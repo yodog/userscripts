@@ -2,7 +2,7 @@
 // @name        MetaCriticAll
 // @namespace   http://stackoverflow.com/users/982924/rasg
 // @author      RASG
-// @version     2014.04.10
+// @version     2014.04.11
 // @description Metacritic ratings everywhere. See the supported sites in the @include section of the script.
 // @icon        http://www.metacritic.com/favicon.ico
 // @require     http://code.jquery.com/jquery.min.js
@@ -11,7 +11,7 @@
 // @resource    metacritic.css http://ufpr.dl.sourceforge.net/project/userscripts/metacriticall/metacritic.css
 // @include     http*://*.getgamesgo.com/*
 // @include     http*://*.greenmangaming.com/*/games/*
-// @include     http:*//*isthereanydeal.com/*
+// @include     http*://*isthereanydeal.com/*
 // @include     http*://*.nuuvem.com.br/produto*
 // @include     http*://*.steamgifts.com/*
 // @include     http*://*store.steampowered.com/*
