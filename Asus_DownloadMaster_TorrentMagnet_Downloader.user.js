@@ -2,9 +2,9 @@
 // @name        Asus DownloadMaster Torrent/Magnet Downloader
 // @namespace   http://stackoverflow.com/users/982924/rasg
 // @author      RASG
+// @version     2013.10.24
 // @description Downloads torrentz directly with Asus DownloadMaster
 // @icon        https://torrentz.eu/favicon.ico
-// @version     2013.10.24
 // @require     http://code.jquery.com/jquery.min.js
 // @include     /^https?://(?:www\.)?(?:tz\.ai|torrents\.de|(?:torrentz\.(?:eu|ph|li|com|me|in|hk)))/.*/
 // ==/UserScript==
