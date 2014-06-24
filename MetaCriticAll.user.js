@@ -2,7 +2,7 @@
 // @name        MetaCriticAll
 // @namespace   http://stackoverflow.com/users/982924/rasg
 // @author      RASG
-// @version     2014.04.11
+// @version     2014.06.24
 // @description Metacritic ratings everywhere. See the supported sites in the @include section of the script.
 // @icon        http://www.metacritic.com/favicon.ico
 // @require     http://code.jquery.com/jquery.min.js
@@ -13,6 +13,7 @@
 // @include     http*://*.greenmangaming.com/*/games/*
 // @include     http*://*isthereanydeal.com/*
 // @include     http*://*.nuuvem.com.br/produto*
+// @include     http*://*steamcommunity.com/id/*/wishlist
 // @include     http*://*.steamgifts.com/*
 // @include     http*://*store.steampowered.com/*
 // ==/UserScript==
@@ -74,6 +75,16 @@ $(function(){
         $("li div.purchase").css({"float":"right"});
     }
 
+    if ((window.location.href.indexOf('steamcommunity.com/id/') > -1) && (window.location.href.indexOf('/wishlist') > -1)) {
+        full_ou_mini = 'mini';
+        elementos = $('div.wishlistRowItem > h4');
+        $("<style>.main_details, .side_details { display: inline-block; }</style>").appendTo(document.documentElement);
+        $("<style>.main_details, .side_details { width: 200px; }</style>").appendTo(document.documentElement);
+        $("<style>div.metamini { float: left; }</style>").appendTo(document.documentElement);
+        $("div.wishlistRow").css({"height":"auto", "overflow":"hidden", "width":"850px"});
+        $("div.bottom_controls").css({"position":"initial"});
+    }
+
     if (window.location.href.indexOf('steamgifts.com') > -1) {
         full_ou_mini = 'full';
         elementos = $('.ajax_gifts > .post > .left > .title > a');
@@ -89,6 +100,7 @@ $(function(){
     }
 
     // METACRITIC CONTENT
+    
     if (full_ou_mini == 'full') {
         var inicio = /(?=<div class="summary_wrap">)/i;
         var fim = '<div class="module critic_user_reviews">';
@@ -100,11 +112,12 @@ $(function(){
         var classe = 'metamini';
     }
     else {
-        alert('variavel full_ou_mini nao foi definida para este dominio');
+        alert('variable full_ou_mini not defined for this domain');
         return;
     }
 
     // DOM
+    
     elementos.each(function() {
         var elemjogo = $(this)
         var jogo = elemjogo.text()
