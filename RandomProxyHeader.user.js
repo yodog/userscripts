@@ -2,12 +2,15 @@
 // @name           RandomProxyHeader
 // @namespace      http://stackoverflow.com/users/982924/rasg
 // @author         RASG
-// @version        2012.06.14
+// @version        2014.08.25
 // @description    [EN] Load webpages and links through a random proxy based on the server response (403). If not found (404), loads the cached version of the page. [PT] Carrega paginas e links atraves de um proxy aleatorio, mas baseado na resposta do servidor (403). Se a pagina nao for encontrada (404), carrega a versao disponivel em algum cache.
 // @require        http://code.jquery.com/jquery.min.js
+// @grant          GM_log
+// @grant          GM_wait
+// @grant          GM_xmlhttpRequest
 // @include        *
-// @exclude        *builder.addons.mozilla.org*
-// @exclude        *stackoverflow*
+// @exclude        *addons.mozilla.org*
+// @exclude        *stack*
 // ==/UserScript==
 
 
