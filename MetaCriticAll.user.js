@@ -15,12 +15,15 @@
 // @grant       GM_xmlhttpRequest
 // @include     http*://*.getgamesgo.com/*
 // @include     http*://*.greenmangaming.com/*/games/*
-// @include     http*://*isthereanydeal.com/*
 // @include     http*://*.nuuvem.com.br/produto*
 // @include     http*://*steamcommunity.com/id/*/wishlist
 // @include     http*://*.steamgifts.com/*
 // @include     http*://*store.steampowered.com/*
 // ==/UserScript==
+
+
+// temporarily disabling isthereanydeal, until someone have time to fix it
+// @include     http*://*isthereanydeal.com/*
 
 
 var estilo1 = GM_getResourceText ("metacritic.global.css");
