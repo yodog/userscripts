@@ -4,7 +4,7 @@
 // @author          RASG
 // @description     Mostra em um mapa no site do Banrisul onde ficam as agencias bancarias
 // @require         http://code.jquery.com/jquery.min.js
-// @require         http://maps.google.com/maps/api/js?sensor=false&region=BR&callback=initialize
+// @require         https://maps.google.com/maps/api/js?sensor=false&region=BR&callback=initialize
 // @require         https://greasyfork.org/scripts/2199-waitforkeyelements/code/waitForKeyElements.js?version=5802
 // @include         http*://*banrisul.com.br/bob/link/bobw00hn_onde_tem_banrisul.aspx?secao_id=111*
 // @version         2012.11.13
@@ -168,7 +168,7 @@ function metodo_JQ(metodo){
 };
 
 function metodo_Gmaps(metodo){
-    API_js_callback = "http://maps.google.com.br/maps/api/js?sensor=false&region=BR&callback=initialize";
+    API_js_callback = "https://maps.google.com.br/maps/api/js?sensor=false&region=BR&callback=initialize";
 
     if (metodo == 2) {
         var script = document.createElement('script');
