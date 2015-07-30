@@ -61,7 +61,7 @@ $(window).load(function(){
     $(DIVmapa).append(DIVinterna)
     $(DIVmapa).appendTo('body')
 
-    $('#ctl00_ctl00_ExtraConteudo02_ExtraConteudo02_listaAg tr[class!=linhaHeader]').each(function(index) {
+    $('#ctl00_ctl00_ExtraConteudo03_ExtraConteudo03_listaAg tr[class!=linhaHeader]').each(function(index) {
         var ag = $.trim( $(this).children().filter('.colunaNome.itemEsquerda').text() );
         var cod = $.trim( $(this).children().filter('.colunaCodInternet.item.posicao').text() );
         var cidade = ' ' + $.trim( $('#ctl00_ctl00_Conteudo_MainContent_lblCidadeSelecionada').text() );
