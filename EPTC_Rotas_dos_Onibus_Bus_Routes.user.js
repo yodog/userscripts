@@ -2,14 +2,14 @@
 // @name           EPTC :: Rotas dos Onibus / Bus Routes
 // @namespace      http://stackoverflow.com/users/982924/rasg
 // @author         RASG
-// @version        2012.06.14
+// @version        2012.06.15
 // @description    [EN] Uses the Google Maps API to show the buses routes in Porto Alegre - Brazil. [PT] Usa a API do Google Maps para mostrar as rotas dos onibus de Porto Alegre no site da EPTC.
 // @grant          GM_addStyle
 // @grant          GM_getResourceText
 // @grant          GM_log
 // @grant          GM_xmlhttpRequest
 // @require        http://code.jquery.com/jquery.min.js
-// @require        http://maps.google.com/maps/api/js?sensor=false&region=BR&callback=initialize
+// @require        http://maps.google.com/maps/api/js?sensor=false&region=BR
 // @include        http*://*eptc.com.br/EPTC_Itinerarios/Cadastro*
 // ==/UserScript==
 
