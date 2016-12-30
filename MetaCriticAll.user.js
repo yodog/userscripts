@@ -21,10 +21,8 @@
 // @include     http*://*store.steampowered.com/*
 // ==/UserScript==
 
-
 // temporarily disabling isthereanydeal, until someone have time to fix it
 // @include     http*://*isthereanydeal.com/*
-
 
 var estilo1 = GM_getResourceText ("metacritic.global.css");
 GM_addStyle (estilo1);
