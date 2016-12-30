@@ -1,0 +1,34 @@
+.metamini .metascore_w.xlarge,.metascore_w.xl {
+    height: 50px;
+    width: 50px;
+    font-size: 35px;
+    line-height: 50px
+}
+
+.metascore_w.xlarge,.metascore_w.xl {
+    height: 85px;
+    width: 85px;
+    font-size: 45px;
+    line-height: 85px
+}
+
+.metascore_w.large,.metascore_w.lrg {
+    height: 50px;
+    width: 50px;
+    font-size: 25px;
+    line-height: 50px
+}
+
+.score_summary .highlight_metascore .metascore_w {
+    margin: 0 0 0 -95px;
+    float: left
+}
+
+.metamini .score_summary .highlight_metascore .metascore_w {
+    margin: 0 0 0 -75px;
+    float: left
+}
+
+.score_summary .highlight_metascore {
+    padding: 0 0 0 95px
+}
