@@ -6,9 +6,9 @@
 // @description Metacritic ratings everywhere. See the supported sites in the @include section of the script.
 // @icon        http://www.metacritic.com/favicon.ico
 // @require     http://code.jquery.com/jquery.min.js
-// @resource    metacritic.global.css http://ufpr.dl.sourceforge.net/project/userscripts/metacriticall/metacritic.global.css
-// @resource    metacritic.base.css http://ufpr.dl.sourceforge.net/project/userscripts/metacriticall/metacritic.base.css
-// @resource    metacritic.css http://ufpr.dl.sourceforge.net/project/userscripts/metacriticall/metacritic.css
+// @resource    metacritic.global.css https://raw.githubusercontent.com/yodog/userscripts/master/res/metacritic.global.css
+// @resource    metacritic.base.css   https://raw.githubusercontent.com/yodog/userscripts/master/res/metacritic.base.css
+// @resource    metacritic.css        https://raw.githubusercontent.com/yodog/userscripts/master/res/metacritic.css
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_log
