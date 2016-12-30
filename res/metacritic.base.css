@@ -1,0 +1,971 @@
+﻿.content_head {
+    position: relative;
+    padding: 0 0 10px
+}
+.content_head .product_title {
+    font-family: georgia,serif;
+    font-size: 24px
+}
+.content_head .product_title a {
+    color: #333;
+    font-weight: normal
+}
+.content_head .product_title .band_name,.content_head .product_title .separator {
+    font-weight: normal;
+    font-size: 14px
+}
+.content_head .product_social {
+    float: right;
+    margin-top: 4px;
+    margin-left: 10px;
+    width: 211px
+}
+.content_head .product_data {
+    height: 1%;
+    overflow: hidden;
+    margin: 5px 0
+}
+.content_head .summary_details {
+    position: relative;
+    display: inline;
+    float: left;
+    margin: 0 0 0 -21px
+}
+
+.content_head .summary_detail {
+    background: url(/images/dividers/v/solid_666.gif) no-repeat 0 -199px;
+    color: #666;
+    display: inline;
+    font-size: 11px;
+    float: left;
+    line-height: 14px;
+    margin: 0 0 0 10px;
+    padding: 0 0 0 11px;
+    white-space: nowrap
+}
+.content_head .summary_detail .label,.content_head .summary_detail .data .active {
+    font-weight: bold
+}
+.content_head .summary_detail .data a {
+    color: #09f
+}
+.content_head .publisher .label {
+    display: none
+}
+.content_head div.useracts {
+    float: right;
+    margin: -26px 0 0
+}
+.content_head .product_seasons {
+    white-space: normal
+}
+
+.content_head .product_seasons .data {
+    white-space: normal
+}
+.game_content_head .platform,.game_content_head .platform a {
+    color: #b6b6b6;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: arial,helvetica,sans-serif;
+    white-space: nowrap
+}
+div.content_nav {
+    line-height: 19px;
+    height: 19px;
+    overflow: hidden;
+    margin: 0 0 13px;
+    width: 100%
+}
+ul.content_nav {
+    width: 100%;
+    margin: 0
+}
+.content_nav li.nav {
+    float: left;
+    text-align: center;
+    margin: 0 0 0 1px;
+    width: 127px
+}
+.content_nav li.first_nav {
+    margin-left: 0
+}
+.content_nav .nav_item {
+    background: #333;
+    display: block
+}
+
+.content_nav .nav a {
+    color: #fff;
+    font-weight: normal
+}
+.content_nav .active_nav .nav_item {
+    background: #ccc
+}
+.content_nav .active_nav .action {
+    color: #000;
+    font-weight: bold
+}
+.content_nav .disabled {
+    color: #999
+}
+ul.useracts,.useracts .act,.useracts .act_item,.useracts .act_item_wrap,.useracts .act_text,.useracts .subact,.useracts .subacts {
+    float: left
+}
+ul.useracts {
+    margin: 0 0 0 -10px
+}
+.useracts .act {
+    font-size: 10px;
+    font-weight: bold;
+    line-height: 20px;
+    margin: 0 0 0 10px;
+    position: relative
+}
+.useracts .act_item {
+    padding: 0 0 0 3px
+}
+
+.useracts .act_item_wrap {
+    padding: 0 3px 0 0;
+    height: 20px
+}
+.useracts .act_text {
+    line-height: 12px;
+    padding: 3px 7px 3px
+}
+.useracts .act_share .act_item,.useracts .act_share .act_item_wrap {
+    background: url(/images/buttons/std_grey.png) no-repeat 0 0
+}
+.useracts .act_share .act_item_wrap {
+    background-position: right -20px
+}
+.useracts .act_share .act_text {
+    padding-left: 4px;
+    padding-left: 4px
+}
+.useracts .act_share .subact {
+    margin: 0 0 0 3px
+}
+.useracts .act_share .subacts {
+    margin: 0 1px 0 -2px;
+    padding: 3px 0 0
+}
+.useracts .act_share .subact a {
+    background: url(/images/icons/share.png) no-repeat 0 0;
+    float: left;
+    height: 0;
+    overflow: hidden;
+    padding: 14px 0 0;
+    width: 14px
+}
+
+.useracts .act_share .subact_twitter a {
+    background-position: 0 -15px
+}
+.useracts .act_track a {
+    color: #fff
+}
+.useracts .act_track .act_item,.useracts .act_track .act_item_wrap {
+    background: url(/images/buttons/std_blue.png) no-repeat 0 0
+}
+.useracts .act_track .act_item_wrap {
+    background-position: right -20px
+}
+.product_data,.product_data .section {
+    height: 100%;
+    overflow: hidden
+}
+.product_data {
+    font-size: 11px
+}
+.product_data .details {
+    display: inline;
+    float: left;
+    width: 50%
+}
+.product_data .product_details .label {
+    font-weight: bold
+}
+
+.product_data .product_credits a {
+    color: #333;
+    font-weight: normal
+}
+.product_data .product_media {
+    display: inline;
+    float: left
+}
+.product_data .has_image .summary_wrap {
+    display: inline;
+    float: right;
+    width: 100%
+}
+.product_data div.product_image {
+    border-color: #999;
+    border-width: 1px;
+    margin: 0 0 13px
+}
+.product_data img.product_image {
+    display: block
+}
+.product_data .has_small_image {
+    padding-left: 75px
+}
+.product_data .has_medium_image {
+    padding-left: 100px
+}
+.product_data .has_large_image {
+    padding-left: 120px
+}
+.product_data .small_image {
+    width: 53px
+}
+
+.product_data .medium_image {
+    width: 78px
+}
+.product_data .large_image {
+    width: 98px
+}
+.product_data div.small_media {
+    margin-left: -75px;
+    width: 55px
+}
+.product_data div.medium_media {
+    margin-left: -100px;
+    width: 80px
+}
+.product_data div.large_media {
+    margin-left: -120px;
+    width: 100px
+}
+.product_data a.product_media_link,.product_data a.product_media_link .text {
+    background: url(/images/buttons/std_blue.png) no-repeat 0 -200px;
+    display: block;
+    height: 31px;
+    line-height: 31px
+}
+.product_data a.product_media_link {
+    color: #fff;
+    font-size: 12px;
+    padding: 0 0 0 5px;
+    text-align: center
+}
+
+.product_data a.product_media_link .text {
+    background-position: right -240px;
+    padding: 0 5px 0 0
+}
+.product_data_summary .section {
+    padding: 0 233px 0 0
+}
+.product_data_summary .product_scores {
+    margin: 0 0 7px 0
+}
+.product_data_summary .main_details {
+    margin: 0;
+    width: 100%
+}
+.product_data_summary .side_details {
+    float: right;
+    margin: 0 -233px 0 18px;
+    width: 215px
+}
+.product_data_summary .side_details .score_summary {
+    margin: 0 0 10px
+}
+.product_data_summary .side_details .yourscore_summary {
+    margin: 0
+}
+.product_data_summary .summary_detail {
+    line-height: 16px;
+    margin: 0 0 2px
+}
+
+.product_data_summary .main_details .summary_detail {
+    margin: 0 0 8px
+}
+.product_countdown,.product_countdown_wrap {
+    background: url(/images/modules/bg_countdown.png) no-repeat 0 0
+}
+.product_countdown {
+    color: #333;
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 14px;
+    height: 43px;
+    padding: 0 0 0 5px;
+    text-align: center;
+    width: 195px
+}
+.product_countdown_wrap {
+    background-position: right -50px;
+    padding: 7px 5px 0 0;
+    height: 36px;
+    overflow: hidden
+}
+.product_countdown .countdown {
+    color: #f60;
+    font-weight: bold
+}
+.product_countdown .countdown_holder {
+    height: 14px
+}
+
+.product_countdown .countdown_complete {
+    height: 29px;
+    line-height: 29px;
+    padding-bottom: 7px
+}
+.product_score_summary .details {
+    display: inline;
+    float: left;
+    width: 50%
+}
+.score_details_module .score_summary {
+    float: left;
+    width: 45%
+}
+.score_details_module .score_distribution {
+    float: left;
+    width: 55%
+}
+.score_details .distribution_title {
+    font-size: 11px;
+    font-weight: bold;
+    line-height: 13px
+}
+.score_details_module .score_distribution {
+    padding: 5px 0 0
+}
+.score_details_module .distribution_wrap {
+    padding: 0 260px 0 0
+}
+.score_details_module .distribution_title {
+    display: inline;
+    float: left;
+    padding: 0;
+    width: 100%
+}
+
+.score_details_module .score_counts {
+    display: inline;
+    float: right;
+    margin: 1px -260px 0 0
+}
+.reviews_module .body {
+    border-color: #ccc;
+    border-width: 0 1px 1px
+}
+.reviews_module .score_details {
+    background: url(/images/modules/bg_gradient_dfdfdf.png) repeat-x 0 bottom;
+    padding: 10px
+}
+.reviews_module .score_details .score_summary {
+    border-color: #ccc;
+    border-width: 0 0 1px;
+    padding: 0 0 1px;
+    margin: 0 0 1px
+}
+.reviews_module .score_summary .label {
+    padding: 2px 0 0
+}
+.reviews_module .distribution_title {
+    margin: 0 0 6px
+}
+.reviews_module .score_distribution .label {
+    text-align: right
+}
+
+.reviews_module .see_all {
+    font-size: 14px;
+    padding: 13px 0 7px;
+    text-align: center
+}
+.reviews_module div.msg_no_reviews {
+    overflow: hidden;
+    height: 100%
+}
+.reviews_module div.msg_no_reviews .review_btm,.reviews_module div.msg_no_reviews .review_top {
+    float: left;
+    width: 100%
+}
+.reviews_module div.msg_no_reviews p {
+    background: #fff;
+    border-color: #ccc;
+    border-width: 0 1px;
+    font-weight: bold;
+    margin: 5px 0;
+    padding: 50px 13px;
+    text-align: center
+}
+.main_col .reviews_module .review_btm_r {
+    background-position: right bottom
+}
+.main_col .reviews_module .review_top {
+    background: url(/images/modules/list_product_reviews_top.png) no-repeat 0 0
+}
+
+.review .review_critic,.review .review_body {
+    display: inline;
+    float: right;
+    width: 100%
+}
+.review .review_grade {
+    display: inline;
+    float: left;
+    margin: 0 0 0 -41px
+}
+.review .review_content {
+    margin: 5px 0;
+    border-color: #ccc
+}
+.review .review_section {
+    padding: 5px 10px 5px 55px;
+    height: 100%;
+    overflow: hidden
+}
+.review .review_critic .date {
+    font: normal 11px georgia,serif;
+    margin: 1px 0 0
+}
+.main_col .reviews_module .body {
+    background: #f6f6f6
+}
+.main_col .reviews_module .page_nav {
+    padding: 0 14px 7px
+}
+.main_col .reviews_module .reviews {
+    padding: 0 7px 7px
+}
+
+.main_col .reviews_module .review {
+    background: #fff;
+    margin: 7px 0 0
+}
+.main_col .reviews_module .review_btm {
+    background: url(/images/modules/list_product_reviews_btm.png) no-repeat 0 bottom
+}
+.main_col .reviews_module .review_btm_r {
+    background-position: right bottom
+}
+.main_col .reviews_module .review_top {
+    background: url(/images/modules/list_product_reviews_top.png) no-repeat 0 0
+}
+.main_col .reviews_module .review_top_r {
+    background-position: right 0
+}
+.main_col .review_content {
+    border-width: 0 1px
+}
+.main_col .review_section {
+    padding: 8px 13px 8px 55px
+}
+
+.side_col .review_critic .author,.side_col .review_critic .source {
+    display: inline
+}
+.side_col .review_critic .author {
+    background: url(/images/dividers/v/solid_666.gif) no-repeat 0 -197px;
+    margin: 0 0 0 6px;
+    padding: 0 0 0 7px;
+    overflow: hidden
+}
+.side_col .review_actions {
+    padding-top: 0
+}
+.critic_review .review_grade.has_author {
+    margin-top: 2px
+}
+.critic_review .review_critic {
+    font-size: 12px;
+    line-height: 16px
+}
+.user_review .review_critic {
+    font-size: 13px;
+    font-weight: bold
+}
+.user_review .review_critic a: hover {
+    color: #09f
+}
+.user_reviews_module div.write_review {
+    display: inline;
+    float: right;
+    padding: 5px;
+    margin: -31px 0 0
+}
+
+.user_reviews_module a.write_review,.user_reviews_module a.write_review span {
+    background: url(/images/buttons/std_blue.png) no-repeat 0 -40px
+}
+.user_reviews_module a.write_review {
+    color: #fff;
+    float: right;
+    font-size: 10px;
+    height: 20px;
+    line-height: 20px;
+    padding: 0 0 0 5px;
+    text-align: center;
+    width: 85px
+}
+.user_reviews_module a.write_review span {
+    background-position: right -60px;
+    float: right;
+    padding: 0 5px 0 0;
+    width: 80px;
+    height: 20px
+}
+.product_reviews div.tabs {
+    border-width: 1px 0 0
+}
+.module .product_reviews .tab .active {
+    background-position: 0 -250px
+}
+
+.module .product_reviews .tab .active span {
+    background-position: right -300px
+}
+.product_reviews .review .review_critic {
+    line-height: 16px;
+    padding: 0 0 6px
+}
+.product_reviews .review .name {
+    float: left
+}
+.product_reviews .review .date {
+    display: inline;
+    float: right;
+    margin: 0 20px 0 0
+}
+.product_reviews .critic_review .review_content {
+    padding: 8px 0
+}
+.product_reviews .critic_review .review_section {
+    padding-top: 0;
+    padding-bottom: 0
+}
+.product_reviews .critic_review div.review_actions {
+    padding-top: 6px
+}
+.product_reviews .critic_review .author,.product_reviews .critic_review .source {
+    display: inline;
+    float: left
+}
+
+.product_reviews .critic_review .author {
+    background: url(/images/dividers/v/solid_666.gif) no-repeat 0 -197px;
+    margin: 0 0 0 6px;
+    padding: 0 0 0 7px
+}
+.product_reviews .critic_review .source {
+    font-size: 14px
+}
+.product_reviews .user_review div.review_actions {
+    border-width: 1px 0 0;
+    padding-top: 5px;
+    padding-bottom: 0
+}
+.critic_user_reviews {
+    height: 100%;
+    overflow: hidden
+}
+.critic_user_reviews .critic_user_reviews_wrap {
+    height: 100%;
+    overflow: hidden;
+    background: #f6f6f6;
+    border-color: #ccc;
+    border-width: 0 1px 1px
+}
+.critic_user_reviews .reviews_module {
+    border-color: #ccc;
+    display: inline;
+    float: left;
+    width: 50%;
+    margin: 0 0 -1000px;
+    padding: 0 0 1000px
+}
+
+.critic_user_reviews .critic_reviews_module .head {
+    border-right-width: 0
+}
+.critic_user_reviews .reviews_module .body {
+    background: 0;
+    border-width: 0
+}
+.critic_user_reviews .review_stats {
+    padding: 0 0 6px 43px;
+    height: 1%;
+    overflow: hidden
+}
+.critic_user_reviews .review_section {
+    padding-left: 13px
+}
+.critic_user_reviews .review_actions {
+    padding-top: 5px
+}
+.critic_user_reviews .score_distribution {
+    padding: 10px 0 3px
+}
+.critic_user_reviews .distribution_title {
+    display: none
+}
+.critic_user_reviews .user_reviews_module {
+    border-width: 0 0 0 1px;
+    margin-left: -1px
+}
+
+.critic_user_reviews .user_reviews_module .head {
+    border-left-width: 0
+}
+.critic_user_reviews .user_review {
+    position: relative
+}
+.critic_user_reviews .user_review .review_critic {
+    margin-top: 0
+}
+.critic_user_reviews .moderation {
+    float: none;
+    position: absolute;
+    top: 5px;
+    right: 13px
+}
+.product_summary {
+    margin: 10px 0;
+    line-height: 16px
+}
+.product_details table,.credits_list table {
+    font-size: 11px;
+    width: 100%;
+    margin: 0 0 15px
+}
+.product_details th,.product_details td {
+    padding: 3px 0 4px 11px
+}
+.product_details th {
+    width: 20%;
+    color: #333;
+    font-weight: bold;
+    white-space: nowrap
+}
+
+.product_details td {
+    width: 80%
+}
+.product_details td a {
+    font-weight: normal
+}
+.product_details .alt td,.product_details .alt th {
+    background-color: #f3f3f3
+}
+.credits_list {
+    margin-bottom: 20px
+}
+.credits_list table {
+    width: 100%
+}
+.credits_list td,.credits_list th {
+    width: 50%;
+    padding: 3px 0 4px 11px
+}
+.credits_list th {
+    color: #333;
+    font-weight: bold
+}
+.credits_list .alt td {
+    background-color: #f3f3f3
+}
+.credits_list .credits_gamefaqs {
+    text-align: right;
+    margin-bottom: 8px
+}
+.credits_list .credits_gamefaqs a {
+    font-weight: bold;
+    color: black
+}
+.imdb_wrap {
+    overflow: hidden;
+    height: 1%;
+    margin: -10px 8px 20px 0
+}
+
+.imdb_copy {
+    float: right;
+    font-weight: bold;
+    line-height: 24px;
+    padding: 0 5px 0 0
+}
+.imdb_wrap a.imdb {
+    background: url(/images/icons/imdb.png) no-repeat 0;
+    float: right;
+    height: 0;
+    overflow: hidden;
+    padding: 26px 0 0;
+    width: 54px
+}
+#gm_shop_mod {
+    margin: 0 0 10px 0
+}
+#gm_shop_mod .btm {
+    background: url(/images/modules/commerce/glyde/module_btm.png) no-repeat 0 bottom;
+    padding-bottom: 5px
+}
+#gm_shop_mod .top {
+    background: url(/images/modules/commerce/glyde/module_top.png) no-repeat 0 top;
+    padding-top: 5px
+}
+#gm_shop_mod .wrap {
+    background-color: #fff;
+    width: 272px;
+    padding: 1px 12px 3px;
+    border-right: 1px solid #cdd0d5;
+    border-left: 1px solid #cdd0d5
+}
+
+#gm_shop_mod .head {
+    overflow: hidden;
+    height: 1%;
+    padding-bottom: 9px;
+    border-bottom: 1px solid #cdd0d5
+}
+#gm_shop_mod .gm_logo a {
+    float: left;
+    background: url(/images/modules/commerce/glyde/header.png) no-repeat 0 0;
+    width: 124px;
+    height: 29px
+}
+#gm_shop_mod .glyde_logo {
+    float: right;
+    background: url(/images/modules/commerce/glyde/logo.png) no-repeat 0 0;
+    width: 96px;
+    height: 20px;
+    margin-top: 10px
+}
+#gm_shop_mod #glyde_interface {
+    display: none
+}
+#gm_shop_mod .body {
+    overflow: hidden;
+    height: 1%;
+    padding: 8px 0 8px 0
+}
+#gm_shop_mod .boxshot {
+    float: left;
+    margin: 0 20px 0 0;
+    padding: 0
+}
+
+#gm_shop_mod .boxshot img {
+    width: 93px;
+    border: 1px solid #b0b0b0;
+    -moz-box-shadow: 4px 4px 4px #ececec;
+    -webkit-box-shadow: 4px 4px 4px #ececec;
+    box-shadow: 4px 4px 4px #ececec
+}
+#gm_shop_mod .ds_margin {
+    margin-bottom: 27px
+}
+#gm_shop_mod .glyde_data {
+    float: left;
+    width: 115px;
+    height: 51px
+}
+#gm_shop_mod .glyde_data div,#gm_shop_mod .glyde_data span {
+    float: left;
+    letter-spacing: 1px
+}
+#gm_shop_mod .glyde_buttons {
+    float: left
+}
+#gm_shop_mod .glyde_buttons a {
+    background: url(/images/modules/commerce/glyde/btn.png) no-repeat 0 0;
+    color: #fff;
+    height: 29px;
+    padding: 6px 0 0;
+    text-align: center;
+    display: block;
+    font-size: 13px;
+    width: 104px
+}
+
+#gm_shop_mod .product_title {
+    float: left;
+    width: 145px;
+    color: #333;
+    font-weight: bold;
+    font-size: 14px
+}
+#gm_shop_mod .starting {
+    float: left;
+    width: 100px;
+    color: #555;
+    font-size: 9px;
+    margin-top: 2px
+}
+#gm_shop_mod .glyde_price {
+    margin-top: -5px;
+    color: #262626;
+    font-weight: bold
+}
+#gm_shop_mod .glyde_price .sign {
+    font-size: 30px;
+    padding-top: 5px
+}
+#gm_shop_mod .glyde_price .dollars {
+    font-size: 45px
+}
+#gm_shop_mod .glyde_price .cents {
+    font-size: 24px;
+    padding-top: 3px
+}
+#gm_shop_mod .footer {
+    padding-top: 6px;
+    text-align: right;
+    border-top: 1px solid #cdd0d5
+}
+
+#gm_shop_mod .footer_link {
+    font-size: 11px;
+    text-decoration: none;
+    font-weight: normal;
+    color: #f05800
+}
+#gm_shop_mod .glyde_sell_btn_wrap {
+    display: none
+}
+#gm_shop_mod #glyde_loading {
+    display: none;
+    font-size: 18px;
+    width: 100%;
+    text-align: center;
+    margin: 38px 0;
+    color: #999
+}
+#gm_shop_mod #glyde_no_js {
+    padding: 10px 0 15px
+}
+#gm_shop_mod #glyde_no_js #retail_msg {
+    font-size: 13px;
+    padding-bottom: 55px
+}
+#gm_shop_mod #glyde_no_js #js_msg {
+    font-size: 11px;
+    text-align: right;
+    margin-right: 12px
+}
+#gm_shop_mod #glyde_no_js #retail_msg .product_title {
+    color: #f60;
+    font-weight: normal;
+    font-size: 13px;
+    float: none
+}
+
+.showtimes_module {
+    position: relative;
+    overflow: visible
+}
+.showtimes_module .showtimes_zipcode {
+    position: absolute;
+    top: 6px;
+    right: 6px
+}
+.showtimes_module .showtimes_zipcode #showtimes_zipcode_input {
+    vertical-align: baseline;
+    width: 35px;
+    border: 1px solid #EEE
+}
+.showtimes_module .showtimes_zipcode label {
+    vertical-align: baseline;
+    color: #FFF
+}
+.showtimes_module .showtimes_zipcode .geolocation {
+    height: 16px;
+    width: 16px;
+    margin-bottom: 2px;
+    vertical-align: middle;
+    cursor: pointer
+}
+.showtimes_module .showtimes_wrap {
+    clear: both;
+    padding: 6px 0 6px;
+    border-top: 1px solid #efefef
+}
+
+.showtimes_module .body {
+    border-width: 0 1px 1px;
+    padding: 0 13px;
+    overflow: hidden
+}
+.showtimes_module .theater_profile {
+    padding: 5px 0 4px
+}
+.showtimes_module .theater_name {
+    color: #333;
+    font-size: 14px;
+    font-weight: bold
+}
+.showtimes_module .theater_location {
+    color: #555;
+    font-size: 11px;
+    padding: 0 0 0 2px
+}
+.showtimes_module .showtimes_list {
+    margin-top: -1px
+}
+.showtimes_module .showtimes_footer {
+    border-width: 0 1px 1px 1px;
+    text-align: right;
+    font-weight: bold;
+    padding: 6px 4px 6px
+}
+.showtimes_module .showtimes .showtime {
+    float: left;
+    width: 46px;
+    padding: 0 0 4px;
+    text-align: center
+}
+
+.showtimes_module .showtimes .showtime a,.showtimes_module .showtimes .showtime,.showtimes_module .showtimes .showtime_label {
+    line-height: 11px;
+    font-size: 11px;
+    height: 11px;
+    font-weight: normal
+}
+.showtimes_module .showtimes .showtime_label {
+    float: left;
+    width: 37px;
+    font-weight: bold
+}
+.showtimes_module .showtimes .showtime_times {
+    height: 100%;
+    width: 230px;
+    overflow: auto;
+    margin-left: 37px
+}
+.showtimes_module .showtimes .showtimes_buy_wrap {
+    font-size: 10px;
+    height: 12px
+}
+.showtimes_module .showtimes .showtimes_buy {
+    float: right;
+    padding-right: 13px
+}
+
+.showtimes_module .showtimes .map {
+    float: left
+}
+.showtimes_module .showtimes_warning {
+    margin: 10px 0
+}
+.showtimes_theater_location {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5000000;
+    width: 260px;
+    height: 260px;
+    border-width: 1px;
+    padding: 5px;
+    background-color: #FFF
+}
