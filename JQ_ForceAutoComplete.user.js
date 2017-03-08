@@ -2,11 +2,13 @@
 // @name            JQ_ForceAutoComplete
 // @namespace       http://stackoverflow.com/users/982924/rasg
 // @author          RASG
-// @version         2017.02.23
+// @version         2017.03.08
 // @description     Forces the autocomplete attribute for all forms and input fields in the page
 // @require         http://code.jquery.com/jquery.min.js
 // @include         http*://*
 // ==/UserScript==
+
+this.$ = this.jQuery = jQuery.noConflict(true);
 
 $(window).load(function(){
 
