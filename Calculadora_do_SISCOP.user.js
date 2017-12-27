@@ -5,7 +5,7 @@
 // @description Calculadora do SISCOP
 // @require     http://code.jquery.com/jquery.min.js
 // @include     http*://siscop.portalcorporativo.serpro/ManRegPonto.asp*
-// @version     2017.12.26.1649
+// @version     2017.12.27.1414
 // @grant       none
 // ==/UserScript==
 
@@ -17,6 +17,38 @@ $(window).load(function(){
     var tblFlexivel = $('table')[1];
     $(tblFlexivel).attr('id', 'tblFlexivel');
     var flexivel = $('#tblFlexivel tr > td:nth-child(5)').eq(1).text();
+
+    var tblSaldoViagem = $('table')[2];
+    $(tblSaldoViagem).find('td').each(function() {
+        sv = Number(this.textContent);
+        if ( isNaN(sv) ) return null;
+        if ( sv == 0 ) return null;
+        $(this).text( MinToHM(sv) );
+    });
+
+    var tblSaldoComp = $('table')[3];
+    $(tblSaldoComp).find('td').each(function() {
+        sc = Number(this.textContent);
+        if ( isNaN(sc) ) return null;
+        if ( sc == 0 ) return null;
+        $(this).text( MinToHM(sc) );
+    });
+
+    var tblSaldoInstrutoria = $('table')[4];
+    $(tblSaldoInstrutoria).find('td').each(function() {
+        si = Number(this.textContent);
+        if ( isNaN(si) ) return null;
+        if ( si == 0 ) return null;
+        $(this).text( MinToHM(si) );
+    });
+
+    var tblAtrasosInjust = $('table')[5];
+    $(tblAtrasosInjust).find('td').each(function() {
+        ai = Number(this.textContent);
+        if ( isNaN(ai) ) return null;
+        if ( ai == 0 ) return null;
+        $(this).text( MinToHM(ai) );
+    });
 
     var tblDetalhada = $('table')[6];
     $(tblDetalhada).attr('id', 'tblDetalhada');
@@ -39,52 +71,75 @@ $(window).load(function(){
     }).get();
 
     $(colsExpNor).each(function() {
-        if ( this.textContent == arrayMenorValor(arrayValues) ) {
-            $(this).css('background-color', 'yellow');
-        }
-        else if ( this.textContent == arrayMaiorValor(arrayValues) ) {
-            $(this).css('background-color', 'lightgreen');
-        }
+        var cor;
+
+        if ( this.textContent == arrayMenorValor(arrayValues) ) { cor = 'yellow' }
+        else if ( this.textContent == arrayMaiorValor(arrayValues) ) { cor = 'lightgreen' }
+
+        $(this).parent().css('background-color', cor);
     });
 
-    //arrayMenorValor(arrayValues);
-    //arrayMaiorValor(arrayValues);
-    //arraySoma(arrayValues);
+    // -------------------------------------------------------------------------
+    // ADICIONAR LINHA COM A SOMA DOS MINUTOS AO FIM DA TABELA
+    // -------------------------------------------------------------------------
+
+    $lastrow  = $(tblDetalhada).find("tr:last");
+    $totalrow = $lastrow.clone();
+    $lastrow.after($totalrow);
+
+    $totalrow.find("td").removeAttr("bgcolor style").text('');
+    $totalrow.css('background-color', 'lightgrey');
+
+    $totalrow.find("td:first").text('SALDO');
+    $totalrow.find("td:eq(9)").text( MinToHM( arraySoma(arrayValues) ) );
+
+    // -------------------------------------------------------------------------
+    //
+    // -------------------------------------------------------------------------
+
+
 });
 
 
+function MinToHM(minutos) {
+    var h = Math.floor(minutos / 60);
+    var m = minutos % 60;
+
+    return `${minutos} (${h}h ${m}min)`;
+}
+
 function arrayMenorValor(array) {
-    console.log(`${arguments.callee.name} :: array is ${array}`);
+    //console.log(`${arguments.callee.name} :: array is ${array}`);
 
     var sorted = array.sort(function(a, b) { return a - b });
-    console.log(`${arguments.callee.name} :: sorted is ${sorted}`);
+    //console.log(`${arguments.callee.name} :: sorted is ${sorted}`);
 
     var menor = sorted[0];
-    console.log(`${arguments.callee.name} :: menor is ${menor}`);
+    //console.log(`${arguments.callee.name} :: menor is ${menor}`);
 
     return menor;
-};
+}
 
 function arrayMaiorValor(array) {
-    console.log(`${arguments.callee.name} :: array is ${array}`);
+    //console.log(`${arguments.callee.name} :: array is ${array}`);
 
     var sorted = array.sort(function(a, b) { return a - b });
-    console.log(`${arguments.callee.name} :: sorted is ${sorted}`);
+    //console.log(`${arguments.callee.name} :: sorted is ${sorted}`);
 
     var maior  = sorted.slice(-1).pop();
-    console.log(`${arguments.callee.name} :: maior is ${maior}`);
+    //console.log(`${arguments.callee.name} :: maior is ${maior}`);
 
     return maior;
-};
+}
 
 function arraySoma(array) {
-    console.log(`${arguments.callee.name} :: array is ${array}`);
+    //console.log(`${arguments.callee.name} :: array is ${array}`);
 
     var sorted = array.sort(function(a, b) { return a - b });
-    console.log(`${arguments.callee.name} :: sorted is ${sorted}`);
+    //console.log(`${arguments.callee.name} :: sorted is ${sorted}`);
 
     var soma   = sorted.reduce(function(a, b) { return a + b; }, 0);
-    console.log(`${arguments.callee.name} :: soma is ${soma}`);
+    //console.log(`${arguments.callee.name} :: soma is ${soma}`);
 
     return soma;
-};
+}
