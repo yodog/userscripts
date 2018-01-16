@@ -5,7 +5,7 @@
 // @description Mercado Livre - calculadora de frete
 // @require     http://code.jquery.com/jquery.min.js
 // @include     http*://*.mercadolivre.com.br/*
-// @version     2018.01.15.1830
+// @version     2018.01.16.1642
 // @grant       GM_xmlhttpRequest
 // ==/UserScript==
 
@@ -25,7 +25,9 @@ $(window).load(function(){
         //console.log( 'id: ', id );
 
         var itemprice = $(this).find('.item__price');
-        itemprice.append('<span> Envio: </span> <span id="freteholder_'+id+'">?</span> <span> Total: </span> <span id="totalholder_'+id+'">?</span>');
+        itemprice.append('<span class="freteholder"> Envio: <span id="freteholder_'+id+'">?</span></span> <span class="totalholder"> Total: R$ <span id="totalholder_'+id+'">?</span></span>');
+        $('.freteholder').css('color', 'blue');
+        $('.totalholder').css('color', 'red');
 
         //console.log( 'itemprice: ', itemprice );
 
