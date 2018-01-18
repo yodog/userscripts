@@ -6,7 +6,7 @@
 // @require     http://code.jquery.com/jquery.min.js
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*.mercadolivre.com.br/*
-// @version     2018.01.18.1855
+// @version     2018.01.18.1901
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
@@ -152,8 +152,7 @@ $(window).load(function(){
                 freteholder_id.html(valorfrete);
                 totalholder_id.html(valortotal);
 
-                if ( valorfrete > esconder_frete_maior_que ) rowItem.parent().hide();
-                if ( valortotal > esconder_total_maior_que ) rowItem.parent().hide();
+                if ( (valorfrete > esconder_frete_maior_que) || (valortotal > esconder_total_maior_que) ) rowItem.parent().hide();
             }
         }
     })
