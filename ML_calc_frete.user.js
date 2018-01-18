@@ -6,7 +6,7 @@
 // @require     http://code.jquery.com/jquery.min.js
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*.mercadolivre.com.br/*
-// @version     2018.01.18.1901
+// @version     2018.01.18.2042
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
@@ -30,6 +30,10 @@ $(window).load(function(){
         menuCommand: true,
         onSave: function() { recarregar(); },
         params: {
+            ordenar_por_total: {
+                type: 'checkbox',
+                default: true
+            },
             destacar_frete_gratis: {
                 type: 'checkbox',
                 default: true
@@ -49,6 +53,7 @@ $(window).load(function(){
         }
     });
 
+    var ordenar_por_total         = cfg.get("ordenar_por_total");
     var destacar_frete_gratis     = cfg.get("destacar_frete_gratis");
     var esconder_frete_a_combinar = cfg.get("esconder_frete_a_combinar");
     var esconder_frete_maior_que  = cfg.get("esconder_frete_maior_que");
@@ -58,7 +63,9 @@ $(window).load(function(){
     // ELEMENTS
     // ---
 
-    $('div.rowItem').each(function() {
+    var rowItems = $('div.rowItem');
+
+    rowItems.each(function() {
 
         var rowItem = $(this);
 
@@ -72,7 +79,7 @@ $(window).load(function(){
         // adicionar o elemento que ira receber os meus campos 'envio' e 'total'
 
         var itemprice = rowItem.find('.item__price');
-        itemprice.append('<span class="freteholder"> Envio: R$ <span id="freteholder_'+id+'">?</span></span> <span class="totalholder"> Total: R$ <span id="totalholder_'+id+'">?</span></span>');
+        itemprice.append('<span class="freteholder"> Envio: R$ <span id="freteholder_'+id+'">?</span></span> <span class="totalholder"> Total: R$ <span id="totalholder_'+id+'" class="totals">?</span></span>');
         $('.totalholder').css('color', 'red');
 
         var totalholder_id = $('#totalholder_'+id);
@@ -101,8 +108,14 @@ $(window).load(function(){
             freteholder_id.html(valorfrete);
             totalholder_id.html(valortotal);
 
-            if ( valortotal > esconder_total_maior_que ) rowItem.parent().hide();
             if ( destacar_frete_gratis ) rowItem.parent().css('border', '2px dotted ' + color);
+
+            if ( valortotal > esconder_total_maior_que ) {
+                rowItem.parent().hide();
+            }
+            else {
+                if ( ordenar_por_total ) sortUsingNestedText($('#searchResults'), "li", "span.totals");
+            }
         }
         else {
             color = 'blue';
@@ -152,11 +165,17 @@ $(window).load(function(){
                 freteholder_id.html(valorfrete);
                 totalholder_id.html(valortotal);
 
-                if ( (valorfrete > esconder_frete_maior_que) || (valortotal > esconder_total_maior_que) ) rowItem.parent().hide();
+                if ( (valorfrete > esconder_frete_maior_que) || (valortotal > esconder_total_maior_que) ) {
+                    rowItem.parent().hide();
+                }
+                else {
+                    if ( ordenar_por_total ) sortUsingNestedText($('#searchResults'), "li", "span.totals");
+                }
             }
         }
     })
 });
+
 
 // ---
 //
@@ -164,4 +183,18 @@ $(window).load(function(){
 
 function recarregar() {
     alert('Recarregue a pagina para aplicar as alteracoes');
+}
+
+// ---
+//
+// ---
+
+function sortUsingNestedText(parent, childSelector, keySelector) {
+    var items = parent.children(childSelector).sort(function(a, b) {
+        var vA = $(keySelector, a).text();
+        var vB = $(keySelector, b).text();
+        return (vA < vB) ? -1 : (vA > vB) ? 1 : 0;
+    });
+
+    parent.append(items);
 }
