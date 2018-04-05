@@ -4,99 +4,105 @@
 // @author      RASG
 // @description Calculadora do SISCOP
 // @require     http://code.jquery.com/jquery.min.js
-// @include     http*://siscop.portalcorporativo.serpro/ManRegPonto.asp*
-// @version     2017.12.27.1414
+// @include     http*://siscop.portalcorporativo.serpro/*
+// @version     2018.04.05.1511
 // @grant       none
 // ==/UserScript==
 
 $(window).load(function(){
 
-    var today = new Date();
-    var dd    = today.getDate();
+    if (window.location.href.indexOf('ManRegPonto.asp') > -1 ) {
 
-    var tblFlexivel = $('table')[1];
-    $(tblFlexivel).attr('id', 'tblFlexivel');
-    var flexivel = $('#tblFlexivel tr > td:nth-child(5)').eq(1).text();
+        var today = new Date();
+        var dd    = today.getDate();
 
-    var tblSaldoViagem = $('table')[2];
-    $(tblSaldoViagem).find('td').each(function() {
-        sv = Number(this.textContent);
-        if ( isNaN(sv) ) return null;
-        if ( sv == 0 ) return null;
-        $(this).text( MinToHM(sv) );
-    });
+        var tblFlexivel = $('table')[1];
+        $(tblFlexivel).attr('id', 'tblFlexivel');
+        var flexivel = $('#tblFlexivel tr > td:nth-child(5)').eq(1).text();
 
-    var tblSaldoComp = $('table')[3];
-    $(tblSaldoComp).find('td').each(function() {
-        sc = Number(this.textContent);
-        if ( isNaN(sc) ) return null;
-        if ( sc == 0 ) return null;
-        $(this).text( MinToHM(sc) );
-    });
+        var tblSaldoViagem = $('table')[2];
+        $(tblSaldoViagem).find('td').each(function() {
+            sv = Number(this.textContent);
+            if ( isNaN(sv) ) return null;
+            if ( sv == 0 ) return null;
+            $(this).text( MinToHM(sv) );
+        });
 
-    var tblSaldoInstrutoria = $('table')[4];
-    $(tblSaldoInstrutoria).find('td').each(function() {
-        si = Number(this.textContent);
-        if ( isNaN(si) ) return null;
-        if ( si == 0 ) return null;
-        $(this).text( MinToHM(si) );
-    });
+        var tblSaldoComp = $('table')[3];
+        $(tblSaldoComp).find('td').each(function() {
+            sc = Number(this.textContent);
+            if ( isNaN(sc) ) return null;
+            if ( sc == 0 ) return null;
+            $(this).text( MinToHM(sc) );
+        });
 
-    var tblAtrasosInjust = $('table')[5];
-    $(tblAtrasosInjust).find('td').each(function() {
-        ai = Number(this.textContent);
-        if ( isNaN(ai) ) return null;
-        if ( ai == 0 ) return null;
-        $(this).text( MinToHM(ai) );
-    });
+        var tblSaldoInstrutoria = $('table')[4];
+        $(tblSaldoInstrutoria).find('td').each(function() {
+            si = Number(this.textContent);
+            if ( isNaN(si) ) return null;
+            if ( si == 0 ) return null;
+            $(this).text( MinToHM(si) );
+        });
 
-    var tblDetalhada = $('table')[6];
-    $(tblDetalhada).attr('id', 'tblDetalhada');
+        var tblAtrasosInjust = $('table')[5];
+        $(tblAtrasosInjust).find('td').each(function() {
+            ai = Number(this.textContent);
+            if ( isNaN(ai) ) return null;
+            if ( ai == 0 ) return null;
+            $(this).text( MinToHM(ai) );
+        });
 
-    var colsAteHoje = $('#tblDetalhada tr').map(function() {
-        var tdf = Number( $('td:first', this).text() );
-        if ( isNaN(tdf) ) return null;
-        if ( tdf >= dd ) return null;
-        $(this).css('border', '1px solid red').attr('class', 'colsAteHoje');
-        return $(this);
-    }).get();
+        var tblDetalhada = $('table')[6];
+        $(tblDetalhada).attr('id', 'tblDetalhada');
 
-    var colsExpNor = $('.colsAteHoje > td:nth-child(10)');
+        var colsAteHoje = $('#tblDetalhada tr').map(function() {
+            var tdf = Number( $('td:first', this).text() );
+            if ( isNaN(tdf) ) return null;
+            if ( tdf >= dd ) return null;
+            $(this).css('border', '1px solid red').attr('class', 'colsAteHoje');
+            return $(this);
+        }).get();
 
-    var arrayValues = $(colsExpNor).map(function() {
-        n = Number(this.textContent);
-        if ( isNaN(n) ) return null;
-        if ( n == 0 ) return null;
-        return n;
-    }).get();
+        var colsExpNor = $('.colsAteHoje > td:nth-child(10)');
 
-    $(colsExpNor).each(function() {
-        var cor;
+        var arrayValues = $(colsExpNor).map(function() {
+            n = Number(this.textContent);
+            if ( isNaN(n) ) return null;
+            if ( n == 0 ) return null;
+            return n;
+        }).get();
 
-        if ( this.textContent == arrayMenorValor(arrayValues) ) { cor = 'yellow' }
-        else if ( this.textContent == arrayMaiorValor(arrayValues) ) { cor = 'lightgreen' }
+        $(colsExpNor).each(function() {
+            var cor;
 
-        $(this).parent().css('background-color', cor);
-    });
+            if ( this.textContent == arrayMenorValor(arrayValues) ) { cor = 'yellow' }
+            else if ( this.textContent == arrayMaiorValor(arrayValues) ) { cor = 'lightgreen' }
+
+            $(this).parent().css('background-color', cor);
+        });
+
+        // -------------------------------------------------------------------------
+        // ADICIONAR LINHA COM A SOMA DOS MINUTOS AO FIM DA TABELA
+        // -------------------------------------------------------------------------
+
+        $lastrow  = $(tblDetalhada).find("tr:last");
+        $totalrow = $lastrow.clone();
+        $lastrow.after($totalrow);
+
+        $totalrow.find("td").removeAttr("bgcolor style").text('');
+        $totalrow.css('background-color', 'lightgrey');
+
+        $totalrow.find("td:first").text('SALDO');
+        $totalrow.find("td:eq(9)").text( MinToHM( arraySoma(arrayValues) ) );
+    }
 
     // -------------------------------------------------------------------------
-    // ADICIONAR LINHA COM A SOMA DOS MINUTOS AO FIM DA TABELA
+    // EXPANDIR TODAS AS OPCOES DO MENU
     // -------------------------------------------------------------------------
 
-    $lastrow  = $(tblDetalhada).find("tr:last");
-    $totalrow = $lastrow.clone();
-    $lastrow.after($totalrow);
-
-    $totalrow.find("td").removeAttr("bgcolor style").text('');
-    $totalrow.css('background-color', 'lightgrey');
-
-    $totalrow.find("td:first").text('SALDO');
-    $totalrow.find("td:eq(9)").text( MinToHM( arraySoma(arrayValues) ) );
-
-    // -------------------------------------------------------------------------
-    //
-    // -------------------------------------------------------------------------
-
+    if (window.location.href.indexOf('ManRegPonto.asp') < 0 ) {
+        $('.sbm').show();
+    }
 
 });
 
