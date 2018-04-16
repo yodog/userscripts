@@ -5,7 +5,7 @@
 // @description Calculadora do SISCOP
 // @require     http://code.jquery.com/jquery.min.js
 // @include     http*://siscop.portalcorporativo.serpro/*
-// @version     2018.04.16.1115
+// @version     2018.04.16.1507
 // @grant       none
 // ==/UserScript==
 
@@ -97,11 +97,17 @@ $(window).load(function(){
     }
 
     // -------------------------------------------------------------------------
-    // TIRAR LIMITE DE TAMANHO DA TABELA
+    //
     // -------------------------------------------------------------------------
 
     if (window.location.href.indexOf('CadRegPonto.asp') > -1) {
-        $('form[name="frmCadastro"] table').width(300);
+        frmCadastro = $('form[name="frmCadastro"] table');
+
+        // TIRAR LIMITE DE TAMANHO DA TABELA
+        frmCadastro.width(300);
+
+        // MOSTRAR 'PREVISAO DE SAIDA'
+        frmCadastro.find("td > font").removeAttr("onmouseout").css('color', 'black');
     }
 
     // -------------------------------------------------------------------------
