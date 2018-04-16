@@ -5,13 +5,13 @@
 // @description Calculadora do SISCOP
 // @require     http://code.jquery.com/jquery.min.js
 // @include     http*://siscop.portalcorporativo.serpro/*
-// @version     2018.04.05.1511
+// @version     2018.04.16.1115
 // @grant       none
 // ==/UserScript==
 
 $(window).load(function(){
 
-    if (window.location.href.indexOf('ManRegPonto.asp') > -1 ) {
+    if (window.location.href.indexOf('ManRegPonto.asp') > -1) {
 
         var today = new Date();
         var dd    = today.getDate();
@@ -97,10 +97,18 @@ $(window).load(function(){
     }
 
     // -------------------------------------------------------------------------
+    // TIRAR LIMITE DE TAMANHO DA TABELA
+    // -------------------------------------------------------------------------
+
+    if (window.location.href.indexOf('CadRegPonto.asp') > -1) {
+        $('form[name="frmCadastro"] table').width(300);
+    }
+
+    // -------------------------------------------------------------------------
     // EXPANDIR TODAS AS OPCOES DO MENU
     // -------------------------------------------------------------------------
 
-    if (window.location.href.indexOf('ManRegPonto.asp') < 0 ) {
+    if (window.location.href.indexOf('ManRegPonto.asp') < 0) {
         $('.sbm').show();
     }
 
