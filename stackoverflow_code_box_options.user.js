@@ -7,7 +7,7 @@
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*stackexchange.com/*
 // @include     http*://*stackoverflow.com/*
-// @version     2018.05.30.1838
+// @version     2018.05.30.1903
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
