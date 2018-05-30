@@ -6,7 +6,7 @@
 // @require     http://code.jquery.com/jquery.min.js
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*stackoverflow.com/*
-// @version     2018.05.30.1238
+// @version     2018.05.30.1820
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
@@ -30,88 +30,53 @@ $(window).load(function(){
         menuCommand: true,
         onSave: function() { recarregar(); },
         params: {
-            code_box_expand: {
-                type: 'checkbox',
-                default: true
-            },
-            code_box_height: {
-                type: 'number',
-                default: 900
-            },
-            code_box_width: {
-                type: 'number',
-                default: 900
-            },
-            code_font_resize: {
-                type: 'checkbox',
-                default: true
-            },
-            code_font_size: {
-                type: 'number',
-                default: 12
-            },
-            answer_box_expand: {
-                type: 'checkbox',
-                default: true
-            },
-            answer_box_height: {
-                type: 'number',
-                default: 400
-            },
-            answer_box_width: {
-                type: 'number',
-                default: 900
-            }
+            answer_box_expand: { type: 'checkbox', default: true },
+            answer_box_height: { type: 'number',   default: 400 },
+            answer_box_width : { type: 'number',   default: 900 },
+            code_box_expand  : { type: 'checkbox', default: true },
+            code_box_height  : { type: 'number',   default: 900 },
+            code_box_width   : { type: 'number',   default: 900 },
+            code_font_resize : { type: 'checkbox', default: true },
+            code_font_size   : { type: 'number',   default: 12 }
         }
     });
 
+    var answer_box_expand = cfg.get("answer_box_expand");
+    var answer_box_height = cfg.get("answer_box_height");
+    var answer_box_width  = cfg.get("answer_box_width");
     var code_box_expand   = cfg.get("code_box_expand");
     var code_box_height   = cfg.get("code_box_height");
     var code_box_width    = cfg.get("code_box_width");
     var code_font_resize  = cfg.get("code_font_resize");
     var code_font_size    = cfg.get("code_font_size");
-    var answer_box_expand = cfg.get("answer_box_expand");
-    var answer_box_height = cfg.get("answer_box_height");
-    var answer_box_width  = cfg.get("answer_box_width");
-
-    // ---
-    // ELEMENTS
-    // ---
-
-    var divinnercontent = $('div.inner-content');
-    var posttext = $('.post-text');
-    var codebox = $('pre.prettyprinted');
-    var codeboxcode = codebox.find('code');
-    var posteditor = $('.post-editor');
-    var youranswer = posteditor.find('textarea');
 
     // ---
     // MODS
     // ---
 
-    divinnercontent.attr('style', 'width: auto !important');
-
-    if ( code_box_expand ) {
-        posttext.css({'width':code_box_width + 'px'})
-        codebox.css({'max-height':code_box_height + 'px'})
-    }
-
-    if ( code_font_resize ) {
-        codeboxcode.attr('style', 'font-size: ' + code_font_size + 'px !important');
-    }
+    $('div.inner-content').attr('style', 'width: auto !important');
 
     if ( answer_box_expand ) {
-        posteditor.css({'width':answer_box_width + 'px'})
-        youranswer.css({'height':answer_box_height + 'px'})
+        $('.post-editor').css({'width':answer_box_width + 'px'})
+        $('textarea').css({'height':answer_box_height + 'px'})
     }
+
+    if ( code_box_expand ) {
+        $('.post-text').css({'width':code_box_width + 'px'})
+        $('pre.prettyprinted').css({'max-height':code_box_height + 'px'})
+    }
+
+
+    if ( code_font_resize ) {
+        $('blockquote,code,pre').css({'font-size':code_font_size + 'px'})
+    }
+
 
 });
 
-
-// ---
-//
-// ---
+// -----------------------------------------------------------------------------
 
 function recarregar() {
-    alert('Recarregue a pagina para aplicar as alteracoes');
+    //alert('Recarregue a pagina para aplicar as alteracoes');
+    document.location.reload(false);
 }
