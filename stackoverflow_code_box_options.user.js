@@ -5,6 +5,7 @@
 // @description stackoverflow code box options
 // @require     http://code.jquery.com/jquery.min.js
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
+// @include     http*://*stackexchange.com/*
 // @include     http*://*stackoverflow.com/*
 // @version     2018.05.30.1838
 // @grant       GM_addStyle
