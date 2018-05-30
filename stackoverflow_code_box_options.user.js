@@ -6,7 +6,7 @@
 // @require     http://code.jquery.com/jquery.min.js
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*stackoverflow.com/*
-// @version     2018.05.30.1820
+// @version     2018.05.30.1838
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
@@ -19,7 +19,7 @@
 this.$ = this.jQuery = jQuery.noConflict(true);
 
 // START
-$(window).load(function(){
+$(function(){
 
     // ---
     // OPTIONS / CONFIG MENU
