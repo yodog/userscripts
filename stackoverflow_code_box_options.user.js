@@ -7,7 +7,7 @@
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*stackexchange.com/*
 // @include     http*://*stackoverflow.com/*
-// @version     2018.05.30.1903
+// @version     2018.06.01.1101
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
@@ -55,7 +55,7 @@ $(function(){
     // MODS
     // ---
 
-    $('div.inner-content').attr('style', 'width: auto !important');
+    $('div.inner-content, div#content').attr('style', 'width: auto !important');
 
     if ( answer_box_expand ) {
         $('.post-editor').css({'width':answer_box_width + 'px'})
@@ -67,9 +67,8 @@ $(function(){
         $('pre.prettyprinted').css({'max-height':code_box_height + 'px'})
     }
 
-
     if ( code_font_resize ) {
-        $('blockquote,code,pre').css({'font-size':code_font_size + 'px'})
+        $('blockquote, code, pre').css({'font-size':code_font_size + 'px'})
     }
 
 
