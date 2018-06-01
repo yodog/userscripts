@@ -7,7 +7,7 @@
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*stackexchange.com/*
 // @include     http*://*stackoverflow.com/*
-// @version     2018.06.01.1101
+// @version     2018.06.01.1129
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
@@ -26,35 +26,40 @@ $(function(){
     // OPTIONS / CONFIG MENU
     // ---
 
-    var cfg = new MonkeyConfig({
-        title: 'Config SO_code_box',
-        menuCommand: true,
-        onSave: function() { recarregar(); },
-        params: {
-            answer_box_expand: { type: 'checkbox', default: true },
-            answer_box_height: { type: 'number',   default: 400 },
-            answer_box_width : { type: 'number',   default: 900 },
-            code_box_expand  : { type: 'checkbox', default: true },
-            code_box_height  : { type: 'number',   default: 900 },
-            code_box_width   : { type: 'number',   default: 900 },
-            code_font_resize : { type: 'checkbox', default: true },
-            code_font_size   : { type: 'number',   default: 12 }
-        }
-    });
-
-    var answer_box_expand = cfg.get("answer_box_expand");
-    var answer_box_height = cfg.get("answer_box_height");
-    var answer_box_width  = cfg.get("answer_box_width");
-    var code_box_expand   = cfg.get("code_box_expand");
-    var code_box_height   = cfg.get("code_box_height");
-    var code_box_width    = cfg.get("code_box_width");
-    var code_font_resize  = cfg.get("code_font_resize");
-    var code_font_size    = cfg.get("code_font_size");
+    try {
+      var cfg = new MonkeyConfig({
+          title: 'Config SO_code_box',
+          menuCommand: true,
+          onSave: function() { recarregar(); },
+          params: {
+              answer_box_expand: { type: 'checkbox', default: true },
+              answer_box_height: { type: 'number',   default: 400 },
+              answer_box_width : { type: 'number',   default: 900 },
+              code_box_expand  : { type: 'checkbox', default: true },
+              code_box_height  : { type: 'number',   default: 900 },
+              code_box_width   : { type: 'number',   default: 900 },
+              code_font_resize : { type: 'checkbox', default: true },
+              code_font_size   : { type: 'number',   default: 12 }
+          }
+      });
+	}
+	catch(err) {
+      console.log("could not instanciate cfg = new MonkeyConfig");
+	}
+    
+    var answer_box_expand = (!!cfg) ? cfg.get("answer_box_expand") : true;
+    var answer_box_height = (!!cfg) ? cfg.get("answer_box_height") : 400;
+    var answer_box_width  = (!!cfg) ? cfg.get("answer_box_width")  : 900;
+    var code_box_expand   = (!!cfg) ? cfg.get("code_box_expand")   : true;
+    var code_box_height   = (!!cfg) ? cfg.get("code_box_height")   : 900;
+    var code_box_width    = (!!cfg) ? cfg.get("code_box_width")    : 900;
+    var code_font_resize  = (!!cfg) ? cfg.get("code_font_resize")  : true;
+    var code_font_size    = (!!cfg) ? cfg.get("code_font_size")    : 12;
 
     // ---
     // MODS
     // ---
-
+  
     $('div.inner-content, div#content').attr('style', 'width: auto !important');
 
     if ( answer_box_expand ) {
@@ -70,7 +75,6 @@ $(function(){
     if ( code_font_resize ) {
         $('blockquote, code, pre').css({'font-size':code_font_size + 'px'})
     }
-
 
 });
 
