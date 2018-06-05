@@ -2,7 +2,7 @@
 // @name            JQ_ForceAutoComplete
 // @namespace       http://stackoverflow.com/users/982924/rasg
 // @author          RASG
-// @version         2017.12.12
+// @version         2018.06.04.2315
 // @description     Forces the autocomplete attribute for all forms and input fields in the page
 // @require         http://code.jquery.com/jquery.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
@@ -15,9 +15,11 @@
 // ==/UserScript==
 
 // PREVENT JQUERY CONFLICT
-this.$ = this.jQuery = jQuery.noConflict(true);
+this.$      = $.noConflict(true);
+this.jQuery = jQuery.noConflict(true);
 
-$(window).load(function(){
+// START
+$(function(){
 
     // ---
     // PARSE PASSWORD FIELDS
@@ -32,26 +34,30 @@ $(window).load(function(){
     // ---
     // OPTIONS / CONFIG MENU
     // ---
-
-    var cfg = new MonkeyConfig({
-        title: 'Config JQ_ForceAutoComplete',
-        menuCommand: true,
-        onSave: function() { togglePassword(); },
-        params: {
-            save_password: {
-                type: 'checkbox',
-                default: true
-            },
-            enable_field: {
-                type: 'checkbox',
-                default: true
-            },
-            show_password_as_clear_text: {
-                type: 'checkbox',
-                default: false
+    try {
+        var cfg = new MonkeyConfig({
+            title: 'Config JQ_ForceAutoComplete',
+            menuCommand: true,
+            onSave: function() { togglePassword(); },
+            params: {
+                save_password: {
+                    type: 'checkbox',
+                    default: true
+                },
+                enable_field: {
+                    type: 'checkbox',
+                    default: true
+                },
+                show_password_as_clear_text: {
+                    type: 'checkbox',
+                    default: false
+                }
             }
-        }
-    });
+        });
+    }
+    catch(err) {
+        console.log("could not instanciate cfg = new MonkeyConfig");
+    }
 
     // ---
     // SELECT ELEMENTS TO WORK ON
