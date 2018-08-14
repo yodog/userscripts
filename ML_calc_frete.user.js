@@ -19,7 +19,7 @@
 this.$ = this.jQuery = jQuery.noConflict(true);
 
 // START
-$(window).load(function(){
+$(function(){
 
     // ---
     // OPTIONS / CONFIG MENU
