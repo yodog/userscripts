@@ -6,7 +6,7 @@
 // @require     http://code.jquery.com/jquery.min.js
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*.mercadolivre.com.br/*
-// @version     2018.08.14.1438
+// @version     2018.08.14.1506
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
@@ -19,7 +19,6 @@
 this.$ = this.jQuery = jQuery.noConflict(true);
 
 // START
-
 $(function(){
 
     // ---
@@ -29,14 +28,14 @@ $(function(){
     var parametros = {
         ordenar_por_total:              { type: 'checkbox', default: true },
         destacar_frete_gratis:          { type: 'checkbox', default: true },
-        esconder_frete_a_combinar:      { type: 'checkbox', default: false },
+        esconder_frete_a_combinar:      { type: 'checkbox', default: true },
         expandir_area_de_visualizacao:  { type: 'checkbox', default: false },
-        esconder_frete_maior_que:       { type: 'number',   default: 999 },
-        esconder_total_maior_que:       { type: 'number',   default: 9999 }
+        esconder_frete_maior_que:       { type: 'number',   default: 30 },
+        esconder_total_maior_que:       { type: 'number',   default: 999 }
     }
 
     try {
-        var cfg = new MonkeyConfi({
+        var cfg = new MonkeyConfig({
             title: 'Config ML_calc_frete',
             menuCommand: true,
             onSave: function() { recarregar(); },
@@ -48,9 +47,7 @@ $(function(){
         console.log("Could not create var cfg = new MonkeyConfig");
         var cfg = {
             params: parametros,
-            get: function get(name) {
-                return this.params[name].default;
-            }
+            get: function get(name) { return GM_getValue(name, this.params[name].default); }
         }
     }
 
