@@ -6,7 +6,7 @@
 // @require     http://code.jquery.com/jquery.min.js
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*.mercadolivre.com.br/*
-// @version     2018.01.19.1321
+// @version     2018.08.14.1438
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
@@ -19,43 +19,40 @@
 this.$ = this.jQuery = jQuery.noConflict(true);
 
 // START
+
 $(function(){
 
     // ---
     // OPTIONS / CONFIG MENU
     // ---
 
-    var cfg = new MonkeyConfig({
-        title: 'Config ML_calc_frete',
-        menuCommand: true,
-        onSave: function() { recarregar(); },
-        params: {
-            ordenar_por_total: {
-                type: 'checkbox',
-                default: true
-            },
-            destacar_frete_gratis: {
-                type: 'checkbox',
-                default: true
-            },
-            esconder_frete_a_combinar: {
-                type: 'checkbox',
-                default: false
-            },
-            expandir_area_de_visualizacao: {
-                type: 'checkbox',
-                default: false
-            },
-            esconder_frete_maior_que: {
-                type: 'number',
-                default: 99
-            },
-            esconder_total_maior_que: {
-                type: 'number',
-                default: 999
+    var parametros = {
+        ordenar_por_total:              { type: 'checkbox', default: true },
+        destacar_frete_gratis:          { type: 'checkbox', default: true },
+        esconder_frete_a_combinar:      { type: 'checkbox', default: false },
+        expandir_area_de_visualizacao:  { type: 'checkbox', default: false },
+        esconder_frete_maior_que:       { type: 'number',   default: 999 },
+        esconder_total_maior_que:       { type: 'number',   default: 9999 }
+    }
+
+    try {
+        var cfg = new MonkeyConfi({
+            title: 'Config ML_calc_frete',
+            menuCommand: true,
+            onSave: function() { recarregar(); },
+            params: parametros
+        });
+        console.log("Created var cfg = new MonkeyConfig");
+    }
+    catch(err) {
+        console.log("Could not create var cfg = new MonkeyConfig");
+        var cfg = {
+            params: parametros,
+            get: function get(name) {
+                return this.params[name].default;
             }
         }
-    });
+    }
 
     var ordenar_por_total             = cfg.get("ordenar_por_total");
     var destacar_frete_gratis         = cfg.get("destacar_frete_gratis");
@@ -187,7 +184,8 @@ $(function(){
 // ---
 
 function recarregar() {
-    alert('Recarregue a pagina para aplicar as alteracoes');
+    //alert('Recarregue a pagina para aplicar as alteracoes');
+    document.location.reload(false);
 }
 
 // ---
