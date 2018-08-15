@@ -1,18 +1,21 @@
 // ==UserScript==
-// @name        Mercado Livre - funcoes que deveriam existir no site
-// @namespace   http://stackoverflow.com/users/982924/rasg
-// @author      RASG
-// @description Adiciona funcoes na visualizacao em lista do Mercado Livre para: (1) somar frete exibindo valor total da compra, (2) destacar produtos com frete gratis, (3) esconder produtos muito caros, (4) esconder produtos com frete muito caro
-// @require     http://code.jquery.com/jquery.min.js
-// @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
-// @include     http*://*.mercadolivre.com.br/*
-// @version     2018.08.14.1506
-// @grant       GM_addStyle
-// @grant       GM_getMetadata
-// @grant       GM_getValue
-// @grant       GM_registerMenuCommand
-// @grant       GM_setValue
-// @grant       GM_xmlhttpRequest
+// @name            Mercado Livre - novas funcoes
+// @namespace       https://github.com/yodog/userscripts
+// @author          RASG
+// @description:en  Add several new functions to Mercado Livre
+// @description:pt  Adiciona funcoes na visualizacao em lista do Mercado Livre para: (1) somar frete exibindo valor total da compra, (2) destacar produtos com frete gratis, (3) esconder produtos muito caros, (4) esconder produtos com frete muito caro
+// @require         http://code.jquery.com/jquery.min.js
+// @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
+// @include         http*://*.mercadolivre.com.br/*
+// @version         2018.08.15.1400
+// @grant           GM_addStyle
+// @grant           GM_getMetadata
+// @grant           GM_getValue
+// @grant           GM. getValue
+// @grant           GM_registerMenuCommand
+// @grant           GM_setValue
+// @grant           GM_xmlhttpRequest
+// @noframes
 // ==/UserScript==
 
 // PREVENT JQUERY CONFLICT
@@ -20,6 +23,12 @@ this.$ = this.jQuery = jQuery.noConflict(true);
 
 // START
 $(function(){
+
+    try { console.log('GM_getValue', GM_getValue); }
+    catch(err) { console.log('GM_getValue nao existe'); }
+
+    try { console.log('GM.getValue', GM.getValue); }
+    catch(err) { console.log('GM.getValue nao existe'); }
 
     // ---
     // OPTIONS / CONFIG MENU
