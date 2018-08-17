@@ -7,72 +7,135 @@
 // @require         http://code.jquery.com/jquery.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include         http*://*.mercadolivre.com.br/*
-// @version         2018.08.15.1400
+// @version         2018.08.16.2113
 // @grant           GM_addStyle
+// @grant           GM.addStyle
 // @grant           GM_getMetadata
+// @grant           GM.getMetadata
 // @grant           GM_getValue
-// @grant           GM. getValue
+// @grant           GM.getValue
 // @grant           GM_registerMenuCommand
+// @grant           GM.registerMenuCommand
 // @grant           GM_setValue
+// @grant           GM.setValue
 // @grant           GM_xmlhttpRequest
+// @grant           GM.xmlHttpRequest
 // @noframes
 // ==/UserScript==
 
+// -----------------------------------------------------------------------------
 // PREVENT JQUERY CONFLICT
+// -----------------------------------------------------------------------------
+
+if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
+
 this.$ = this.jQuery = jQuery.noConflict(true);
 
+// -----------------------------------------------------------------------------
+// COMPATIBILITY BETWEEN GM VERSIONS
+// -----------------------------------------------------------------------------
+
+try {
+    GM_addStyle            = GM.addStyle;
+    GM_getMetadata         = GM.getMetadata;
+    GM_getValue            = GM.getValue;
+    GM_registerMenuCommand = GM.registerMenuCommand;
+    GM_setValue            = GM.setValue;
+    GM_xmlhttpRequest      = GM.xmlHttpRequest;
+
+    console.log('GM object found; Using GM. methods');
+}
+catch(err) {
+    console.log('GM object not found; Using GM_ functions');
+}
+
+// -----------------------------------------------------------------------------
+// OPTIONS / CONFIG MENU
+// -----------------------------------------------------------------------------
+
+var parametros = {
+    ordenar_por_total:              { type: 'checkbox', default: true },
+    destacar_frete_gratis:          { type: 'checkbox', default: true },
+    esconder_frete_a_combinar:      { type: 'checkbox', default: true },
+    expandir_area_de_visualizacao:  { type: 'checkbox', default: true },
+    esconder_frete_maior_que:       { type: 'number',   default: 30 },
+    esconder_total_maior_que:       { type: 'number',   default: 999 }
+}
+
+try {
+    var cfg = new MonkeyConfig({
+        title: 'Config ML_calc_frete',
+        menuCommand: true,
+        onSave: function() { recarregar(); },
+        params: parametros
+    });
+    console.log("MonkeyConfig loaded; The settings menu will be enabled");
+}
+catch(err) {
+    console.log("MonkeyConfig not loaded; The settings menu will be disabled");
+    var cfg = {
+        params: parametros,
+        get: function get(name) { return GM_getValue(name, this.params[name].default); }
+    }
+}
+
+var ordenar_por_total             = cfg.get("ordenar_por_total");
+var destacar_frete_gratis         = cfg.get("destacar_frete_gratis");
+var esconder_frete_a_combinar     = cfg.get("esconder_frete_a_combinar");
+var expandir_area_de_visualizacao = cfg.get("expandir_area_de_visualizacao");
+var esconder_frete_maior_que      = cfg.get("esconder_frete_maior_que");
+var esconder_total_maior_que      = cfg.get("esconder_total_maior_que");
+
+// -----------------------------------------------------------------------------
+// FUNCTIONS
+// -----------------------------------------------------------------------------
+
+// ---
+// RELOAD PAGE (USED WHEN SETTINGS ARE CHANGED)
+// ---
+
+function recarregar() {
+    //alert('Recarregue a pagina para aplicar as alteracoes');
+    document.location.reload(false);
+}
+
+// ---
+// SORT PAGE ELEMENTS (USED TO SORT BY PRICE TOTAL)
+// ---
+
+function sortUsingNestedText(parent, childSelector, keySelector) {
+    var items = parent.children(childSelector).sort(function(a, b) {
+        var vA = $(keySelector, a).text();
+        var vB = $(keySelector, b).text();
+        return (vA < vB) ? -1 : (vA > vB) ? 1 : 0;
+    });
+
+    parent.append(items);
+}
+
+// ---
+// PSEUDO FUNCTION TO SEARCH FOR EXACT TEXT
+// ---
+
+$.expr[':'].textEquals = $.expr.createPseudo(function(arg) {
+    return function( elem ) {
+        return $(elem).text().match("^" + arg + "$");
+    };
+});
+
+// -----------------------------------------------------------------------------
 // START
+// -----------------------------------------------------------------------------
+
 $(function(){
-
-    try { console.log('GM_getValue', GM_getValue); }
-    catch(err) { console.log('GM_getValue nao existe'); }
-
-    try { console.log('GM.getValue', GM.getValue); }
-    catch(err) { console.log('GM.getValue nao existe'); }
-
-    // ---
-    // OPTIONS / CONFIG MENU
-    // ---
-
-    var parametros = {
-        ordenar_por_total:              { type: 'checkbox', default: true },
-        destacar_frete_gratis:          { type: 'checkbox', default: true },
-        esconder_frete_a_combinar:      { type: 'checkbox', default: true },
-        expandir_area_de_visualizacao:  { type: 'checkbox', default: false },
-        esconder_frete_maior_que:       { type: 'number',   default: 30 },
-        esconder_total_maior_que:       { type: 'number',   default: 999 }
-    }
-
-    try {
-        var cfg = new MonkeyConfig({
-            title: 'Config ML_calc_frete',
-            menuCommand: true,
-            onSave: function() { recarregar(); },
-            params: parametros
-        });
-        console.log("Created var cfg = new MonkeyConfig");
-    }
-    catch(err) {
-        console.log("Could not create var cfg = new MonkeyConfig");
-        var cfg = {
-            params: parametros,
-            get: function get(name) { return GM_getValue(name, this.params[name].default); }
-        }
-    }
-
-    var ordenar_por_total             = cfg.get("ordenar_por_total");
-    var destacar_frete_gratis         = cfg.get("destacar_frete_gratis");
-    var esconder_frete_a_combinar     = cfg.get("esconder_frete_a_combinar");
-    var expandir_area_de_visualizacao = cfg.get("expandir_area_de_visualizacao");
-    var esconder_frete_maior_que      = cfg.get("esconder_frete_maior_que");
-    var esconder_total_maior_que      = cfg.get("esconder_total_maior_que");
 
     // ---
     // ELEMENTS
     // ---
 
-    var lista = $('ol#searchResults');
-    var items = lista.find('li.results-item');
+    var lista    = $('ol#searchResults');
+    var items    = lista.find('li.results-item');
+    var produtos = [];
 
     if ( expandir_area_de_visualizacao ) $('.ml-main').attr('style', 'max-width: 1700px !important');
 
@@ -80,6 +143,14 @@ $(function(){
 
         var item = $(this);
         var id   = item.find('div.rowItem').attr('id');
+
+        var produto = {
+            ['id']: id.trim(),
+            ['preco']: 0,
+            ['frete']: 0,
+            ['total']: 0,
+            ['title']: item.find('span.main-title').text().trim(),
+        }
 
         // capturar o link
 
@@ -98,7 +169,8 @@ $(function(){
 
         var pricefraction = item.find('span.price__fraction');
         var preco = pricefraction.text();
-        preco = parseInt( preco.replace(/\D/g,'') );
+
+        produto.preco = parseInt( preco.replace(/\D/g,'') );
 
         // ---
         // FRETE
@@ -106,24 +178,30 @@ $(function(){
 
         // capturar o texto; se for frete gratis marcar com borda verde e nao enviar a requisicao
 
-        var regrafrete = item.find('p.stack-item-info ').text() || item.find('div.item__shipping ').attr('title');
+        var regrafrete = item.find('p.stack-item-info').text() || item.find('div.item__shipping').attr('title') || item.find('div.item__shipping > p').text();
+        //var regrafrete = item.children(":contains('Frete gr')").text();
+        //var regrafrete = item.find(":contains('Frete gr')").first();
+        //var regrafrete = item.find(":textEquals('Frete grátis')");
 
         if ( (regrafrete) && (regrafrete.indexOf('Frete gr') > -1) ) {
-            color      = 'green';
-            valorfrete = 0;
-            valortotal = preco + valorfrete;
 
-            freteholder_id.html(valorfrete);
-            totalholder_id.html(valortotal);
+            color         = 'green';
+            produto.total = produto.preco + produto.frete;
+
+            freteholder_id.html(produto.frete);
+            totalholder_id.html(produto.total);
 
             if ( destacar_frete_gratis ) item.css('border', '2px dotted ' + color);
 
-            if ( valortotal > esconder_total_maior_que ) {
+            if ( produto.total > esconder_total_maior_que ) {
                 item.hide();
             }
             else {
                 if ( ordenar_por_total ) sortUsingNestedText(lista, items, "span.totals");
             }
+
+            console.log('produto sincrono', produto);
+            produtos[produto.id] = produto;
         }
         else {
             color = 'blue';
@@ -156,54 +234,41 @@ $(function(){
         function resparser(detalhes) {
 
             shippingmethodtitle = $(detalhes.responseText).find('.shipping-method-title');
-            elfrete = shippingmethodtitle.find('.ch-price').contents().filter(function() { return this.nodeType == 3; });
-
-            valorfrete = parseInt( elfrete.text().replace(/\D/g,'') );
             textofrete = shippingmethodtitle.text();
 
-            if ( ! valorfrete ) {
+            if ( textofrete.indexOf('a combinar') > -1 ) {
                 itemprice.find('.freteholder').hide();
                 itemprice.find('.totalholder').html(textofrete);
 
                 if ( esconder_frete_a_combinar ) item.hide();
             }
             else {
-                valortotal = preco + valorfrete;
+                elfrete = shippingmethodtitle.find('.ch-price').contents().filter(function() { return this.nodeType == 3; });
 
-                freteholder_id.html(valorfrete);
-                totalholder_id.html(valortotal);
+                if ( textofrete.indexOf('Frete gr') > -1 ) {
+                    produto.frete = 0;
+                    if ( destacar_frete_gratis ) item.css('border', '2px dotted green');
+                }
+                else {
+                    produto.frete = parseInt( elfrete.text().replace(/\D/g,'') );
+                }
 
-                if ( (valorfrete > esconder_frete_maior_que) || (valortotal > esconder_total_maior_que) ) {
+                produto.total = produto.preco + produto.frete;
+
+                freteholder_id.html(produto.frete);
+                totalholder_id.html(produto.total);
+
+                if ( (produto.frete > esconder_frete_maior_que) || (produto.total > esconder_total_maior_que) ) {
                     item.hide();
                 }
                 else {
                     if ( ordenar_por_total ) sortUsingNestedText(lista, items, "span.totals");
                 }
             }
+            console.log('produto assincrono', produto);
+            produtos[produto.id] = produto;
         }
     })
+
+    console.log('produtos', produtos.length, produtos);
 });
-
-
-// ---
-//
-// ---
-
-function recarregar() {
-    //alert('Recarregue a pagina para aplicar as alteracoes');
-    document.location.reload(false);
-}
-
-// ---
-//
-// ---
-
-function sortUsingNestedText(parent, childSelector, keySelector) {
-    var items = parent.children(childSelector).sort(function(a, b) {
-        var vA = $(keySelector, a).text();
-        var vB = $(keySelector, b).text();
-        return (vA < vB) ? -1 : (vA > vB) ? 1 : 0;
-    });
-
-    parent.append(items);
-}
