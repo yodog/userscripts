@@ -5,9 +5,10 @@
 // @description:en  Add several new functions to Mercado Livre
 // @description:pt  Adiciona funcoes na visualizacao em lista do Mercado Livre para: (1) somar frete exibindo valor total da compra, (2) destacar produtos com frete gratis, (3) esconder produtos muito caros, (4) esconder produtos com frete muito caro
 // @require         http://code.jquery.com/jquery.min.js
+// @require         https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include         http*://*.mercadolivre.com.br/*
-// @version         2018.08.16.2113
+// @version         2018.08.21.1556
 // @grant           GM_addStyle
 // @grant           GM.addStyle
 // @grant           GM_getMetadata
@@ -34,6 +35,8 @@ this.$ = this.jQuery = jQuery.noConflict(true);
 // -----------------------------------------------------------------------------
 // COMPATIBILITY BETWEEN GM VERSIONS
 // -----------------------------------------------------------------------------
+
+(async () => {
 
 try {
     GM_addStyle            = GM.addStyle;
@@ -75,16 +78,16 @@ catch(err) {
     console.log("MonkeyConfig not loaded; The settings menu will be disabled");
     var cfg = {
         params: parametros,
-        get: function get(name) { return GM_getValue(name, this.params[name].default); }
+        get: function get(name) { return GM_getValue(name, this.params[name].default) }
     }
 }
 
-var ordenar_por_total             = cfg.get("ordenar_por_total");
-var destacar_frete_gratis         = cfg.get("destacar_frete_gratis");
-var esconder_frete_a_combinar     = cfg.get("esconder_frete_a_combinar");
-var expandir_area_de_visualizacao = cfg.get("expandir_area_de_visualizacao");
-var esconder_frete_maior_que      = cfg.get("esconder_frete_maior_que");
-var esconder_total_maior_que      = cfg.get("esconder_total_maior_que");
+var ordenar_por_total             = await cfg.get("ordenar_por_total");
+var destacar_frete_gratis         = await cfg.get("destacar_frete_gratis");
+var esconder_frete_a_combinar     = await cfg.get("esconder_frete_a_combinar");
+var expandir_area_de_visualizacao = await cfg.get("expandir_area_de_visualizacao");
+var esconder_frete_maior_que      = await cfg.get("esconder_frete_maior_que");
+var esconder_total_maior_que      = await cfg.get("esconder_total_maior_que");
 
 // -----------------------------------------------------------------------------
 // FUNCTIONS
@@ -127,148 +130,154 @@ $.expr[':'].textEquals = $.expr.createPseudo(function(arg) {
 // START
 // -----------------------------------------------------------------------------
 
-$(function(){
-
-    // ---
-    // ELEMENTS
-    // ---
-
-    var lista    = $('ol#searchResults');
-    var items    = lista.find('li.results-item');
-    var produtos = [];
-
-    if ( expandir_area_de_visualizacao ) $('.ml-main').attr('style', 'max-width: 1700px !important');
-
-    items.each(function() {
-
-        var item = $(this);
-        var id   = item.find('div.rowItem').attr('id');
-
-        var produto = {
-            ['id']: id.trim(),
-            ['preco']: 0,
-            ['frete']: 0,
-            ['total']: 0,
-            ['title']: item.find('span.main-title').text().trim(),
-        }
-
-        // capturar o link
-
-        var link = item.find('a.item__info-title').attr('href') || item.find('a.item-link, a.item__info-link').attr('href');
-
-        // adicionar o elemento que ira receber os meus campos 'envio' e 'total'
-
-        var itemprice = item.find('div.item__price');
-        itemprice.append('<span class="freteholder"> Envio: R$ <span id="freteholder_'+id+'">?</span></span> <span class="totalholder"> Total: R$ <span id="totalholder_'+id+'" class="totals">?</span></span>');
-        $('.totalholder').css('color', 'red');
-
-        var totalholder_id = $('#totalholder_'+id);
-        var freteholder_id = $('#freteholder_'+id);
-
-        // capturar o preco
-
-        var pricefraction = item.find('span.price__fraction');
-        var preco = pricefraction.text();
-
-        produto.preco = parseInt( preco.replace(/\D/g,'') );
+    $(function() {
 
         // ---
-        // FRETE
+        // ELEMENTS
         // ---
 
-        // capturar o texto; se for frete gratis marcar com borda verde e nao enviar a requisicao
+        var lista    = $('ol#searchResults');
+        var items    = lista.find('li.results-item');
+        var produtos = [];
 
-        var regrafrete = item.find('p.stack-item-info').text() || item.find('div.item__shipping').attr('title') || item.find('div.item__shipping > p').text();
-        //var regrafrete = item.children(":contains('Frete gr')").text();
-        //var regrafrete = item.find(":contains('Frete gr')").first();
-        //var regrafrete = item.find(":textEquals('Frete grátis')");
+        if ( expandir_area_de_visualizacao ) $('.ml-main').attr('style', 'max-width: 1700px !important');
 
-        if ( (regrafrete) && (regrafrete.indexOf('Frete gr') > -1) ) {
+        items.each(function() {
+        //items.first(function() {
 
-            color         = 'green';
-            produto.total = produto.preco + produto.frete;
+            var item = $(this);
+            var id   = item.find('div.rowItem').attr('id');
 
-            freteholder_id.html(produto.frete);
-            totalholder_id.html(produto.total);
-
-            if ( destacar_frete_gratis ) item.css('border', '2px dotted ' + color);
-
-            if ( produto.total > esconder_total_maior_que ) {
-                item.hide();
-            }
-            else {
-                if ( ordenar_por_total ) sortUsingNestedText(lista, items, "span.totals");
+            var produto = {
+                ['id']: id.trim(),
+                ['preco']: 0,
+                ['frete']: 0,
+                ['total']: 0,
+                ['title']: item.find('span.main-title').text().trim(),
             }
 
-            console.log('produto sincrono', produto);
-            produtos[produto.id] = produto;
-        }
-        else {
-            color = 'blue';
-            conectar('GET', link, resparser);
-        }
+            // capturar o link
 
-        itemprice.find('.freteholder').css('color', color);
+            var link = item.find('a.item__info-title').attr('href') || item.find('a.item-link, a.item__info-link').attr('href');
 
-        // ---
-        //
-        // ---
+            // adicionar o elemento que ira receber os meus campos 'envio' e 'total'
 
-        function conectar(metodo, endereco, resposta, corpo) {
-            callback = function(xhr) { resposta(xhr); }
+            var itemprice = item.find('div.item__price');
+            itemprice.append('<span class="freteholder"> Envio: R$ <span id="freteholder_'+id+'">?</span></span> <span class="totalholder"> Total: R$ <span id="totalholder_'+id+'" class="totals">?</span></span>');
+            $('.totalholder').css('color', 'red');
 
-            GM_xmlhttpRequest({
-                "method"    : metodo,
-                "url"       : endereco,
-                "onerror"   : callback,
-                "onload"    : callback,
-                "headers"   : {'Content-Type' : 'application/x-www-form-urlencoded'},
-                "data"      : corpo
-            });
-        }
+            var totalholder_id = $('#totalholder_'+id);
+            var freteholder_id = $('#freteholder_'+id);
 
-        // ---
-        //
-        // ---
+            // capturar o preco
 
-        function resparser(detalhes) {
+            var pricefraction = item.find('span.price__fraction');
+            var preco = pricefraction.text();
 
-            shippingmethodtitle = $(detalhes.responseText).find('.shipping-method-title');
-            textofrete = shippingmethodtitle.text();
+            produto.preco = parseInt( preco.replace(/\D/g,'') );
 
-            if ( textofrete.indexOf('a combinar') > -1 ) {
-                itemprice.find('.freteholder').hide();
-                itemprice.find('.totalholder').html(textofrete);
+            // ---
+            // FRETE
+            // ---
 
-                if ( esconder_frete_a_combinar ) item.hide();
-            }
-            else {
-                elfrete = shippingmethodtitle.find('.ch-price').contents().filter(function() { return this.nodeType == 3; });
+            // capturar o texto; se for frete gratis marcar com borda verde e nao enviar a requisicao
 
-                if ( textofrete.indexOf('Frete gr') > -1 ) {
-                    produto.frete = 0;
-                    if ( destacar_frete_gratis ) item.css('border', '2px dotted green');
-                }
-                else {
-                    produto.frete = parseInt( elfrete.text().replace(/\D/g,'') );
-                }
+            var regrafrete = item.find('p.stack-item-info').text() || item.find('div.item__shipping').attr('title') || item.find('div.item__shipping > p').text();
+            //var regrafrete = item.children(":contains('Frete gr')").text();
+            //var regrafrete = item.find(":contains('Frete gr')").first();
+            //var regrafrete = item.find(":textEquals('Frete grátis')");
 
+            if ( (regrafrete) && (regrafrete.indexOf('Frete gr') > -1) ) {
+
+                color         = 'green';
                 produto.total = produto.preco + produto.frete;
 
                 freteholder_id.html(produto.frete);
                 totalholder_id.html(produto.total);
 
-                if ( (produto.frete > esconder_frete_maior_que) || (produto.total > esconder_total_maior_que) ) {
+                if ( destacar_frete_gratis ) item.css('border', '2px dotted ' + color);
+
+                if ( produto.total > esconder_total_maior_que ) {
                     item.hide();
                 }
                 else {
                     if ( ordenar_por_total ) sortUsingNestedText(lista, items, "span.totals");
                 }
-            }
-            console.log('produto assincrono', produto);
-            produtos[produto.id] = produto;
-        }
-    })
 
-    console.log('produtos', produtos.length, produtos);
-});
+                console.log('produto sincrono', produto);
+                produtos[produto.id] = produto;
+            }
+            else {
+                color = 'blue';
+                conectar('GET', link, resparser);
+            }
+
+            itemprice.find('.freteholder').css('color', color);
+
+            // ---
+            //
+            // ---
+
+            function conectar(metodo, endereco, resposta, corpo) {
+                callback = function(xhr) { resposta(xhr); }
+
+                GM_xmlhttpRequest({
+                    "method"    : metodo,
+                    "url"       : endereco,
+                    "onerror"   : callback,
+                    "onload"    : callback,
+                    "headers"   : {'Content-Type' : 'application/x-www-form-urlencoded'},
+                    "data"      : corpo
+                });
+            }
+
+            // ---
+            //
+            // ---
+
+            function resparser(detalhes) {
+
+                shippingmethodtitle = $(detalhes.responseText).find('.shipping-method-title');
+                textofrete = shippingmethodtitle.text();
+
+                if ( textofrete.indexOf('a combinar') > -1 ) {
+                    color = 'blue';
+                    itemprice.find('.freteholder').hide();
+                    itemprice.find('.totalholder').html(textofrete);
+
+                    if ( esconder_frete_a_combinar ) item.hide();
+                }
+                else {
+                    elfrete = shippingmethodtitle.find('.ch-price').contents().filter(function() { return this.nodeType == 3; });
+
+                    if ( textofrete.indexOf('Frete gr') > -1 ) {
+                        color = 'green';
+                        produto.frete = 0;
+                        if ( destacar_frete_gratis ) item.css('border', '2px dotted ' + color);
+                    }
+                    else {
+                        produto.frete = parseInt( elfrete.text().replace(/\D/g,'') );
+                    }
+
+                    produto.total = produto.preco + produto.frete;
+
+                    freteholder_id.html(produto.frete);
+                    totalholder_id.html(produto.total);
+
+                    if ( (produto.frete > esconder_frete_maior_que) || (produto.total > esconder_total_maior_que) ) {
+                        item.hide();
+                    }
+                    else {
+                        if ( ordenar_por_total ) sortUsingNestedText(lista, items, "span.totals");
+                    }
+                }
+                console.log('produto assincrono', produto);
+                produtos[produto.id] = produto;
+            }
+        })
+
+        console.log('produtos', produtos.length, produtos);
+
+    }); // closing $(function() {
+
+})(); // closing (async () => {
