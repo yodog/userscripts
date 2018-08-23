@@ -1,12 +1,11 @@
 // ==UserScript==
 // @name            JQ_ForceAutoComplete
-// @namespace       http://stackoverflow.com/users/982924/rasg
+// @namespace       https://github.com/yodog/userscripts
 // @author          RASG
-// @version         2018.06.04.2315
+// @version         2018.08.23.1852
 // @description     Forces the autocomplete attribute for all forms and input fields in the page
 // @require         http://code.jquery.com/jquery.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
-// @include         http*://*
 // @grant           GM_getValue
 // @grant           GM_setValue
 // @grant           GM_addStyle
@@ -14,11 +13,18 @@
 // @grant           GM_registerMenuCommand
 // ==/UserScript==
 
+// -----------------------------------------------------------------------------
 // PREVENT JQUERY CONFLICT
-this.$      = $.noConflict(true);
-this.jQuery = jQuery.noConflict(true);
+// -----------------------------------------------------------------------------
 
+if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
+
+this.$ = this.jQuery = jQuery.noConflict(true);
+
+// -----------------------------------------------------------------------------
 // START
+// -----------------------------------------------------------------------------
+
 $(function(){
 
     // ---
@@ -34,29 +40,22 @@ $(function(){
     // ---
     // OPTIONS / CONFIG MENU
     // ---
+
     try {
         var cfg = new MonkeyConfig({
             title: 'Config JQ_ForceAutoComplete',
             menuCommand: true,
             onSave: function() { togglePassword(); },
             params: {
-                save_password: {
-                    type: 'checkbox',
-                    default: true
-                },
-                enable_field: {
-                    type: 'checkbox',
-                    default: true
-                },
-                show_password_as_clear_text: {
-                    type: 'checkbox',
-                    default: false
-                }
+                enable_field                : { type: 'checkbox', default: true },
+                save_password               : { type: 'checkbox', default: true },
+                show_password_as_clear_text : { type: 'checkbox', default: false }
             }
         });
+        console.log("MonkeyConfig loaded; The settings menu will be enabled");
     }
     catch(err) {
-        console.log("could not instanciate cfg = new MonkeyConfig");
+        console.log("MonkeyConfig not loaded; The settings menu will be disabled");
     }
 
     // ---
