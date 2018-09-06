@@ -5,9 +5,10 @@
 // @require     http://code.jquery.com/jquery.min.js
 // @require     https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @require     https://gist.github.com/raw/2625891/waitForKeyElements.js
-// @include     http*://siscopweb.serpro/manutencao.html
-// @version     2018.08.28.1228
-// @grant       none
+// @include     http*://siscopweb.serpro/*
+// @include     file://*
+// @version     2018.09.06.1752
+// @grant       GM_addStyle
 // @noframes
 // ==/UserScript==
 
@@ -19,118 +20,103 @@ if (typeof $ == 'undefined') console.log('JQuery not found; The script will cert
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
+
 // -----------------------------------------------------------------------------
-// START
+// Variaveis que precisam estar disponiveis para todas as funcoes
 // -----------------------------------------------------------------------------
 
-$(function(){
+var today    = new Date();
+var hoje     = today.getDate();      // 1-31
+var mesatual = today.getMonth() + 1; // 0-11 +1 = 1-12
 
-    var today = new Date();
-    var dd    = today.getDate();
+var tabelaRegistros = $('table#tabelaRegistros');
+var tblHead = tabelaRegistros.find('thead');
+var tblBody = tabelaRegistros.find('tbody');
+var tblRows = tblBody.find('tr');
+var firstrow = tblRows.first();
+var lastrow = tblRows.last();
 
-    var tabelaRegistros = $('table#tabelaRegistros');
-    var tblBody = tabelaRegistros.find('tbody');
-    var tblRows = tblBody.find('tr');
-    var lastrow = tblRows.last();;
+// -----------------------------------------------------------------------------
+// Acoes globais, que podem ser aplicadas para todas as paginas
+// -----------------------------------------------------------------------------
 
-    if (tblRows.length == 0) {
-        waitForKeyElements('table#tabelaRegistros > tbody', function(e) {
-            tblBody = e;
-            tblRows = tblBody.find('tr');
-            lastrow = tblRows.last();
+// Monitorar evento 'scroll' para fixar a linha de 'saldo'
 
-            console.log('tblBody*', tblBody);
-            console.log('tblRows*', tblRows);
-            console.log('lastrow*', lastrow);
+$(document).on('ready scroll', function() {
+    var $stickyRow = $('.totalrow'),
+    $anchor = $stickyRow.prev();
 
-            if (tblRows.length == 0) return true;
-        });
+    $stickyRow.removeClass('fixed flutuante top bottom');
+
+    if (! isScrolledIntoView($anchor)) {
+        var orientation = ($anchor.offset().top < $(window).scrollTop()) ? 'top' : 'bottom';
+        $stickyRow.addClass('fixed flutuante ' + orientation);
     }
 
-    // Capturar o saldo do banco de horas
-    var saldo_semestral_banco_horas = $('span#saldo_semestral_banco_horas');
-    var txt  = saldo_semestral_banco_horas.text().split('/');
+    // Mostrar painel de pesquisa de empregados
 
-    console.log('tabelaRegistros', tabelaRegistros);
-    console.log('tblBody', tblBody);
-    console.log('tblRows', tblRows);
-    console.log('lastrow', lastrow);
-    console.log('totalrow', totalrow);
-    console.log('txt', txt);
-
-    var base = Number( txt[0].replace(/\D/g,'') );
-    var act  = Number( txt[1].replace(/\D/g,'') );
-
-    var ssbh = saldo_semestral_banco_horas.clone();
-    saldo_semestral_banco_horas.append('<br>');
-    saldo_semestral_banco_horas.after(ssbh);
-    ssbh.attr('id', 'ssbh').text( 'Total: ' + MinToHM( arraySoma([base, act]) ) );
-
-
-    // Capturar o dia do mes em cada linha e marcar com borda vermelha
-    var colsAteHoje = tblRows.map(function() {
-        var dia = Number( $('td:eq(3)', this).text() );
-        if ( isNaN(dia) ) return null;
-        if ( dia >= dd ) return null;
-        $(this).css('border', '1px solid red').attr('class', 'colsAteHoje');
-        return $(this);
-    }).get();
-
-
-    // Capturar todos o valores da coluna 'Diferenca na Jornada'
-    var colsDifJorn = $('.colsAteHoje > td:nth-child(17)');
-
-    var arrDifJornVals = colsDifJorn.map(function() {
-        n = Number(this.textContent);
-        if ( isNaN(n) ) return null;
-        if ( n == 0 ) return null;
-        return n;
-    }).get();
-
-
-    // Capturar todos o valores da coluna 'Saldo Final da Jornada'
-    var colsSalFinJorn = $('.colsAteHoje > td:nth-child(18)');
-
-    var arrSalFinJornVals = colsSalFinJorn.map(function() {
-        n = Number(this.textContent);
-        if ( isNaN(n) ) return null;
-        if ( n == 0 ) return null;
-        return n;
-    }).get();
-
-
-    // Colorir maior e menor valores
-    colsDifJorn.each(function() {
-        var cor;
-
-        if ( this.textContent == arrayMenorValor(arrDifJornVals) ) { cor = 'yellow' }
-        else if ( this.textContent == arrayMaiorValor(arrDifJornVals) ) { cor = 'lightgreen' }
-
-        $(this).parent().css('background-color', cor);
-    });
-
-
-    // Adicionar linha de saldo abaixo da ultima linha da tabela
-    var totalrow = lastrow.clone();
-    lastrow.after(totalrow);
-
-    totalrow.find('td').removeAttr('bgcolor style id').text('');
-    totalrow.attr('id', 'totalrow').css('background-color', 'lightgrey');
-
-    totalrow.find("td:first").text('SALDO');
-    totalrow.find("td:eq(16)").text( MinToHM( arraySoma(arrDifJornVals) ) );
-    totalrow.find("td:eq(17)").text( MinToHM( arraySoma(arrSalFinJornVals) ) );
-
-
-
-    //console.log('colsAteHoje', colsAteHoje);
-    //console.log('arrDifJornVals', arrDifJornVals);
-    //console.log('arrSalFinJornVals', arrSalFinJornVals);
-
+    $('div#panel-pesquisa-empregado').show();
 });
 
+// Remover 'footer' inutil
+
+$('body > footer').remove();
+
+// Arrumar menu
+
+waitForKeyElements('ul#menu li.menu-primary', fMenu);
+
 // -----------------------------------------------------------------------------
-// FUNCOES
+// Acoes especificas para cada pagina
+// -----------------------------------------------------------------------------
+
+if (window.location.href.indexOf('manutencao.html') > -1) {
+
+    // -------------------------------------------------------------------------
+    // Experar o AJAX maldito carregar a tabela com os dados
+    // Somente a partir de entao executar o codigo
+    // -------------------------------------------------------------------------
+
+    waitForKeyElements('table#tabelaRegistros > tbody', function(tblBody) {
+
+        // atualizar valores das variaveis que foram definidas fora dessa funcao
+
+        tblRows = tblBody.find('tr');
+        lastrow = tblRows.last();
+
+        // true = executar em loop ate encontrar o elemento que estou esperando
+
+        if (tblRows.length == 0) return true;
+
+        // se chegou aqui o elemento apareceu. iniciar a execucao
+
+        fSaldoBanco();
+        fMes();
+        fDia();
+        fJornada();
+        fLinhaSaldo();
+        fCabecalho();
+
+        // aplicar alteracoes esteticas
+
+        $('.fds').attr('style', 'background-color: whitesmoke !important').css('opacity', '0.2');
+        $('.diafuturo').css('opacity', '0.3');
+        $('.diapassado').css('border', '1px solid red');
+        $('.diamenor').parent().css('background-color', 'yellow');
+        $('.diamaior').parent().css('background-color', 'lightgreen');
+
+    });
+}
+
+if (window.location.href.indexOf('registro.html') > -1) {
+
+    // Incluir aqui o calculo em tempo real de horas do dia
+    // baseado no relogio da pagina e nos registros
+
+}
+
+// -----------------------------------------------------------------------------
+// FUNCOES QUE PODEM SER APROVEITADAS EM OUTROS SCRIPTS
 // -----------------------------------------------------------------------------
 
 function MinToHM(minutos) {
@@ -140,38 +126,266 @@ function MinToHM(minutos) {
     return `${minutos} (${h}h ${m}min)`;
 }
 
-function arrayMenorValor(array) {
-    //console.log(`${arguments.callee.name} :: array is ${array}`);
-
-    var sorted = array.sort(function(a, b) { return a - b });
-    //console.log(`${arguments.callee.name} :: sorted is ${sorted}`);
-
-    var menor = sorted[0];
-    //console.log(`${arguments.callee.name} :: menor is ${menor}`);
-
-    return menor;
+function MyArrayObj(array) {
+    this.array  = array;
+    this.sorted = (function (arr) { return arr.sort(function(a, b) { return a - b }) })([...this.array]);
+    this.max    = this.sorted.slice(-1).pop();
+    this.min    = this.sorted[0];
+    this.sum    = this.sorted.reduce(function(a, b) { return a + b; }, 0);
+    this.unique = [...new Set(this.sorted)];
 }
 
-function arrayMaiorValor(array) {
-    //console.log(`${arguments.callee.name} :: array is ${array}`);
+function isScrolledIntoView($elem) {
+  var $window = $(window);
+  var docViewTop = $window.scrollTop();
+  var docViewBottom = docViewTop + $window.height();
+  var elemTop = $elem.offset().top;
+  var elemBottom = elemTop + $elem.height();
 
-    var sorted = array.sort(function(a, b) { return a - b });
-    //console.log(`${arguments.callee.name} :: sorted is ${sorted}`);
-
-    var maior  = sorted.slice(-1).pop();
-    //console.log(`${arguments.callee.name} :: maior is ${maior}`);
-
-    return maior;
+  return ((elemBottom <= docViewBottom) && (elemTop >= docViewTop));
 }
 
-function arraySoma(array) {
-    //console.log(`${arguments.callee.name} :: array is ${array}`);
+// -----------------------------------------------------------------------------
+// FUNCOES E MANIPULACOES DE ELEMENTOS ESPECIFICOS PARA ESTE SCRIPT
+// -----------------------------------------------------------------------------
 
-    var sorted = array.sort(function(a, b) { return a - b });
-    //console.log(`${arguments.callee.name} :: sorted is ${sorted}`);
+// -----------------------------------------------------------------------------
+// Saldo do banco de horas
+// -----------------------------------------------------------------------------
 
-    var soma   = sorted.reduce(function(a, b) { return a + b; }, 0);
-    //console.log(`${arguments.callee.name} :: soma is ${soma}`);
+function fSaldoBanco() {
 
-    return soma;
+    // Preparar o elemento que ira receber o total
+
+    var saldo_semestral_banco_horas = $('span#saldo_semestral_banco_horas');
+    var ssbh = $("span#ssbh");
+    if (ssbh.length == 0) ssbh = saldo_semestral_banco_horas.clone().attr('id', 'ssbh');
+    saldo_semestral_banco_horas.after(ssbh).after('<br>');
+
+    // Capturar e converter o saldo
+
+    var txt  = saldo_semestral_banco_horas.text().split('/');
+    var base = Number( txt[0].replace(/\D/g,'') );
+    var act  = Number( txt[1].replace(/\D/g,'') );
+
+    var saldo = new MyArrayObj([base, act]);
+
+    // Inserir o resultado
+
+    ssbh.text('Total: ' + MinToHM(saldo.sum));
+}
+
+// -----------------------------------------------------------------------------
+// Barra de meses
+// -----------------------------------------------------------------------------
+// Para cada mes:
+// 1- capturar a representacao numerica (1-12)
+// 2- dividir passado, presente e futuro em classes
+// -----------------------------------------------------------------------------
+
+var meses;
+var mesativo;
+var mesespassados;
+
+function fMes() {
+
+    meses = $('div#mesesDoAno li');
+
+    meses.each(function() {
+        var mes = $(this).attr("id");
+        if (mes < mesatual) $(this).addClass('mespassado').css('text-decoration', 'line-through');
+        if ($(this).hasClass('active')) mesativo = $(this).attr("id");
+    });
+
+    mesespassados = meses.filter('.mespassado');
+
+    meses.on("click", function(e) { mesativo = this.find('li.active').attr("id"); });
+}
+
+// -----------------------------------------------------------------------------
+// Linhas da tabela : dia
+// -----------------------------------------------------------------------------
+// Para cada dia:
+// 1- capturar a representacao numerica (1-31)
+// 2- dividir passado, presente e futuro em classes
+// -----------------------------------------------------------------------------
+
+var linhasAteHoje;
+
+function fDia() {
+
+    linhasAteHoje = tblRows.map(function() {
+
+        var dia = Number( $('td:eq(3)', this).text() );
+        if ( isNaN(dia) ) return null;
+
+        if ( mesativo > mesatual ) $(this).addClass('diafuturo');
+        if ( mesativo < mesatual ) $(this).addClass('diapassado');
+        if ( mesativo == mesatual ) {
+            if ( dia < hoje ) $(this).addClass('diapassado');
+            if ( dia == hoje ) return null;
+            if ( dia > hoje ) { $(this).addClass('diafuturo') ; return null; }
+        }
+
+        return $(this);
+
+    }).get();
+}
+
+// -----------------------------------------------------------------------------
+// Linhas da tabela : jornada
+// -----------------------------------------------------------------------------
+// Capturar todos o valores da coluna 'Diferenca na Jornada'
+// Capturar todos o valores da coluna 'Saldo Final da Jornada'
+// -----------------------------------------------------------------------------
+
+var arrValoresDiferenca;
+var arrValoresSaldoFinal;
+var colunaDiferenca;
+var colunaSaldoFinal;
+
+function fJornada() {
+
+    //colunaDiferenca = $('.diapassado > td:nth-child(17)');
+    colunaDiferenca = $('.diapassado td[id^="diferenca_jornada_"]');
+
+    arrValoresDiferenca = new MyArrayObj(colunaDiferenca.map(function() {
+        var n = Number(this.textContent);
+        if ( isNaN(n) ) return null;
+        if ( n == 0 ) return null;
+        return n;
+    }).get());
+
+    //colunaSaldoFinal = $('.diapassado > td:nth-child(18)');
+    colunaSaldoFinal = $('.diapassado td[id^="execucao_jornada_"]');
+
+    arrValoresSaldoFinal = new MyArrayObj(colunaSaldoFinal.map(function() {
+        var n = Number(this.textContent);
+        if ( isNaN(n) ) return null;
+        if ( n == 0 ) return null;
+        return n;
+    }).get());
+
+    colunaDiferenca.each(function() {
+        if ( this.textContent == arrValoresDiferenca.min ) { $(this).addClass('diamenor'); }
+        else if ( this.textContent == arrValoresDiferenca.max ) { $(this).addClass('diamaior'); }
+    });
+}
+
+// -----------------------------------------------------------------------------
+// Linhas da tabela : SALDO
+// -----------------------------------------------------------------------------
+// Adicionar linha de saldo abaixo da ultima linha da tabela
+// -----------------------------------------------------------------------------
+
+var totalrow;
+var myTblHeader;
+var myTblFooter;
+
+function fLinhaSaldo() {
+
+    var linhasaldo = `
+        <tr id="myTblFooter" class="totalrow">
+            <td id="saldo"      class="l" colspan="15"> SALDO </td>
+            <td id="diferenca"  class="r"> ${MinToHM(arrValoresDiferenca.sum)} </td>
+            <td id="saldofinal" class="r"> ${MinToHM(arrValoresSaldoFinal.sum)} </td>
+        </tr>
+    `;
+
+    lastrow.after(linhasaldo);
+
+    var wdmyTblFooter = $('tr#myTblFooter').width()+'px';
+    var wdsaldo       = $('td#saldo').width()+'px';
+    var wddiferenca   = $('td#diferenca').width()+'px';
+    var wdsaldofinal  = $('td#saldofinal').width()+'px';
+
+    GM_addStyle('tr#myTblFooter { text-align: center; background-color: lightgray; display: table-row; }');
+
+    GM_addStyle('tr#myTblFooter.flutuante                   { width: '+wdmyTblFooter+'; display: inline-table; }');
+    GM_addStyle('tr#myTblFooter.flutuante > td#saldo        { width: '+wdsaldo+'; }');
+    GM_addStyle('tr#myTblFooter.flutuante > td#diferenca    { min-width: '+wddiferenca+'; }');
+    GM_addStyle('tr#myTblFooter.flutuante > td#saldofinal   { min-width: '+wdsaldofinal+'; }');
+
+    GM_addStyle('.flutuante.fixed  { position: fixed; }');
+    GM_addStyle('.flutuante.bottom { bottom: 0; }');
+    GM_addStyle('.flutuante.top    { top: 0; }');
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+
+function fMenu() {
+
+    var stickymenu = `
+        ul#menu, .dropdown-menu {
+            display: block;
+            position: sticky;
+            top: 10%;
+            z-index: 9999;
+        }
+
+        div.container {
+            margin-right: 0;
+        }
+
+        div.serpro-titulo {
+            margin-bottom: -15em;
+        }
+    `;
+
+    GM_addStyle(stickymenu);
+
+    $('ul#menu').removeAttr('style');
+    $('ul#menu').show();
+    $('ul#menu').prependTo('article');
+
+    $('ul#menu ul').removeClass('collapse');
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+
+function fCabecalho() {
+
+    var stickyheader = `
+        div#mesesDoAno {
+            position: sticky;
+            top: 200;
+        }
+
+        thead tr:nth-child(1) th {
+            background: black;
+            position: sticky;
+            top: 300;
+            z-index: 10;
+        }
+    `;
+
+    //GM_addStyle(stickyheader);
+
+    //$('td#saldo').css({'width' : firstrow.width()+'px', 'background-color' : 'lightblue'});
+    //$('tr#myTblFooter').css({'width' : firstrow.width()+'px', 'background-color' : 'lightblue'});
+
+    /*
+    if (! totalrow) totalrow = lastrow.clone();
+
+    //totalrow.removeAttr('class style');
+    //totalrow.find('td').removeAttr('bgcolor id style').text('');
+
+    totalrow.attr('class', 'totalrow');
+    totalrow.css({'width' : lastrow.width()+'px', 'background-color' : 'lightgrey'});
+
+    totalrow.find('td').text('');
+    totalrow.find("td:first").text('SALDO');
+    totalrow.find("td[id^='diferenca_jornada_']").text(MinToHM(arrValoresDiferenca.sum));
+    totalrow.find("td[id^='execucao_jornada_']").text(MinToHM(arrValoresSaldoFinal.sum));
+
+    myTblHeader = totalrow.clone().attr('id', 'myTblHeader');
+    //myTblFooter = totalrow.clone().attr('id', 'myTblFooter').addClass('flutuante');
+
+    //firstrow.before(myTblHeader);
+    //lastrow.after(myTblFooter);
+    */
 }
