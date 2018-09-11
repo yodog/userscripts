@@ -7,7 +7,7 @@
 // @require     https://gist.github.com/raw/2625891/waitForKeyElements.js
 // @include     http*://siscopweb.serpro/*
 // @include     file://*
-// @version     2018.09.06.1752
+// @version     2018.09.11.1240
 // @grant       GM_addStyle
 // @noframes
 // ==/UserScript==
@@ -19,7 +19,6 @@
 if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
 
 this.$ = this.jQuery = jQuery.noConflict(true);
-
 
 // -----------------------------------------------------------------------------
 // Variaveis que precisam estar disponiveis para todas as funcoes
@@ -128,10 +127,10 @@ function MinToHM(minutos) {
 
 function MyArrayObj(array) {
     this.array  = array;
-    this.sorted = (function (arr) { return arr.sort(function(a, b) { return a - b }) })([...this.array]);
-    this.max    = this.sorted.slice(-1).pop();
+    this.sorted = [...this.array].sort((a, b) => a - b);
+    this.max    = this.sorted[this.sorted.length - 1];
     this.min    = this.sorted[0];
-    this.sum    = this.sorted.reduce(function(a, b) { return a + b; }, 0);
+    this.sum    = this.sorted.reduce((a, b) => a + b, 0);
     this.unique = [...new Set(this.sorted)];
 }
 
