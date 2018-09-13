@@ -7,7 +7,7 @@
 // @require     https://gist.github.com/raw/2625891/waitForKeyElements.js
 // @include     http*://siscopweb.serpro/*
 // @include     file://*
-// @version     2018.09.1727
+// @version     2018.09.1758
 // @grant       GM_addStyle
 // @noframes
 // ==/UserScript==
@@ -442,13 +442,13 @@ function fMenu() {
 function fCabecalho() {
 
     var stickyheader = `
-        thead {
-            background: yellow;
-            border: 3px dotted blue;
+        thead, th {
+            //background: yellow;
+            //border: 3px dotted blue;
             position: sticky;
             position: -moz-sticky;
             position: -webkit-sticky;
-            top: 0;
+            top: 100;
         }
     `;
 
