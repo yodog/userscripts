@@ -7,8 +7,7 @@
 // @require     https://gist.github.com/raw/2625891/waitForKeyElements.js
 // @include     http*://siscopweb.serpro/*
 // @include     file://*
-// @version     2018.09.11.1240
-// @grant       GM_addStyle
+// @version     2018.09.13.43
 // @noframes
 // ==/UserScript==
 
@@ -34,6 +33,10 @@ var tblBody = tabelaRegistros.find('tbody');
 var tblRows = tblBody.find('tr');
 var firstrow = tblRows.first();
 var lastrow = tblRows.last();
+
+
+// ESPERAR O JQUERY CARREGAR
+$(function() {
 
 // -----------------------------------------------------------------------------
 // Acoes globais, que podem ser aplicadas para todas as paginas
@@ -109,14 +112,59 @@ if (window.location.href.indexOf('manutencao.html') > -1) {
 
 if (window.location.href.indexOf('registro.html') > -1) {
 
-    // Incluir aqui o calculo em tempo real de horas do dia
-    // baseado no relogio da pagina e nos registros
+    // -------------------------------------------------------------------------
+    // Experar o AJAX maldito carregar a tabela com os dados
+    // Somente a partir de entao executar o codigo
+    // -------------------------------------------------------------------------
 
+    waitForKeyElements('ul#registrosHoje', function(e) {
+
+        // true = executar em loop ate encontrar o elemento que estou esperando
+
+        if (e.find('li.entrada').length == 0) return true;
+
+        // se chegou aqui o elemento apareceu. iniciar a execucao
+
+        fRegistrosDeHoje();
+
+        // aplicar alteracoes esteticas
+
+        $('.lisomaregistros').css('background-color', 'lightyellow');
+        $('.par').css('border', '1px dotted lightblue');
+
+    });
 }
+
+}); // FECHA $(function() {
+
 
 // -----------------------------------------------------------------------------
 // FUNCOES QUE PODEM SER APROVEITADAS EM OUTROS SCRIPTS
 // -----------------------------------------------------------------------------
+
+// https://stackoverflow.com/questions/3366529/wrap-every-3-divs-in-a-div
+$.fn.chunk = function(size) {
+    var arr = [];
+    for (var i = 0; i < this.length; i += size) {
+        arr.push(this.slice(i, i + size));
+    }
+
+    return this.pushStack(arr, "chunk", size);
+}
+
+function CalcInOut(...hm) {
+    var arrMinutos = hm.map(HMtoMin);
+    var TotalMinutos = arrMinutos.reduce((a, b) => b - a);
+
+    return MinToHM(TotalMinutos);
+}
+
+function HMtoMin(hm) {
+    var x = hm.split(':');
+    var minutos = (+x[0]) * 60 + (+x[1]);
+
+    return minutos;
+}
 
 function MinToHM(minutos) {
     var h = Math.floor(minutos / 60);
@@ -147,6 +195,50 @@ function isScrolledIntoView($elem) {
 // -----------------------------------------------------------------------------
 // FUNCOES E MANIPULACOES DE ELEMENTOS ESPECIFICOS PARA ESTE SCRIPT
 // -----------------------------------------------------------------------------
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+
+function fRegistrosDeHoje() {
+
+    var somaregistros = `
+        <li class="lisomaregistros">
+            <div class="divsomaregistros"> 0 </div>
+        </li>
+    `;
+
+    var pares = $("ul#registrosHoje li").chunk(2);
+    pares.wrap('<div class="par">');
+
+    $('div.par').each(function(i) {
+
+        var el_entrada = $(this).find('li.entrada > div');
+        var el_saida   = $(this).find('li.saida > div');
+
+        var h_entrada = el_entrada.text();
+        var h_saida   = el_saida.text();
+
+        if ( h_entrada.includes('--') ) return null;
+        if ( h_saida.includes('--') ) h_saida = fPegarHoraServidor();
+
+        $(this).append(somaregistros);
+        $(this).find('div.divsomaregistros').text( CalcInOut(h_entrada, h_saida) );
+    });
+}
+
+// -----------------------------------------------------------------------------
+//
+// -----------------------------------------------------------------------------
+
+function fPegarHoraServidor() {
+
+    var horaServidor = $('#horaServidor').text().replace(/.*(\d{2}:\d{2}):\d{2}.*/, "$1");
+
+    console.log('horaServidor', horaServidor);
+
+    return horaServidor;
+}
 
 // -----------------------------------------------------------------------------
 // Saldo do banco de horas
