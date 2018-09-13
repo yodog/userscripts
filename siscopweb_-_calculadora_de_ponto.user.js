@@ -7,7 +7,8 @@
 // @require     https://gist.github.com/raw/2625891/waitForKeyElements.js
 // @include     http*://siscopweb.serpro/*
 // @include     file://*
-// @version     2018.09.13.43
+// @version     2018.09.1727
+// @grant       GM_addStyle
 // @noframes
 // ==/UserScript==
 
@@ -441,42 +442,15 @@ function fMenu() {
 function fCabecalho() {
 
     var stickyheader = `
-        div#mesesDoAno {
+        thead {
+            background: yellow;
+            border: 3px dotted blue;
             position: sticky;
-            top: 200;
-        }
-
-        thead tr:nth-child(1) th {
-            background: black;
-            position: sticky;
-            top: 300;
-            z-index: 10;
+            position: -moz-sticky;
+            position: -webkit-sticky;
+            top: 0;
         }
     `;
 
-    //GM_addStyle(stickyheader);
-
-    //$('td#saldo').css({'width' : firstrow.width()+'px', 'background-color' : 'lightblue'});
-    //$('tr#myTblFooter').css({'width' : firstrow.width()+'px', 'background-color' : 'lightblue'});
-
-    /*
-    if (! totalrow) totalrow = lastrow.clone();
-
-    //totalrow.removeAttr('class style');
-    //totalrow.find('td').removeAttr('bgcolor id style').text('');
-
-    totalrow.attr('class', 'totalrow');
-    totalrow.css({'width' : lastrow.width()+'px', 'background-color' : 'lightgrey'});
-
-    totalrow.find('td').text('');
-    totalrow.find("td:first").text('SALDO');
-    totalrow.find("td[id^='diferenca_jornada_']").text(MinToHM(arrValoresDiferenca.sum));
-    totalrow.find("td[id^='execucao_jornada_']").text(MinToHM(arrValoresSaldoFinal.sum));
-
-    myTblHeader = totalrow.clone().attr('id', 'myTblHeader');
-    //myTblFooter = totalrow.clone().attr('id', 'myTblFooter').addClass('flutuante');
-
-    //firstrow.before(myTblHeader);
-    //lastrow.after(myTblFooter);
-    */
+    GM_addStyle(stickyheader);
 }
