@@ -8,7 +8,7 @@
 // @require         https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include         http*://*.mercadolivre.com.br/*
-// @version         2018.08.21.1556
+// @version         2018.12.18.1500
 // @grant           GM_addStyle
 // @grant           GM.addStyle
 // @grant           GM_getMetadata
@@ -38,6 +38,7 @@ this.$ = this.jQuery = jQuery.noConflict(true);
 
 (async () => {
 
+/*
 try {
     GM_addStyle            = GM.addStyle;
     GM_getMetadata         = GM.getMetadata;
@@ -49,8 +50,10 @@ try {
     console.log('GM object found; Using GM. methods');
 }
 catch(err) {
+    console.log(err);
     console.log('GM object not found; Using GM_ functions');
 }
+*/
 
 // -----------------------------------------------------------------------------
 // OPTIONS / CONFIG MENU
@@ -75,6 +78,7 @@ try {
     console.log("MonkeyConfig loaded; The settings menu will be enabled");
 }
 catch(err) {
+    console.log(err);
     console.log("MonkeyConfig not loaded; The settings menu will be disabled");
     var cfg = {
         params: parametros,
