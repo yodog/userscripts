@@ -8,7 +8,7 @@
 // @require         https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include         http*://*.mercadolivre.com.br/*
-// @version         2019.03.17.2148
+// @version         2019.03.17.2208
 // @grant           GM_addStyle
 // @grant           GM.addStyle
 // @grant           GM_getMetadata
@@ -252,7 +252,7 @@ $.expr[':'].textEquals = $.expr.createPseudo(function(arg) {
                     if ( esconder_frete_a_combinar ) item.hide();
                 }
                 else {
-                    elfrete = shippingmethodtitle.find('.ch-price').contents().filter(function() { return this.nodeType == 3; });
+                    elfrete = shippingmethodtitle.find('.ch-price:first').contents().filter(function() { return this.nodeType == 3; });
 
                     if ( textofrete.indexOf('Frete gr') > -1 ) {
                         color = 'green';
