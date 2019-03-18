@@ -8,7 +8,7 @@
 // @require         https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include         http*://*.mercadolivre.com.br/*
-// @version         2018.12.18.1500
+// @version         2019.03.17.2148
 // @grant           GM_addStyle
 // @grant           GM.addStyle
 // @grant           GM_getMetadata
@@ -112,8 +112,8 @@ function recarregar() {
 
 function sortUsingNestedText(parent, childSelector, keySelector) {
     var items = parent.children(childSelector).sort(function(a, b) {
-        var vA = $(keySelector, a).text();
-        var vB = $(keySelector, b).text();
+        var vA = parseFloat($(keySelector, a).text());
+        var vB = parseFloat($(keySelector, b).text());
         return (vA < vB) ? -1 : (vA > vB) ? 1 : 0;
     });
 
