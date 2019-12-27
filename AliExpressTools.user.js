@@ -4,10 +4,11 @@
 // @author          RASG
 // @description:en  Add new functions to AliExpress (shipping calc, shipping from, sort by)
 // @description:pt  Adiciona novas funcoes ao AliExpress (calculadora de frete, mostrar somente itens que ja estao no brasil, ordem de produtos)
-// @version         2019.03.07.1835
+// @version         2019.03.07.1836
 // @require         http://code.jquery.com/jquery.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include         http*://*.aliexpress.com/*
+// @icon            https://www.google.com/s2/favicons?domain=aliexpress.com
 // @grant           GM_addStyle
 // @grant           GM_getMetadata
 // @grant           GM_getValue
