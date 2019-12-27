@@ -2,9 +2,9 @@
 // @name        MetaCriticAll
 // @namespace   http://stackoverflow.com/users/982924/rasg
 // @author      RASG
-// @version     2016.12.30
+// @version     2016.12.30.1010
 // @description Metacritic ratings everywhere. See the supported sites in the @include section of the script.
-// @icon        http://www.metacritic.com/favicon.ico
+// @icon        https://www.google.com/s2/favicons?domain=metacritic.com
 // @require     http://code.jquery.com/jquery.min.js
 // @resource    metacritic.global.css https://raw.githubusercontent.com/yodog/userscripts/master/res/metacritic.global.css
 // @resource    metacritic.base.css   https://raw.githubusercontent.com/yodog/userscripts/master/res/metacritic.base.css
