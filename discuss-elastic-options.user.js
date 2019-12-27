@@ -6,7 +6,8 @@
 // @require     http://code.jquery.com/jquery.min.js
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*discuss.elastic.co/*
-// @version     2019.12.27.1750
+// @icon        https://www.google.com/s2/favicons?domain=discuss.elastic.co
+// @version     2019.12.27.1751
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
