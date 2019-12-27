@@ -8,6 +8,7 @@
 // @require         https://greasemonkey.github.io/gm4-polyfill/gm4-polyfill.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include         http*://*.mercadolivre.com.br/*
+// @icon            https://www.google.com/s2/favicons?domain=mercadolivre.com.br
 // @version         2019.03.17.2208
 // @grant           GM_addStyle
 // @grant           GM.addStyle
