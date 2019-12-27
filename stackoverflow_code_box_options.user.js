@@ -7,7 +7,8 @@
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include     http*://*stackexchange.com/*
 // @include     http*://*stackoverflow.com/*
-// @version     2018.06.13.1204
+// @icon        https://www.google.com/s2/favicons?domain=stackoverflow.com
+// @version     2018.06.13.1205
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getValue
