@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     https://forums.docker.com/t/*
 // @icon        https://www.google.com/s2/favicons?domain=forums.docker.com
-// @version     2020.01.15.1221
+// @version     2020.01.15.1637
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
