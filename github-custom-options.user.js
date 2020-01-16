@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     https://github.com/*
 // @icon        https://www.google.com/s2/favicons?domain=github.com
-// @version     2020.01.15.1715
+// @version     2020.01.16.1027
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -82,24 +82,18 @@ catch(err) {
 
 var shouldreload = false;
 
-$(function(){
+$(document).on('ready scroll', function() {
 
-    // ---
-    // MODS
-    // ---
+    if ( cfg.get("code_font_resize") ) {
+        var code_font_size = cfg.get("code_font_size");
+        $('td.blob-code-inner, td.blob-num').css({'font-size':code_font_size + 'px'});
+    }
 
-    $(document).on('ready scroll', function() {
+    if ( cfg.get("page_wide") ) {
+        $('div.container-lg').css({'max-width':'unset'});
+        shouldreload = true;
+    }
 
-        if ( cfg.get("code_font_resize") ) {
-            var code_font_size = cfg.get("code_font_size");
-            $('td.blob-code-inner, td.blob-num').css({'font-size':code_font_size + 'px'});
-        }
-
-        if ( cfg.get("page_wide") ) {
-            $('div.container-lg').css({'max-width':'unset'});
-            shouldreload = true;
-        }
-    });
 });
 
 // -----------------------------------------------------------------------------
