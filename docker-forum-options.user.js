@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     https://forums.docker.com/*
 // @icon        https://www.google.com/s2/favicons?domain=forums.docker.com
-// @version     2020.01.15.1734
+// @version     2020.01.16.1026
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -85,46 +85,40 @@ catch(err) {
 
 var shouldreload = false;
 
-$(function(){
+$(document).on('ready scroll', function() {
 
-    // ---
-    // MODS
-    // ---
+    if ( cfg.get("code_box_expand") ) {
+        var code_box_height = cfg.get("code_box_height");
+        $('code').css({'max-height':code_box_height + 'px'});
+        shouldreload = true;
+    }
 
-    $(document).on('ready scroll', function() {
+    if ( cfg.get("code_font_resize") ) {
+        var code_font_size = cfg.get("code_font_size");
+        $('blockquote, code, pre').css({'font-size':code_font_size + 'px'});
+    }
 
-        if ( cfg.get("code_box_expand") ) {
-            var code_box_height = cfg.get("code_box_height");
-            $('code').css({'max-height':code_box_height + 'px'});
-            shouldreload = true;
-        }
+    var pageheader = $('header.header');
+    if ( cfg.get("hide_page_header") ) {
+        pageheader.hide();
+    }
+    else {
+        pageheader.css({'height':'100px'});
+        pageheader.show();
+    }
 
-        if ( cfg.get("code_font_resize") ) {
-            var code_font_size = cfg.get("code_font_size");
-            $('blockquote, code, pre').css({'font-size':code_font_size + 'px'});
-        }
+    if ( cfg.get("page_wide") ) {
+        $('#main-outlet').css({'max-width':'none'});
+        $('.container.posts').css({'width':'unset'});
+        $('.timeline-container').css({'margin-left':'90%'});
+        $('.topic-body').css({
+            'margin-right':'10%',
+            'float':'unset',
+            'width':'unset'
+        });
+        shouldreload = true;
+    }
 
-        var pageheader = $('header.header');
-        if ( cfg.get("hide_page_header") ) {
-            pageheader.hide();
-        }
-        else {
-            pageheader.css({'height':'100px'});
-            pageheader.show();
-        }
-
-        if ( cfg.get("page_wide") ) {
-            $('#main-outlet').css({'max-width':'none'});
-            $('.container.posts').css({'width':'unset'});
-            $('.timeline-container').css({'margin-left':'90%'});
-            $('.topic-body').css({
-                'margin-right':'10%',
-                'float':'unset',
-                'width':'unset'
-            });
-            shouldreload = true;
-        }
-    });
 });
 
 // -----------------------------------------------------------------------------
