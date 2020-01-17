@@ -2,7 +2,7 @@
 // @name        banrisul_servicos
 // @namespace   http://stackoverflow.com/users/982924/rasg
 // @author      RASG
-// @version     2012.06.22
+// @version     2012.06.22.1010
 // @description Mostra um mapa na pagina de busca de estabelecimentos credenciados do refeisul. Chega de copiar e colar no google maps :)
 // @require     http://code.jquery.com/jquery.min.js
 // @require     http://maps.google.com/maps/api/js?sensor=false&region=BR&callback=initialize
