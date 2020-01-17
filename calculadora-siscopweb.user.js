@@ -7,7 +7,7 @@
 // @require     https://gist.github.com/raw/2625891/waitForKeyElements.js
 // @include     http*://siscopweb.serpro/*
 // @include     file://*
-// @version     2018.09.1758.1010
+// @version     2018.09.17.1010
 // @grant       GM_addStyle
 // @noframes
 // ==/UserScript==
