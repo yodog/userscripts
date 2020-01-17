@@ -2,7 +2,7 @@
 // @name        AnonyTank
 // @namespace   http://stackoverflow.com/users/982924/rasg
 // @author      RASG
-// @version     2014.08.19
+// @version     2014.08.19.1010
 // @description Show only the selected city for Anonyfish Personals. Change de variable "ShowOnlyThisCity" to suit your needs.
 // @require     http://code.jquery.com/jquery.min.js
 // @grant       GM_log
