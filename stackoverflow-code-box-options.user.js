@@ -10,7 +10,7 @@
 // @include     http*://*stackexchange.com/*
 // @include     http*://*stackoverflow.com/*
 // @icon        https://www.google.com/s2/favicons?domain=stackoverflow.com
-// @version     2020.01.16.1052
+// @version     2020.01.16.1053
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
