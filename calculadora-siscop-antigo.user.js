@@ -5,7 +5,7 @@
 // @description Calculadora do SISCOP
 // @require     http://code.jquery.com/jquery.min.js
 // @include     http*://siscop.portalcorporativo.serpro/*
-// @version     2018.04.16.1507
+// @version     2018.04.16.1508
 // @grant       none
 // ==/UserScript==
 
