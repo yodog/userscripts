@@ -7,10 +7,13 @@
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @require     https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
+// @include     http*://*askubuntu.com/*
+// @include     http*://*mathoverflow.net/*
 // @include     http*://*stackexchange.com/*
 // @include     http*://*stackoverflow.com/*
+// @include     http*://*superuser.com/*
 // @icon        https://www.google.com/s2/favicons?domain=stackoverflow.com
-// @version     2020.01.17.1425
+// @version     2020.01.17.1432
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
