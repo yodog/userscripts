@@ -7,7 +7,7 @@
 // @require         https://maps.google.com/maps/api/js?sensor=false&region=BR&callback=initialize
 // @require         https://greasyfork.org/scripts/2199-waitforkeyelements/code/waitForKeyElements.js?version=5802
 // @include         http*://*banrisul.com.br/bob/link/bobw00hn_onde_tem_banrisul.aspx?secao_id=111*
-// @version         2012.11.13
+// @version         2012.11.13.1010
 // ==/UserScript==
 
 /*
