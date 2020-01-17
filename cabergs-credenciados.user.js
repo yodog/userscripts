@@ -2,7 +2,7 @@
 // @name            CABERGS_credenciados
 // @namespace       http://stackoverflow.com/users/982924/rasg
 // @author          RASG
-// @version         2012.10.10
+// @version         2012.10.10.1010
 // @description     Mostra o endereço do credenciado em um mapa no site da CABERGS, sem precisar ir no Google Maps :)
 // @require         http://code.jquery.com/jquery.min.js
 // @require         http://maps.google.com/maps/api/js?sensor=false&region=BR&callback=initialize
