@@ -2,7 +2,7 @@
 // @name           RandomProxy
 // @namespace      http://stackoverflow.com/users/982924/rasg
 // @author         RASG
-// @version        2012.06.14
+// @version        2012.06.14.1010
 // @description    [PT] Carrega paginas e links atraves de um proxy aleatorio. [EN] Load webpages and links through a random proxy.
 // @include        http*://*
 // ==/UserScript==
