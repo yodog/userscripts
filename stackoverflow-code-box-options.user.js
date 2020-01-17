@@ -10,7 +10,7 @@
 // @include     http*://*stackexchange.com/*
 // @include     http*://*stackoverflow.com/*
 // @icon        https://www.google.com/s2/favicons?domain=stackoverflow.com
-// @version     2020.01.16.1053
+// @version     2020.01.17.1425
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -68,7 +68,7 @@ try {
     cfg = new MonkeyConfig({
         title:       'Config DF_code_box',
         menuCommand: true,
-        onSave:      function() { recarregar(); },
+        onSave:      function() { fnSaveChanges(); },
         params:      parametros
     });
     console.log("MonkeyConfig loaded; The settings menu will be enabled");
@@ -86,44 +86,60 @@ catch(err) {
 // START
 // -----------------------------------------------------------------------------
 
-$(function(){
+var shouldreload = false;
 
-    $('#mainbar').css({'text-align':'justify'});
+// apply imediately at document start
+fnCheckChanges();
 
-    if ( cfg.get("answer_box_expand") ) {
-        var answer_box_height = cfg.get("answer_box_height");
-        $('textarea').css({'height':answer_box_height + 'px'})
-    }
+// also wait for page load. jquery will be ready here
+$(function() {
 
-    if ( cfg.get("code_box_expand") ){
-        var code_box_height = cfg.get("code_box_height");
-        $('pre').css({'max-height':code_box_height + 'px'})
-    }
-
-    if ( cfg.get("code_font_resize") ) {
-        var code_font_size = cfg.get("code_font_size");
-        $('blockquote, code, pre').css({'font-size':code_font_size + 'px'})
-    }
-
-    if ( cfg.get("page_wide") ) {
-        $('div.container, div#content').css({'max-width':'99%'});
-    }
-
-    if ( cfg.get("remove_left_sidebar") ) $('.left-sidebar, #left-sidebar').remove();
+    // monitor the page for changes and reapply if necessary
+    // use 'observer.disconnect()' in 'fnCheckChanges()' to stop monitoring
+    var alvo = document.querySelector('body');
+    var observer = new MutationObserver(fnCheckChanges);
+    observer.observe(alvo, { attributes: true, characterData: true, childList: true, subtree: true });
 
 });
 
 // -----------------------------------------------------------------------------
+// FUNCTIONS
+// -----------------------------------------------------------------------------
 
-function recarregar() {
+function fnCheckChanges(changes, observer) {
+
+    $('#mainbar').css({'text-align':'justify'});
+
+    (cfg.get("remove_left_sidebar")) ? $('.left-sidebar, #left-sidebar').hide() : $('.left-sidebar, #left-sidebar').show();
+
+    var answer_box_height = '';
+    if (cfg.get("answer_box_expand")) answer_box_height = cfg.get("answer_box_height") + 'px';
+    $('textarea').css({'height':answer_box_height});
+
+    var code_box_height = '';
+    if (cfg.get("code_box_expand")) code_box_height = cfg.get("code_box_height") + 'px';
+    $('pre').css({'max-height':code_box_height});
+
+    var code_font_size = '';
+    if (cfg.get("code_font_resize")) code_font_size = cfg.get("code_font_size") + 'px';
+    $('blockquote, code, pre').css({'font-size':code_font_size});
+
+    var page_size = '';
+    if (cfg.get("page_wide")) page_size = 'unset';
+    $('div.container, div#content').css({'max-width':page_size});
+}
+
+// -----------------------------------------------------------------------------
+
+function fnSaveChanges() {
 
     $('body').on("click", "#reloadnow", function() {
-        document.location.reload(false);
+        $(this).fadeOut("fast", function() { document.location.reload(false); });
     });
 
     var msg_success = 'Settings saved';
     toast.success(msg_success);
 
     var msg_reload = '<span id="reloadnow"> Some changes will be applied after you reload the page. <br> Click here to reload now </span>';
-    toast.message(msg_reload, { delay:2000, duration:5000 });
+    if (shouldreload) toast.message(msg_reload, { delay: 3000, duration: 7000 });
 }
