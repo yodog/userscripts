@@ -2,7 +2,7 @@
 // @name           ProxyLoadIMG
 // @namespace      http://stackoverflow.com/users/982924/rasg
 // @author         RASG
-// @version        2012.06.14
+// @version        2012.06.14.1010
 // @description    [PT] Carrega imagens atraves de um proxy aleatorio. [EN] Load images through a random proxy.
 // @include        *
 // @exclude        *intranet*
