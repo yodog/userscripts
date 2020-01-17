@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://discuss.elastic.co/*
 // @icon        https://www.google.com/s2/favicons?domain=discuss.elastic.co
-// @version     2020.01.17.1218
+// @version     2020.01.17.1221
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -115,15 +115,15 @@ function fnCheckChanges(changes, observer) {
 
     var page_size = '';
     var tl_margin = '';
-    var tb_float = '';
+    var tb_float  = '';
     var tb_margin = '';
-    var tb_width = '';
+    var tb_width  = '';
     if (cfg.get("page_wide")) {
         page_size = 'unset';
         tl_margin = '90%';
-        tb_float = 'unset';
+        tb_float  = 'unset';
         tb_margin = '10%';
-        tb_width = 'unset';
+        tb_width  = 'unset';
     }
     $('#main-outlet').css({'max-width':page_size});
     $('.timeline-container').css({'margin-left':tl_margin});
