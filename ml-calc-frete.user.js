@@ -9,7 +9,7 @@
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @include         http*://*.mercadolivre.com.br/*
 // @icon            https://www.google.com/s2/favicons?domain=mercadolivre.com.br
-// @version         2019.03.17.2209
+// @version         2019.03.17.2210
 // @grant           GM_addStyle
 // @grant           GM.addStyle
 // @grant           GM_getMetadata
