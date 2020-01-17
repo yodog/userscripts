@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://github.com/*
 // @icon        https://www.google.com/s2/favicons?domain=github.com
-// @version     2020.01.16.1650
+// @version     2020.01.17.1133
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -118,7 +118,7 @@ function fnCheckChanges(changes, observer) {
 function fnSaveChanges() {
 
     $('body').on("click", "#reloadnow", function() {
-        document.location.reload(false);
+        $(this).fadeOut("fast", function() { document.location.reload(false); });
     });
 
     var msg_success = 'Settings saved';
