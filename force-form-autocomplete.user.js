@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name            JQ_ForceAutoComplete
+// @name            Force Forms AutoComplete
 // @namespace       https://github.com/yodog/userscripts
 // @author          RASG
-// @version         2018.08.23.1852
+// @version         2018.08.23.1853
 // @description     Forces the autocomplete attribute for all forms and input fields in the page
 // @require         http://code.jquery.com/jquery.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
