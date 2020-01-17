@@ -2,7 +2,7 @@
 // @name           myDX_BR
 // @namespace      http://stackoverflow.com/users/982924/rasg
 // @author         RASG
-// @version        2012.06.15.1010
+// @version        2012.06.15.1011
 // @description    [EN] DealExtreme script to check the tracking number on the brazilian post office. [PT] Script para o DealExtreme que mostra o rastreio da encomenda direto na pagina, sem precisar ir no site do correio. 
 // @icon           https://www.google.com/s2/favicons?domain=dx.com
 // @require        http://code.jquery.com/jquery.min.js
