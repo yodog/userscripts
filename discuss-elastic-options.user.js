@@ -7,9 +7,9 @@
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @require     https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
-// @include     http*://*discuss.elastic.co/*
+// @include     http*://discuss.elastic.co/*
 // @icon        https://www.google.com/s2/favicons?domain=discuss.elastic.co
-// @version     2020.01.16.1022
+// @version     2020.01.17.1218
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -17,6 +17,8 @@
 // @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_xmlhttpRequest
+// @run-at      document-start
+// @noframes
 // ==/UserScript==
 
 // -----------------------------------------------------------------------------
@@ -63,7 +65,7 @@ try {
     cfg = new MonkeyConfig({
         title:       'Config DE_code_box',
         menuCommand: true,
-        onSave:      function() { recarregar(); },
+        onSave:      function() { fnSaveChanges(); },
         params:      parametros
     });
     console.log("MonkeyConfig loaded; The settings menu will be enabled");
@@ -83,43 +85,62 @@ catch(err) {
 
 var shouldreload = false;
 
-$(document).on('ready scroll', function() {
+// apply imediately at document start
+fnCheckChanges();
 
-    if ( cfg.get("code_box_expand") ) {
-        var code_box_height = cfg.get("code_box_height");
-        $('code').css({'max-height':code_box_height + 'px'});
-        shouldreload = true;
-    }
+// also wait for page load. jquery will be ready here
+$(function() {
 
-    if ( cfg.get("code_font_resize") ) {
-        var code_font_size = cfg.get("code_font_size");
-        $('blockquote, code, pre').css({'font-size':code_font_size + 'px'});
-    }
-
-    if ( cfg.get("page_wide") ) {
-        $('#main-outlet').css({'max-width':'none'});
-        $('.timeline-container').css({'margin-left':'90%'});
-        $('.topic-body').css({
-            'margin-right':'10%',
-            'float':'unset',
-            'width':'unset'
-        });
-        shouldreload = true;
-    }
+    // monitor the page for changes and reapply if necessary
+    // use 'observer.disconnect()' in 'fnCheckChanges()' to stop monitoring
+    var alvo = document.querySelector('body');
+    var observer = new MutationObserver(fnCheckChanges);
+    observer.observe(alvo, { attributes: true, characterData: true, childList: true, subtree: true });
 
 });
 
 // -----------------------------------------------------------------------------
+// FUNCTIONS
+// -----------------------------------------------------------------------------
 
-function recarregar() {
-    
+function fnCheckChanges(changes, observer) {
+
+    var code_box_height = '';
+    if (cfg.get("code_box_expand")) code_box_height = cfg.get("code_box_height") + 'px';
+    $('code').css({'max-height':code_box_height});
+
+    var code_font_size = '';
+    if (cfg.get("code_font_resize")) code_font_size = cfg.get("code_font_size") + 'px';
+    $('blockquote, code, pre').css({'font-size':code_font_size});
+
+    var page_size = '';
+    var tl_margin = '';
+    var tb_float = '';
+    var tb_margin = '';
+    var tb_width = '';
+    if (cfg.get("page_wide")) {
+        page_size = 'unset';
+        tl_margin = '90%';
+        tb_float = 'unset';
+        tb_margin = '10%';
+        tb_width = 'unset';
+    }
+    $('#main-outlet').css({'max-width':page_size});
+    $('.timeline-container').css({'margin-left':tl_margin});
+    $('.topic-body').css({'float':tb_float, 'margin-right':tb_margin, 'width':tb_width});
+}
+
+// -----------------------------------------------------------------------------
+
+function fnSaveChanges() {
+
     $('body').on("click", "#reloadnow", function() {
-        document.location.reload(false);
+        $(this).fadeOut("fast", function() { document.location.reload(false); });
     });
 
     var msg_success = 'Settings saved';
     toast.success(msg_success);
 
     var msg_reload = '<span id="reloadnow"> Some changes will be applied after you reload the page. <br> Click here to reload now </span>';
-    if (shouldreload) toast.message(msg_reload, { delay:2000, duration:5000 });
+    if (shouldreload) toast.message(msg_reload, { delay: 3000, duration: 7000 });
 }
