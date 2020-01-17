@@ -7,9 +7,9 @@
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @require     https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
-// @include     https://forums.docker.com/*
+// @include     http*://forums.docker.com/*
 // @icon        https://www.google.com/s2/favicons?domain=forums.docker.com
-// @version     2020.01.16.1026
+// @version     2020.01.17.1331
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -65,7 +65,7 @@ try {
     cfg = new MonkeyConfig({
         title:       'Config DF_code_box',
         menuCommand: true,
-        onSave:      function() { recarregar(); },
+        onSave:      function() { fnSaveChanges(); },
         params:      parametros
     });
     console.log("MonkeyConfig loaded; The settings menu will be enabled");
@@ -85,18 +85,33 @@ catch(err) {
 
 var shouldreload = false;
 
-$(document).on('ready scroll', function() {
+// apply imediately at document start
+fnCheckChanges();
 
-    if ( cfg.get("code_box_expand") ) {
-        var code_box_height = cfg.get("code_box_height");
-        $('code').css({'max-height':code_box_height + 'px'});
-        shouldreload = true;
-    }
+// also wait for page load. jquery will be ready here
+$(function() {
 
-    if ( cfg.get("code_font_resize") ) {
-        var code_font_size = cfg.get("code_font_size");
-        $('blockquote, code, pre').css({'font-size':code_font_size + 'px'});
-    }
+    // monitor the page for changes and reapply if necessary
+    // use 'observer.disconnect()' in 'fnCheckChanges()' to stop monitoring
+    var alvo = document.querySelector('body');
+    var observer = new MutationObserver(fnCheckChanges);
+    observer.observe(alvo, { attributes: true, characterData: true, childList: true, subtree: true });
+
+});
+
+// -----------------------------------------------------------------------------
+// FUNCTIONS
+// -----------------------------------------------------------------------------
+
+function fnCheckChanges(changes, observer) {
+
+    var code_box_height = '';
+    if (cfg.get("code_box_expand")) code_box_height = cfg.get("code_box_height") + 'px';
+    $('code').css({'max-height':code_box_height});
+
+    var code_font_size = '';
+    if (cfg.get("code_font_resize")) code_font_size = cfg.get("code_font_size") + 'px';
+    $('blockquote, code, pre').css({'font-size':code_font_size});
 
     var pageheader = $('header.header');
     if ( cfg.get("hide_page_header") ) {
@@ -107,31 +122,37 @@ $(document).on('ready scroll', function() {
         pageheader.show();
     }
 
-    if ( cfg.get("page_wide") ) {
-        $('#main-outlet').css({'max-width':'none'});
-        $('.container.posts').css({'width':'unset'});
-        $('.timeline-container').css({'margin-left':'90%'});
-        $('.topic-body').css({
-            'margin-right':'10%',
-            'float':'unset',
-            'width':'unset'
-        });
-        shouldreload = true;
+    var page_size = '';
+    var cp_size   = '';
+    var tl_margin = '';
+    var tb_float  = '';
+    var tb_margin = '';
+    var tb_width  = '';
+    if (cfg.get("page_wide")) {
+        page_size = 'unset';
+        cp_size   = 'unset';
+        tl_margin = '90%';
+        tb_float  = 'unset';
+        tb_margin = '10%';
+        tb_width  = 'unset';
     }
-
-});
+    $('.wrap').css({'max-width':page_size});
+    $('.container.posts').css({'width':cp_size});
+    $('.timeline-container').css({'margin-left':tl_margin});
+    $('.topic-body').css({'float':tb_float, 'margin-right':tb_margin, 'width':tb_width});
+}
 
 // -----------------------------------------------------------------------------
 
-function recarregar() {
+function fnSaveChanges() {
 
     $('body').on("click", "#reloadnow", function() {
-        document.location.reload(false);
+        $(this).fadeOut("fast", function() { document.location.reload(false); });
     });
 
     var msg_success = 'Settings saved';
     toast.success(msg_success);
 
     var msg_reload = '<span id="reloadnow"> Some changes will be applied after you reload the page. <br> Click here to reload now </span>';
-    if (shouldreload) toast.message(msg_reload, { delay:2000, duration:5000 });
+    if (shouldreload) toast.message(msg_reload, { delay: 3000, duration: 7000 });
 }
