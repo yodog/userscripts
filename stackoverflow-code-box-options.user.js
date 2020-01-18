@@ -9,11 +9,12 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://*askubuntu.com/*
 // @include     http*://*mathoverflow.net/*
+// @include     http*://*stackapps.com/*
 // @include     http*://*stackexchange.com/*
 // @include     http*://*stackoverflow.com/*
 // @include     http*://*superuser.com/*
 // @icon        https://www.google.com/s2/favicons?domain=stackoverflow.com
-// @version     2020.01.17.1432
+// @version     2020.01.17.2308
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
