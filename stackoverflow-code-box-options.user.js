@@ -14,7 +14,7 @@
 // @include     http*://*stackoverflow.com/*
 // @include     http*://*superuser.com/*
 // @icon        https://www.google.com/s2/favicons?domain=stackoverflow.com
-// @version     2020.01.27.1522
+// @version     2020.01.27.1523
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -64,7 +64,7 @@ var parametros = {
     code_font_resize    : { type: 'checkbox', default: true },
     code_font_size      : { type: 'number',   default: 12 },
     page_wide           : { type: 'checkbox', default: true },
-    remove_left_sidebar : { type: 'checkbox', default: true },
+    remove_left_sidebar : { type: 'checkbox', default: false },
 };
 
 var cfg;
