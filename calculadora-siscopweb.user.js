@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        siscopweb - calculadora de ponto
+// @name        SiscopWeb - Calculadora de Ponto
 // @namespace   https://github.com/yodog/userscripts
 // @author      RASG
 // @require     http://code.jquery.com/jquery.min.js
@@ -7,7 +7,7 @@
 // @require     https://gist.github.com/raw/2625891/waitForKeyElements.js
 // @include     http*://siscopweb.serpro/*
 // @include     file://*
-// @version     2018.09.17.1010
+// @version     2018.09.17.1011
 // @grant       GM_addStyle
 // @noframes
 // ==/UserScript==
