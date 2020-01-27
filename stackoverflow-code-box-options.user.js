@@ -14,7 +14,7 @@
 // @include     http*://*stackoverflow.com/*
 // @include     http*://*superuser.com/*
 // @icon        https://www.google.com/s2/favicons?domain=stackoverflow.com
-// @version     2020.01.17.2308
+// @version     2020.01.27.1522
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -106,11 +106,38 @@ $(function() {
 
 });
 
+// wait for SE specifics to be ready
+var SEready = false;
+StackExchange.ready (function() {
+
+    SEready = true;
+    console.log("StackExchange JS ready", SEready);
+
+    var meumenu = `
+    <ol class="nav-links">
+    <li class="youarehere"> <a id="navheader" href="#" class="pl8 js-gps-track nav-links--link -link__with-icon"> Scripted Options </a> </li>
+    <li> <a id="ec" href="#" class="js-gps-track nav-links--link"> Expand Comments </a> </li>
+    <li> <a id="wt" href="#" class="js-gps-track nav-links--link"> Watched Tags </a> </li>
+    <li> <a id="more" href="#" class="js-gps-track nav-links--link"> More ... </a> </li>
+    </ol>
+    `;
+
+    $(meumenu).insertAfter('#left-sidebar > div.left-sidebar--sticky-container.js-sticky-leftnav > nav > ol.nav-links');
+
+    $('#ec').click(function() { $('a.js-show-link').not(".dno").each(function() { StackExchange.comments.loadAll($(this)); }) })
+    $('#wt').click(function() { window.location = 'https://' + window.location.hostname + '/questions/tagged?tagMode=Watched'; })
+    $('#more').click(function() { cfg.open(); })
+
+});
+
+
 // -----------------------------------------------------------------------------
 // FUNCTIONS
 // -----------------------------------------------------------------------------
 
 function fnCheckChanges(changes, observer) {
+
+    //if (SEready) a.b.c;
 
     $('#mainbar').css({'text-align':'justify'});
 
