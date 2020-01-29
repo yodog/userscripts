@@ -14,7 +14,7 @@
 // @include     http*://*stackoverflow.com/*
 // @include     http*://*superuser.com/*
 // @icon        https://www.google.com/s2/favicons?domain=stackoverflow.com
-// @version     2020.01.27.1523
+// @version     2020.01.29.1026
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -63,6 +63,7 @@ var parametros = {
     code_box_height     : { type: 'number',   default: 900 },
     code_font_resize    : { type: 'checkbox', default: true },
     code_font_size      : { type: 'number',   default: 12 },
+    open_links_in_new_tab : { type: 'checkbox', default: true },
     page_wide           : { type: 'checkbox', default: true },
     remove_left_sidebar : { type: 'checkbox', default: false },
 };
@@ -102,7 +103,7 @@ $(function() {
     // use 'observer.disconnect()' in 'fnCheckChanges()' to stop monitoring
     var alvo = document.querySelector('body');
     var observer = new MutationObserver(fnCheckChanges);
-    observer.observe(alvo, { attributes: true, characterData: true, childList: true, subtree: true });
+    observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
 
 });
 
@@ -158,6 +159,19 @@ function fnCheckChanges(changes, observer) {
     var page_size = '';
     if (cfg.get("page_wide")) page_size = 'unset';
     $('div.container, div#content').css({'max-width':page_size});
+
+    if (cfg.get("open_links_in_new_tab")) fnReplaceLinks();
+}
+
+// -----------------------------------------------------------------------------
+
+function fnReplaceLinks() {
+
+    [...document.links].forEach(
+        a => $(a).filter(function() {
+            return this.href.match(/^http/) && this.hostname !== location.hostname;
+        }).attr('target', '_blank')
+    );
 }
 
 // -----------------------------------------------------------------------------
