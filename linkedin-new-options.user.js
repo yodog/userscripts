@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://*linkedin.com/*
 // @icon        https://www.google.com/s2/favicons?domain=linkedin.com
-// @version     2020.01.29.1336
+// @version     2020.01.30.2227
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -101,9 +101,11 @@ $(function() {
 
 function fnCheckChanges(changes, observer) {
 
+    $('#ads-container, .org-container__ad-module, .ad-banner-container').remove();
+
     var page_size = '';
     if (cfg.get("page_wide")) page_size = 'unset';
-    $('div.neptune-grid').css({'width':page_size});
+    $('div.neptune-grid, div.organization-outlet, div.org-organization-page__container, div.org-grid__core-rail--no-margin-left').css({'width':page_size});
     $('section.jobs-boxes').css({'max-width':page_size});
 
     if (cfg.get("open_links_in_new_tab")) fnReplaceLinks();
