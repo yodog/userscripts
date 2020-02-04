@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://*linkedin.com/*
 // @icon        https://www.google.com/s2/favicons?domain=linkedin.com
-// @version     2020.01.30.2324
+// @version     2020.02.04.1106
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -108,7 +108,7 @@ function fnCheckChanges(changes, observer) {
     $('div.neptune-grid, div.organization-outlet, div.org-organization-page__container, div.org-grid__core-rail--no-margin-left').css({'width':page_size});
     $('section.jobs-boxes').css({'max-width':page_size});
 
-    $('.jobs-company, .jobs-box').removeClass('jobs-description--is-truncated jobs-company--is-truncated');
+    $('.jobs-company, .jobs-box').removeClass('jobs-description--is-truncated jobs-description--is-truncated-poster jobs-company--is-truncated');
     $('button[data-control-name="see_more"]').triggerHandler('click');
 
     if (cfg.get("open_links_in_new_tab")) fnReplaceLinks();
