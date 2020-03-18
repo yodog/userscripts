@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://*.mercadolivre.com.br/*
 // @icon        https://www.google.com/s2/favicons?domain=mercadolivre.com.br
-// @version     2020.03.17.1856
+// @version     2020.03.18.1856
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -100,8 +100,12 @@ $(function() {
     // use 'observer.disconnect()' in 'fnCheckChanges()' to stop monitoring
 
     var body = document.querySelector('body');
+
     var observerBody = new MutationObserver(fnCheckChangesBody);
     observerBody.observe(body, { attributes: false, characterData: false, childList: true, subtree: false });
+
+    var observerSubTree = new MutationObserver(fnCheckChangesSubTree);
+    observerSubTree.observe(body, { attributes: false, characterData: false, childList: true, subtree: true });
 
     fnScanItems();
 
@@ -111,17 +115,68 @@ $(function() {
 // FUNCTIONS
 // -----------------------------------------------------------------------------
 
+function fnCheckChangesSubTree(changes, observer) {
+
+    // para as fotos do produto nao vazarem do elemento pai redimensionado
+    $('li.ch-carousel-item').css({'display':'inline-table'});
+
+}
+
+// -----------------------------------------------------------------------------
+
 function fnCheckChangesBody(changes, observer) {
 
     var page_size = '';
-    if (cfg.get("expandir_area_de_visualizacao")) page_size = 'unset';
+    var grid = {
+        img:  { height: '' },
+        item: { height: '', width: '', margin: '' },
+    };
+    var stack = {
+        img:  { height: '' },
+        item: { height: '', width: '', margin: '' },
+    };
+
+    if (cfg.get("expandir_area_de_visualizacao")) {
+        page_size = 'unset';
+        grid = {
+            img:  { height: '180px' },
+            item: { height: '470px', width: '200px', margin: '0 0 20px 10px' },
+        };
+        stack = {
+            img: { height: '120px' },
+            //item: { height: '470px', width: '200px', margin: '0 0 20px 10px' },
+        };
+    }
+
+    // tamanho da pagina (TDP)
     $('.ml-main, #results-section').css({'max-width':page_size});
     $('section.results').css({'width':page_size});
 
+    // tamanho de cada item (TCI)
+    $('.item.item--grid, .item__image').css({'width':grid.item.width});
+    $('.search-results.grid .results-item.item-info-height-169').css({'height':grid.item.height});
+
+    // espaco entre cada item (ECI) depende de TCI
+    $('.search-results.grid .results-item').css({'margin':grid.item.margin});
+
+    // titulo, cidade, avaliacoes, parcelamento
+    $('span.item-installments').remove();
+    $('.item__reviews, .item__status').show();
+    $('span.main-title').css({'overflow':'unset', 'display':'unset', 'font-size':'12px'});
+    $('div.item__condition').css({'font-size':'12px'});
+
+    // abrir produtos em nova aba
     if ( cfg.get("abrir_links_em_nova_aba") ) fnReplaceLinks();
 
+    // ordenar produtos
     if ( cfg.get("ordenar_por_total") ) sortUsingNestedText(lista, items, "span.price__fraction");
 
+    // frete
+    //if ( cfg.get("destacar_frete_gratis") ) fnDestacarFreteGratis();
+    //if ( cfg.get("esconder_frete_a_combinar") ) fnEsconderFreteCombinar();
+
+    // esconder produtos
+    fnEsconderProdutosCaros();
 }
 
 // -----------------------------------------------------------------------------
@@ -131,21 +186,19 @@ function fnScanItems() {
     items.each(function() {
     //items.first(function() {
         var item = $(this);
-        var id   = item.attr('id');
+        var id = item.attr('id').trim();
+        var link = item.find('a.item__info-title').attr('href') || item.find('a.item-link, a.item__info-link').attr('href');
 
         var produto = {
-            ['id']: id.trim(),
+            ['id']: id,
             ['preco']: parseInt( (item.find('span.price__fraction').text()).replace(/\D/g,'') ) || 0,
-            ['frete']: fnBuscarFrete(item),
+            ['frete']: fnBuscarFrete(id, item, link),
             ['total']: 0,
             ['title']: item.find('span.main-title').text().trim(),
-            ['link']: item.find('a.item__info-title').attr('href') || item.find('a.item-link, a.item__info-link').attr('href'),
+            ['link']: link,
         };
 
         produto.total = produto.preco + produto.frete;
-
-        //if ( produto.total > cfg.get("esconder_total_maior_que") ) item.hide();
-        if ( produto.preco > cfg.get("esconder_total_maior_que") ) item.css('border', '2px dotted red');
 
         //console.log('produto sincrono', produto);
         produtos[produto.id] = produto;
@@ -156,16 +209,38 @@ function fnScanItems() {
 
 // -----------------------------------------------------------------------------
 
-function fnBuscarFrete(item) {
+function fnEsconderProdutosCaros() {
+
+    for ( let [id, produto] of Object.entries(produtos) ) {
+        var item = $(`div#${id}`).parent('li');
+        //produto.preco > cfg.get("esconder_total_maior_que") ? item.hide() : item.show() ;
+        produto.preco > cfg.get("esconder_total_maior_que") ? item.css('opacity', '0.3') : item.css('opacity', 'unset');
+    }
+}
+
+// -----------------------------------------------------------------------------
+
+function fnBuscarFrete(id, item, link) {
 
     var fretegratis = item.find('div.free-shipping, div.item__shipping[title^="Frete gr"], div.item__shipping > span.item--has-fulfillment');
+    var fretecombinar = item.find('p.shipping-text:contains("a combinar")');
 
-    if ( fretegratis.length ) {
+    return fnConectar('GET', link, fnRespParser);
+    /*
+    if ( fretecombinar.length ) {
+        item.css('border', '2px dotted blue');
+        if ( cfg.get("esconder_frete_a_combinar") ) item.css('opacity', '0.3');
+        return 'a combinar';
+    }
+    else if ( fretegratis.length ) {
         if ( cfg.get("destacar_frete_gratis") ) item.css('border', '2px dotted green');
         return 0;
     }
-
-    return 999;
+    else {
+        return fnConectar('GET', link, fnRespParser);
+    }
+*/
+    return '???';
 }
 
 // -----------------------------------------------------------------------------
@@ -222,3 +297,73 @@ $.expr[':'].textEquals = $.expr.createPseudo(function(arg) {
         return $(elem).text().match("^" + arg + "$");
     };
 });
+
+// ---
+//
+// ---
+
+function fnConectar(metodo, endereco, resposta, corpo) {
+    var callback = function(xhr) { resposta(xhr); }
+
+    GM_xmlhttpRequest({
+        "method"    : metodo,
+        "url"       : endereco,
+        "onerror"   : callback,
+        "onload"    : callback,
+        "headers"   : {'Content-Type' : 'application/x-www-form-urlencoded'},
+        "data"      : corpo
+    });
+}
+
+// ---
+//
+// ---
+
+function fnRespParser(detalhes) {
+
+    var objDetalhes = $(detalhes.responseText);
+    var shippingmethodtitle = objDetalhes.find('.shipping-method-title');
+    var textofrete = shippingmethodtitle.text();
+    var retorno;
+
+    var shipping = objDetalhes.find('p.shipping-method-title, p.shipping-text').text().trim().replace(/\s+/g,' ');
+
+    /*
+    if ( $(`${shipping}:contains("a combinar")`) ) {
+        retorno = 'c'
+    }
+    else if ( $(`${shipping}:contains("Frete gr")`) ) {
+        retorno = 'g'
+    }
+    else {
+        //retorno = parseInt( elfrete.text().replace(/\D/g,'') );
+        retorno = '?'
+    }
+*/
+    //var fretegratis = objDetalhes.find('div.free-shipping, div.item__shipping[title^="Frete gr"], div.item__shipping > span.item--has-fulfillment');
+    //var fretecombinar = objDetalhes.find('p.shipping-text:contains("a combinar")');
+
+    console.log('shipping', shipping);
+    //console.log('fretegratis', fretegratis.length);
+    //console.log('fretecombinar', fretecombinar.length);
+
+/*
+    if ( textofrete.indexOf('a combinar') > -1 ) {
+        retorno = 'a combinar';
+    }
+    else {
+        var elfrete = shippingmethodtitle.find('.ch-price:first').contents().filter(function() {
+            return this.nodeType == 3;
+        });
+
+        if ( textofrete.indexOf('Frete gr') > -1 ) {
+            retorno = 'gratis';
+        }
+        else {
+            retorno = parseInt( elfrete.text().replace(/\D/g,'') );
+        }
+    }
+*/
+    //console.log('retorno', retorno);
+    return shipping;
+}
