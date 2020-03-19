@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://*.mercadolivre.com.br/*
 // @icon        https://www.google.com/s2/favicons?domain=mercadolivre.com.br
-// @version     2020.03.18.1856
+// @version     2020.03.18.2312
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -192,13 +192,11 @@ function fnScanItems() {
         var produto = {
             ['id']: id,
             ['preco']: parseInt( (item.find('span.price__fraction').text()).replace(/\D/g,'') ) || 0,
-            ['frete']: fnBuscarFrete(id, item, link),
+            ['frete']: fnBuscarFrete(item, link),
             ['total']: 0,
             ['title']: item.find('span.main-title').text().trim(),
             ['link']: link,
         };
-
-        produto.total = produto.preco + produto.frete;
 
         //console.log('produto sincrono', produto);
         produtos[produto.id] = produto;
@@ -220,13 +218,11 @@ function fnEsconderProdutosCaros() {
 
 // -----------------------------------------------------------------------------
 
-function fnBuscarFrete(id, item, link) {
+function fnBuscarFrete(item, link) {
 
-    var fretegratis = item.find('div.free-shipping, div.item__shipping[title^="Frete gr"], div.item__shipping > span.item--has-fulfillment');
     var fretecombinar = item.find('p.shipping-text:contains("a combinar")');
+    var fretegratis = item.find('div.free-shipping, div.item__shipping[title^="Frete gr"], div.item__shipping > span.item--has-fulfillment');
 
-    return fnConectar('GET', link, fnRespParser);
-    /*
     if ( fretecombinar.length ) {
         item.css('border', '2px dotted blue');
         if ( cfg.get("esconder_frete_a_combinar") ) item.css('opacity', '0.3');
@@ -239,7 +235,7 @@ function fnBuscarFrete(id, item, link) {
     else {
         return fnConectar('GET', link, fnRespParser);
     }
-*/
+
     return '???';
 }
 
@@ -322,48 +318,25 @@ function fnConectar(metodo, endereco, resposta, corpo) {
 function fnRespParser(detalhes) {
 
     var objDetalhes = $(detalhes.responseText);
-    var shippingmethodtitle = objDetalhes.find('.shipping-method-title');
-    var textofrete = shippingmethodtitle.text();
-    var retorno;
+    var id = objDetalhes.find('input[name=item_id], input[name=itemId]').val();
+    var shipping = objDetalhes.find('p.shipping-method-title, p.shipping-text, .ui-pdp-media__title:contains("Chegar")').text().trim().replace(/\s+/g, ' ');
 
-    var shipping = objDetalhes.find('p.shipping-method-title, p.shipping-text').text().trim().replace(/\s+/g,' ');
+    switch (true) {
+        case /gratis/.test(shipping):
+        case /grátis/.test(shipping):
+            shipping = 0;
+            break;
+        case /Frete R\$/.test(shipping):
+            shipping = parseInt( shipping.split("R$")[1].split(" ")[1].slice(0,-2) );
+            break;
+        case /entre.*por R\$/.test(shipping):
+            shipping = parseInt( shipping.split("R$")[1].split(",")[0] );
+            break;
+        default:
+            shipping = shipping;
+            break;
+    }
 
-    /*
-    if ( $(`${shipping}:contains("a combinar")`) ) {
-        retorno = 'c'
-    }
-    else if ( $(`${shipping}:contains("Frete gr")`) ) {
-        retorno = 'g'
-    }
-    else {
-        //retorno = parseInt( elfrete.text().replace(/\D/g,'') );
-        retorno = '?'
-    }
-*/
-    //var fretegratis = objDetalhes.find('div.free-shipping, div.item__shipping[title^="Frete gr"], div.item__shipping > span.item--has-fulfillment');
-    //var fretecombinar = objDetalhes.find('p.shipping-text:contains("a combinar")');
-
-    console.log('shipping', shipping);
-    //console.log('fretegratis', fretegratis.length);
-    //console.log('fretecombinar', fretecombinar.length);
-
-/*
-    if ( textofrete.indexOf('a combinar') > -1 ) {
-        retorno = 'a combinar';
-    }
-    else {
-        var elfrete = shippingmethodtitle.find('.ch-price:first').contents().filter(function() {
-            return this.nodeType == 3;
-        });
-
-        if ( textofrete.indexOf('Frete gr') > -1 ) {
-            retorno = 'gratis';
-        }
-        else {
-            retorno = parseInt( elfrete.text().replace(/\D/g,'') );
-        }
-    }
-*/
-    //console.log('retorno', retorno);
-    return shipping;
+    produtos[id].frete = shipping;
+    produtos[id].total = produtos[id].preco + produtos[id].frete;
 }
