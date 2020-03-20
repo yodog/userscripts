@@ -9,7 +9,8 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://*.mercadolivre.com.br/*
 // @icon        https://www.google.com/s2/favicons?domain=mercadolivre.com.br
-// @version     2020.03.18.2312
+// @version     2020.03.20.0006
+// @connect     mercadolivre.com.br
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -171,12 +172,8 @@ function fnCheckChangesBody(changes, observer) {
     // ordenar produtos
     if ( cfg.get("ordenar_por_total") ) sortUsingNestedText(lista, items, "span.price__fraction");
 
-    // frete
-    //if ( cfg.get("destacar_frete_gratis") ) fnDestacarFreteGratis();
-    //if ( cfg.get("esconder_frete_a_combinar") ) fnEsconderFreteCombinar();
-
-    // esconder produtos
-    fnEsconderProdutosCaros();
+    //
+    fnAplicarEfeitos();
 }
 
 // -----------------------------------------------------------------------------
@@ -192,13 +189,12 @@ function fnScanItems() {
         var produto = {
             ['id']: id,
             ['preco']: parseInt( (item.find('span.price__fraction').text()).replace(/\D/g,'') ) || 0,
-            ['frete']: fnBuscarFrete(item, link),
+            ['frete']: fnParseShipping(item, link),
             ['total']: 0,
             ['title']: item.find('span.main-title').text().trim(),
             ['link']: link,
         };
 
-        //console.log('produto sincrono', produto);
         produtos[produto.id] = produto;
     })
 
@@ -207,33 +203,59 @@ function fnScanItems() {
 
 // -----------------------------------------------------------------------------
 
-function fnEsconderProdutosCaros() {
+function fnAplicarEfeitos() {
 
     for ( let [id, produto] of Object.entries(produtos) ) {
+
         var item = $(`div#${id}`).parent('li');
-        //produto.preco > cfg.get("esconder_total_maior_que") ? item.hide() : item.show() ;
-        produto.preco > cfg.get("esconder_total_maior_que") ? item.css('opacity', '0.3') : item.css('opacity', 'unset');
+
+        if ( produto.frete == 0 ) item.css('border', '2px dotted green')
+
+        if ( produto.frete && produto.frete.toString().includes('combinar') ) {
+            item.css('border', '2px dotted blue');
+            if ( cfg.get("esconder_frete_a_combinar") ) {
+                item.css('opacity', '0.3');
+                //item.hide();
+            }
+            else {
+                item.css('opacity', 'unset');
+                //item.show();
+            }
+        }
+
+        // esconder produtos caros
+        if ( produto.preco > cfg.get("esconder_total_maior_que") ) {
+            item.css('opacity', '0.3');
+            //item.hide();
+        }
+        else {
+            item.css('opacity', 'unset');
+            //item.show();
+        }
     }
 }
 
 // -----------------------------------------------------------------------------
+// Tenta capturar o valor do frete usando o codigo da pagina que o usuario esta
+// Se nao conseguir, conecta na pagina do produto e retorna o valor de la
+// -----------------------------------------------------------------------------
 
-function fnBuscarFrete(item, link) {
+function fnParseShipping(item, link) {
 
     var fretecombinar = item.find('p.shipping-text:contains("a combinar")');
     var fretegratis = item.find('div.free-shipping, div.item__shipping[title^="Frete gr"], div.item__shipping > span.item--has-fulfillment');
 
     if ( fretecombinar.length ) {
         item.css('border', '2px dotted blue');
-        if ( cfg.get("esconder_frete_a_combinar") ) item.css('opacity', '0.3');
+        //if ( cfg.get("esconder_frete_a_combinar") ) fnEsconderFreteCombinar();
         return 'a combinar';
     }
     else if ( fretegratis.length ) {
-        if ( cfg.get("destacar_frete_gratis") ) item.css('border', '2px dotted green');
+        //if ( cfg.get("destacar_frete_gratis") ) fnDestacarFreteGratis();
         return 0;
     }
     else {
-        return fnConectar('GET', link, fnRespParser);
+        return fnConnectXHR('GET', link, fnParseShippingXHR);
     }
 
     return '???';
@@ -298,7 +320,7 @@ $.expr[':'].textEquals = $.expr.createPseudo(function(arg) {
 //
 // ---
 
-function fnConectar(metodo, endereco, resposta, corpo) {
+function fnConnectXHR(metodo, endereco, resposta, corpo) {
     var callback = function(xhr) { resposta(xhr); }
 
     GM_xmlhttpRequest({
@@ -315,7 +337,7 @@ function fnConectar(metodo, endereco, resposta, corpo) {
 //
 // ---
 
-function fnRespParser(detalhes) {
+function fnParseShippingXHR(detalhes) {
 
     var objDetalhes = $(detalhes.responseText);
     var id = objDetalhes.find('input[name=item_id], input[name=itemId]').val();
