@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://*.mercadolivre.com.br/*
 // @icon        https://www.google.com/s2/favicons?domain=mercadolivre.com.br
-// @version     2020.03.20.0006
+// @version     2020.03.20.0204
 // @connect     mercadolivre.com.br
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
@@ -170,10 +170,10 @@ function fnCheckChangesBody(changes, observer) {
     if ( cfg.get("abrir_links_em_nova_aba") ) fnReplaceLinks();
 
     // ordenar produtos
-    if ( cfg.get("ordenar_por_total") ) sortUsingNestedText(lista, items, "span.price__fraction");
+    if ( cfg.get("ordenar_por_total") ) sortUsingNestedText(lista, items, "span.t");
 
     //
-    fnAplicarEfeitos();
+    //fnAplicarEfeitos();
 }
 
 // -----------------------------------------------------------------------------
@@ -184,18 +184,31 @@ function fnScanItems() {
     //items.first(function() {
         var item = $(this);
         var id = item.attr('id').trim();
-        var link = item.find('a.item__info-title').attr('href') || item.find('a.item-link, a.item__info-link').attr('href');
+        var link = item.find('a.item__info-title, a.item-link, a.item__info-link').attr('href');
+        var preco = parseInt( (item.find('span.price__fraction').text()).replace(/\D/g,'') );
+        var frete = fnParseShipping(item, link);
+        var total = (preco + frete);
+        var title = item.find('span.main-title').text().trim();
 
         var produto = {
             ['id']: id,
-            ['preco']: parseInt( (item.find('span.price__fraction').text()).replace(/\D/g,'') ) || 0,
-            ['frete']: fnParseShipping(item, link),
-            ['total']: 0,
-            ['title']: item.find('span.main-title').text().trim(),
+            ['preco']: preco,
+            ['frete']: frete,
+            ['total']: total,
+            ['title']: title,
             ['link']: link,
         };
 
         produtos[produto.id] = produto;
+
+        // adicionar elemento que ira conter o preco total
+        var e = item.find('div.item__price');
+        e.html(`<span id='p_${id}' class='p'> ${preco} </span> + <span id='f_${id}' class='f'> ${frete} </span> = <span id='t_${id}' class='t'> ${total} </span>`);
+        e.css('background', 'linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(200,200,200,0.7) 50%, rgba(255,255,255,1) 100%)');
+        e.css({'display':'block', 'text-align':'center'});
+        $('.p').css({'font-size':'0.7em', 'color':'black'});
+        $('.f').css({'font-size':'0.7em', 'color':'purple'});
+        $('.t').css({'font-size':'0.7em', 'color':'blue'});
     })
 
     console.log('produtos', produtos);
@@ -209,11 +222,27 @@ function fnAplicarEfeitos() {
 
         var item = $(`div#${id}`).parent('li');
 
-        if ( produto.frete == 0 ) item.css('border', '2px dotted green')
+        if ( produto.frete ) {
 
-        if ( produto.frete && produto.frete.toString().includes('combinar') ) {
-            item.css('border', '2px dotted blue');
-            if ( cfg.get("esconder_frete_a_combinar") ) {
+            if ( produto.frete == 0 ) item.css('border', '2px dotted green')
+
+            if ( produto.frete.toString().includes('combinar') ) {
+                item.css('border', '2px dotted blue');
+                if ( cfg.get("esconder_frete_a_combinar") ) {
+                    item.css('opacity', '0.3');
+                    //item.hide();
+                }
+                else {
+                    item.css('opacity', 'unset');
+                    //item.show();
+                }
+            }
+        }
+
+        if ( produto.preco ) {
+
+            // esconder produtos caros
+            if ( produto.preco > cfg.get("esconder_total_maior_que") ) {
                 item.css('opacity', '0.3');
                 //item.hide();
             }
@@ -221,16 +250,6 @@ function fnAplicarEfeitos() {
                 item.css('opacity', 'unset');
                 //item.show();
             }
-        }
-
-        // esconder produtos caros
-        if ( produto.preco > cfg.get("esconder_total_maior_que") ) {
-            item.css('opacity', '0.3');
-            //item.hide();
-        }
-        else {
-            item.css('opacity', 'unset');
-            //item.show();
         }
     }
 }
@@ -246,7 +265,7 @@ function fnParseShipping(item, link) {
     var fretegratis = item.find('div.free-shipping, div.item__shipping[title^="Frete gr"], div.item__shipping > span.item--has-fulfillment');
 
     if ( fretecombinar.length ) {
-        item.css('border', '2px dotted blue');
+        //item.css('border', '2px dotted blue');
         //if ( cfg.get("esconder_frete_a_combinar") ) fnEsconderFreteCombinar();
         return 'a combinar';
     }
@@ -344,8 +363,7 @@ function fnParseShippingXHR(detalhes) {
     var shipping = objDetalhes.find('p.shipping-method-title, p.shipping-text, .ui-pdp-media__title:contains("Chegar")').text().trim().replace(/\s+/g, ' ');
 
     switch (true) {
-        case /gratis/.test(shipping):
-        case /grátis/.test(shipping):
+        case /gr.tis/.test(shipping):
             shipping = 0;
             break;
         case /Frete R\$/.test(shipping):
@@ -361,4 +379,17 @@ function fnParseShippingXHR(detalhes) {
 
     produtos[id].frete = shipping;
     produtos[id].total = produtos[id].preco + produtos[id].frete;
+
+    fnRecalcularTotal(id);
+}
+
+// -----------------------------------------------------------------------------
+
+function fnRecalcularTotal(id) {
+
+    $(`#f_${id}`).text(produtos[id].frete);
+    $(`#t_${id}`).text(produtos[id].total);
+
+    //fnEfeitoFreteCombinar(id);
+    //fnEfeitoFreteGratis(id);
 }
