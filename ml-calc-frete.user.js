@@ -10,7 +10,7 @@
 // @resource        toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include         http*://*.mercadolivre.com.br/*
 // @icon            https://www.google.com/s2/favicons?domain=mercadolivre.com
-// @version         2020.03.21.1337
+// @version         2020.03.21.1656
 // @connect         mercadolivre.com.br
 // @grant           GM_addStyle
 // @grant           GM_getMetadata
@@ -164,6 +164,8 @@ function fnCheckChangesBody(changes, observer) {
     $('.item__reviews, .item__status').show();
     $('span.main-title').css({'overflow':'unset', 'display':'unset', 'font-size':'12px'});
     $('div.item__condition').css({'font-size':'12px'});
+    $('.search-results .item .item__shipping.highlighted.item--has-installments').css({'padding-top':'inherit'});
+    $('.item.item--grid .item__info').css({'padding':'15px'});
 
     // abrir produtos em nova aba
     if ( cfg.get("abrir_links_em_nova_aba") ) fnReplaceLinks();
@@ -199,7 +201,7 @@ function fnScanItems() {
         var e = item.find('div.item__price');
         e.html(`<span id='p_${id}' class='p'> ${preco} </span> + <span id='f_${id}' class='f'> ${frete} </span> = <span id='t_${id}' class='t'> ${total} </span>`);
         e.css('background', 'linear-gradient(90deg, rgba(255,255,255,1) 0%, rgba(200,200,200,0.7) 50%, rgba(255,255,255,1) 100%)');
-        e.css({'display':'block', 'text-align':'center'});
+        if ( item.hasClass('item--grid') ) e.css({'display':'block', 'text-align':'center'});
         $('.p').css({'font-size':'0.7em', 'color':'black'});
         $('.f').css({'font-size':'0.7em', 'color':'purple'});
         $('.t').css({'font-size':'0.7em', 'color':'blue'});
