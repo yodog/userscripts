@@ -10,7 +10,7 @@
 // @resource        toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include         http*://*.mercadolivre.com.br/*
 // @icon            https://www.google.com/s2/favicons?domain=mercadolivre.com
-// @version         2020.03.21.1656
+// @version         2020.03.22.0040
 // @connect         mercadolivre.com.br
 // @grant           GM_addStyle
 // @grant           GM_getMetadata
@@ -180,7 +180,7 @@ function fnScanItems() {
 
     items.each(function() {
         var item = $(this);
-        var id = item.attr('id').trim();
+        var id = ( item.attr('id') || item.find('div.images-viewer').attr('product-id') ).trim();
         var link = item.find('a.item__info-title, a.item-link, a.item__info-link').attr('href');
         var preco = parseInt( (item.find('span.price__fraction').text()).replace(/\D/g,'') );
         var frete = fnParseShipping(item, link);
@@ -217,9 +217,12 @@ function fnScanItems() {
 
 function fnParseShipping(item, link) {
 
-    var id = item.attr('id').trim();
+    var id = ( item.attr('id') || item.find('div.images-viewer').attr('product-id') ).trim();
     var fretecombinar = item.find('p.shipping-text:contains("combinar")');
     var fretegratis = item.find('div.free-shipping, div.item__shipping[title^="Frete gr"], div.item__shipping > span.item--has-fulfillment');
+
+    //try { var id = item.attr('id').trim(); }
+    //catch(err) { console.log('Item nao tem ID', link); return false; }
 
     if ( fretecombinar.length ) {
         fnEfeitoFreteCombinar(id);
@@ -308,8 +311,10 @@ function fnConnectXHR(metodo, endereco, resposta, corpo) {
 function fnParseShippingXHR(detalhes) {
 
     var objDetalhes = $(detalhes.responseText);
-    var id = objDetalhes.find('input[name=item_id], input[name=itemId]').val();
     var shipping = objDetalhes.find('p.shipping-method-title, p.shipping-text, .ui-pdp-pick-up .ui-pdp-media__title, .ui-pdp-shipping .ui-pdp-media__title').text().trim().replace(/\s+/g, ' ');
+
+    try { var id = objDetalhes.find('input[name=item_id], input[name=itemId]').val().trim(); }
+    catch(err) { console.log('fnParseShippingXHR: item nao tem ID'); return false; }
 
     switch (true) {
         case /gr.tis/i.test(shipping):
@@ -404,5 +409,16 @@ function fnReAplicarTodosEfeitos() {
 
 function fnReordenarItems() {
     if ( $('span.t').lenght < items.lenght ) return;
-    cfg.get("ordenar_por_total") ? sortUsingNestedText(lista, items, "span.t") : sortUsingNestedText(lista, items, "span.p");
+    sleep(5000).then(() => {
+        console.log('sleep');
+        cfg.get("ordenar_por_total") ? sortUsingNestedText(lista, items, "span.t") : sortUsingNestedText(lista, items, "span.p");
+    });
+}
+
+// -----------------------------------------------------------------------------
+// sleep time expects milliseconds
+// -----------------------------------------------------------------------------
+
+function sleep(time) {
+    return new Promise((resolve) => setTimeout(resolve, time));
 }
