@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.13.2358
+// @version      2020.06.15.0001
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -23,33 +23,52 @@
 // ==/UserScript==
 
 // -----------------------------------------------------------------------------
-// LOAD TOAST NOTIFICATIONS LIBRARY
+// Carregar css das bibliotecas
 // -----------------------------------------------------------------------------
 
-// @require     https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
-// @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
-// @grant       GM_addStyle
-// @grant       GM_getResourceText
+// @require  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
+// @resource toastcss https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 
-GM_addStyle( GM_getResourceText("toastcss") );
-GM_addStyle( GM_getResourceText("gridcss") );
+// @require  https://cdn.jsdelivr.net/npm/gridjs/dist/gridjs.production.min.js
+// @resource gridcss https://unpkg.com/gridjs/dist/theme/mermaid.min.css
+
+// @grant    GM_addStyle
+// @grant    GM_getResourceText
+
+GM_addStyle(GM_getResourceText("toastcss"));
+GM_addStyle(GM_getResourceText("gridcss"));
+
+var toast = siiimpleToast.setOptions({
+    position: 'top|right',
+    duration: 3000,
+});
+
+var colunas = ['Nome', 'Issues', 'Horas', 'H/Dia', 'H/Issue'];
+const grid = new gridjs.Grid({
+    columns: colunas,
+    data: colunas,
+});
 
 // -----------------------------------------------------------------------------
-// PREVENT JQUERY CONFLICT
+// Tentar evitar conflito deste jquery com o carregado pela pagina
 // -----------------------------------------------------------------------------
 
-var $      = window.$;
+var $ = window.$;
 var jQuery = window.jQuery;
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
-if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
+var msg_jqnotfound = 'JQuery not found; The script will certainly fail';
+if (typeof $ == 'undefined') {
+    console.log(msg_jqnotfound);
+    toast.alert(msg_jqnotfound);
+}
 
 // -----------------------------------------------------------------------------
 // START
 // -----------------------------------------------------------------------------
 
-(function() {
+(function () {
 
     var menu_mes = `
 <ul id="meses">
@@ -68,7 +87,7 @@ if (typeof $ == 'undefined') console.log('JQuery not found; The script will cert
 </ul>
 `
 
-var styles = `
+    var styles = `
 #meses li:focus {
 background-color: #eee;
 }
@@ -100,78 +119,136 @@ max-width: unset;
 .frequent-items-dropdown-container .frequent-items-dropdown-content {
 width: unset;
 }
+
+#btnKPI .dropdown-menu li a {
+padding-top: 5px;
+}
+
+#btnKPI .frequent-items-dropdown-content {
+font-size: 12px;
+}
 `
-var styleSheet = document.createElement("style")
-styleSheet.type = "text/css"
-styleSheet.innerText = styles
-document.head.appendChild(styleSheet)
+
+    var styleSheet = document.createElement("style")
+    styleSheet.type = "text/css"
+    styleSheet.innerText = styles
+    document.head.appendChild(styleSheet)
 
     $('#nav-groups-dropdown').clone().prop('id', 'btnKPI').appendTo('ul.navbar-sub-nav');
     $('#btnKPI > button.btn').text('KPI');
-    $('#btnKPI').click( () => $(`#meses #${mes}`).click() );
-    //$('#btnKPI .frequent-items-dropdown-container').empty();
+    $('#btnKPI').click(() => $(`#meses #${mes}`).click());
 
     const meu_cpf = $('a.header-user-dropdown-toggle').attr('href').replace(/\D/g, '');
-    //var url = `https://git.serpro/api/v4/projects/8969/issues?assignee_username=${meu_cpf}&updated_after=2020-06-01&updated_before=2020-07-01&per_page=100`;
+    const minhas_issues_url = (start, end) => `https://git.serpro/api/v4/projects/8969/issues?updated_after=${start}&updated_before=${end}&per_page=100&assignee_username=${meu_cpf}`;
     const project_issues_url = (start, end) => `https://git.serpro/api/v4/projects/8969/issues?updated_after=${start}&updated_before=${end}&per_page=100`;
 
-    const date      = new Date();
-    const ano       = date.getYear() + 1900;
-    const mes       = date.getMonth() + 1;
-    const dia       = date.getDate();
-    const diasuteis = (function diasuteis() {
-        var du = dia;
-        for (var d=0; d<dia; d++) {
-            var t = new Date(ano, mes-1, d);
+    // ---
+    // diasNoMes() : Retornar quantos dias ha no mes passado como parametro
+    // diasUteisNoMes() : Retornar quantos dias uteis ha no mes passado como parametro
+    // diasUteisAteHoje() : Retornar quantos dias uteis ha no mes corrente, ate a data de hoje
+    // diasUteisNoMesOuAteHoje() : Retornar quantos dias uteis ha no mes passado como parametro, ou ate a data de hoje se for o mes corrente
+    // ---
+
+    const hoje = new Date();
+    const ano = hoje.getFullYear();
+    const mes = hoje.getMonth() + 1;
+    const dia = hoje.getDate();
+
+    const diasNoMes = (...args) => (args.length == 0) ? new Date(ano, mes, 0).getDate() : new Date(args).getDate() + 1;
+
+    const diasUteisNoMes = (...args) => {
+        var du = diasNoMes(args);
+        var y = new Date(args).getFullYear();
+        var m = new Date(args).getMonth();
+        for (var d = 0; d < du; d++) {
+            var t = new Date(y, m, d);
             if (t.getDay(d) == 0 || t.getDay(d) == 6) du--;
         }
         return du;
-    }());
+    };
+    console.log('diasUteisNoMes1', diasUteisNoMes());
+    console.log('diasUteisNoMes2', diasUteisNoMes('2020-02-01'));
+    console.log('diasUteisNoMes3', diasUteisNoMes('2020-02-29'));
+    console.log('diasUteisNoMes4', diasUteisNoMes('2020-03-01'));
+    console.log('diasUteisNoMes5', diasUteisNoMes('2020-03-30'));
+    console.log('diasUteisNoMes6', diasUteisNoMes('2020-06-30'));
 
-    console.log('dia', dia);
-    console.log('diasuteis', diasuteis);
+    const diasUteisAteHoje = () => {
+        var du = dia;
+        for (var d = 0; d < dia; d++) {
+            var t = new Date(ano, mes, d);
+            if (t.getDay(d) == 0 || t.getDay(d) == 6) du--;
+        }
+        console.log('diasUteisAteHoje du', du);
+        return du;
+    };
+
+    const diasUteisNoMesOuAteHoje = (...args) => (args.length == 0) ? diasUteisAteHoje() : diasUteisNoMes(args);
+
+    // ---
+    //
+    // ---
 
     $('#btnKPI .frequent-items-dropdown-sidebar').prop('id', 'sidebarKPI').html(menu_mes);
-    $('#btnKPI .frequent-items-dropdown-content').prop('id', 'contentKPI').css({'font-size':'12px'}).empty();
-    $('#btnKPI .dropdown-menu li a').css({'padding-top':'5px'});
+    $('#btnKPI .frequent-items-dropdown-content').prop('id', 'contentKPI').empty();
 
-    $('#sidebarKPI li').click(function(e) {
-        getJsonPages( project_issues_url( $(this).data('start'), $(this).data('end') ));
+    // ---
+    // Atualizar o grid quando o usuario clica no menu
+    // ---
+
+    $('#sidebarKPI li').click(function (e) {
+        var u = project_issues_url($(this).data('start'), $(this).data('end'));
+
+        grid.updateConfig({
+            data: () => getAllData(u).then(resolve => {
+                console.log('updateConfig resolve', resolve);
+                return resolve;
+            })
+        });
+
+        try { grid.forceRender(); }
+        catch (e) { grid.render(document.getElementById('contentKPI')); }
+
         return false;
     });
 
     // ---
-    // Usar API para buscar os dados, filtrar os que preciso e descartar o resto
-    // Iterar o json e filrar, mantendo somente os campos que vou mostrar na tabela
-    // Deve estar autenticado no git para funcionar
+    //
     // ---
 
-    var dadosFiltrados = {};
-    var dadosTratados  = [];
+    function getAllData(url) {
+        var dadosFiltrados = {};
+        var dadosTratados = [];
 
-    function getJsonPages(url) {
-        $('#contentKPI').empty();
-        var req = $.getJSON(url, function(jsondata) {
-            var hdrlink, linknext, relnext;
-            //dadosFiltrados = {...filtrarJson(jsondata), ...dadosFiltrados};
-            dadosFiltrados = mergeDeep(filtrarJson(jsondata), dadosFiltrados);
-            try {
-                hdrlink  = req.getResponseHeader('link').split(',');
-                relnext  = hdrlink.filter(l => l.toLowerCase().indexOf('rel="next"') > -1);
-                linknext = decodeURIComponent(relnext[0].split('<')[1].split('>')[0]);
-            }
-            catch (e) {
-                //console.log(e);
-            }
-            if (linknext) {
-                getJsonPages(linknext);
-            }
-            else {
-                dadosTratados = tratarDados(dadosFiltrados);
-                montarTabela(['Nome', 'Issues', 'Horas', 'Media 1', 'Media 2'], dadosTratados, 'contentKPI');
-            }
+        function recursiveCall(url, resolve, reject) {
+
+            var req = $.getJSON(url, (jsondata) => {
+                var hdrlink, linknext, relnext;
+                dadosFiltrados = mergeDeep(filtrarJson(jsondata), dadosFiltrados);
+                try {
+                    hdrlink = req.getResponseHeader('link').split(',');
+                    relnext = hdrlink.filter(l => l.toLowerCase().indexOf('rel="next"') > -1);
+                    linknext = decodeURIComponent(relnext[0].split('<')[1].split('>')[0]);
+                }
+                catch (e) {
+                    //console.log(e);
+                }
+                if (linknext) {
+                    console.log('recursiveCall if dadosTratados', dadosTratados)
+                    recursiveCall(linknext, resolve, reject);
+                }
+                else {
+                    dadosTratados = tratarDados(dadosFiltrados);
+                    console.log('recursiveCall else dadosTratados', dadosTratados)
+                    resolve(dadosTratados);
+                }
+            });
+        }
+
+        return new Promise((resolve, reject) => {
+            recursiveCall(url, resolve, reject);
         });
-    }(project_issues_url);
+    }
 
     // ---
     // Filtrar o json e retornar somente os campos que vou usar
@@ -179,6 +256,7 @@ document.head.appendChild(styleSheet)
 
     function filtrarJson(j) {
         var r = {};
+        var dt, key;
         j.forEach((item) => {
             try {
                 dt = {
@@ -203,7 +281,7 @@ document.head.appendChild(styleSheet)
     }
 
     // ---
-    // Iterar os dados e retornar o json que ira para a tabela
+    // Iterar os dados e retornar os arrays que irao para a tabela
     // Somar horas, contar issues, etc
     // ---
 
@@ -211,29 +289,16 @@ document.head.appendChild(styleSheet)
         const r = [];
         var nome, issues, segundos, horas, media_d, media_i;
         for (var k in dados) {
-            nome     = dados[k][0].name.split(' ')[0];
-            issues   = dados[k].length;
+            nome = dados[k][0].name.split(' ')[0];
+            issues = dados[k].length;
             segundos = dados[k].map(o => o.total_time_spent).reduce((a, c) => { return a + c });
-            horas    = Math.floor(segundos / 60 / 60);
-            media_d  = (horas / diasuteis).toFixed(1);
-            media_i  = (horas / issues).toFixed(1);
+            horas = Math.floor(segundos / 60 / 60);
+            media_d = (horas / diasUteisNoMesOuAteHoje()).toFixed(1);
+            media_i = (horas / issues).toFixed(1);
             r.push([nome, issues, horas, media_d, media_i]);
         };
-        console.log(dados)
+        console.log('tratarDados dados', dados)
         return r;
-    }
-
-    // ---
-    // Montar tabela com as informacoes
-    // ---
-
-    function montarTabela(columns, data, elementID) {
-        //$(`#${elementID}`).empty();
-        const grid = new gridjs.Grid({
-            columns: columns,
-            //search: true,
-            data: data.sort(),
-        }).render(document.getElementById(elementID));
     }
 
     /**
@@ -266,11 +331,4 @@ document.head.appendChild(styleSheet)
             return prev;
         }, {});
     }
-
-    // ---
-    //
-    // ---
-
-    const sortObject = o => Object.keys(o).sort().reduce((r, k) => (r[k] = o[k], r), {})
-
 })();
