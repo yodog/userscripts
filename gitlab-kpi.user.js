@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.15.0001
+// @version      2020.06.19.1419
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -116,8 +116,20 @@ height: unset;
 max-width: unset;
 }
 
+.frequent-items-dropdown-container {
+width: 550px;
+}
+
 .frequent-items-dropdown-container .frequent-items-dropdown-content {
 width: unset;
+}
+
+.frequent-items-dropdown-container .frequent-items-dropdown-sidebar, .frequent-items-dropdown-container .frequent-items-dropdown-content {
+padding: unset;
+}
+
+.gridjs-container, .gridjs-wrapper, table.gridjs-table {
+height: 100%;
 }
 
 #btnKPI .dropdown-menu li a {
@@ -200,9 +212,9 @@ font-size: 12px;
         var u = project_issues_url($(this).data('start'), $(this).data('end'));
 
         grid.updateConfig({
-            data: () => getAllData(u).then(resolve => {
-                console.log('updateConfig resolve', resolve);
-                return resolve;
+            data: () => getAllData(u).then(dados => {
+                console.log('updateConfig dados', dados);
+                return dados.sort();
             })
         });
 
