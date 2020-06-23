@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.19.1419
+// @version      2020.06.23.1235
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -69,6 +69,10 @@ if (typeof $ == 'undefined') {
 // -----------------------------------------------------------------------------
 
 (function () {
+
+    // ---
+    // CSS
+    // ---
 
     var menu_mes = `
 <ul id="meses">
@@ -146,13 +150,24 @@ font-size: 12px;
     styleSheet.innerText = styles
     document.head.appendChild(styleSheet)
 
+    // ---
+    // Botao KPI
+    // ---
+
     $('#nav-groups-dropdown').clone().prop('id', 'btnKPI').appendTo('ul.navbar-sub-nav');
     $('#btnKPI > button.btn').text('KPI');
     $('#btnKPI').click(() => $(`#meses #${mes}`).click());
 
+    $('#btnKPI .frequent-items-dropdown-sidebar').prop('id', 'sidebarKPI').html(menu_mes);
+    $('#btnKPI .frequent-items-dropdown-content').prop('id', 'contentKPI').empty();
+
+    // ---
+    // Endpoints
+    // ---
+
     const meu_cpf = $('a.header-user-dropdown-toggle').attr('href').replace(/\D/g, '');
-    const minhas_issues_url = (start, end) => `https://git.serpro/api/v4/projects/8969/issues?updated_after=${start}&updated_before=${end}&per_page=100&assignee_username=${meu_cpf}`;
-    const project_issues_url = (start, end) => `https://git.serpro/api/v4/projects/8969/issues?updated_after=${start}&updated_before=${end}&per_page=100`;
+    const project_issues_url = (start, end) => `https://git.serpro/api/v4/projects/8969/issues?updated_after=${start}&updated_before=${end}&order_by=created_at&per_page=100`;
+    const minhas_issues_url = (start, end) => project_issues_url(start, end) + `&assignee_username=${meu_cpf}`;
 
     // ---
     // diasNoMes() : Retornar quantos dias ha no mes passado como parametro
@@ -178,12 +193,6 @@ font-size: 12px;
         }
         return du;
     };
-    console.log('diasUteisNoMes1', diasUteisNoMes());
-    console.log('diasUteisNoMes2', diasUteisNoMes('2020-02-01'));
-    console.log('diasUteisNoMes3', diasUteisNoMes('2020-02-29'));
-    console.log('diasUteisNoMes4', diasUteisNoMes('2020-03-01'));
-    console.log('diasUteisNoMes5', diasUteisNoMes('2020-03-30'));
-    console.log('diasUteisNoMes6', diasUteisNoMes('2020-06-30'));
 
     const diasUteisAteHoje = () => {
         var du = dia;
@@ -191,18 +200,10 @@ font-size: 12px;
             var t = new Date(ano, mes, d);
             if (t.getDay(d) == 0 || t.getDay(d) == 6) du--;
         }
-        console.log('diasUteisAteHoje du', du);
         return du;
     };
 
     const diasUteisNoMesOuAteHoje = (...args) => (args.length == 0) ? diasUteisAteHoje() : diasUteisNoMes(args);
-
-    // ---
-    //
-    // ---
-
-    $('#btnKPI .frequent-items-dropdown-sidebar').prop('id', 'sidebarKPI').html(menu_mes);
-    $('#btnKPI .frequent-items-dropdown-content').prop('id', 'contentKPI').empty();
 
     // ---
     // Atualizar o grid quando o usuario clica no menu
@@ -212,10 +213,7 @@ font-size: 12px;
         var u = project_issues_url($(this).data('start'), $(this).data('end'));
 
         grid.updateConfig({
-            data: () => getAllData(u).then(dados => {
-                console.log('updateConfig dados', dados);
-                return dados.sort();
-            })
+            data: () => getAllData(u).then(dados => dados.sort())
         });
 
         try { grid.forceRender(); }
@@ -225,15 +223,18 @@ font-size: 12px;
     });
 
     // ---
-    //
+    // A API do gitlab retorna dados paginados (header rel="next")
+    // Esta funcao vai requisitando cada pagina e acumulando para processar depois
     // ---
 
     function getAllData(url) {
         var dadosFiltrados = {};
         var dadosTratados = [];
+        let pagina = 0;
 
         function recursiveCall(url, resolve, reject) {
-
+            let erros = 0;
+            pagina++;
             var req = $.getJSON(url, (jsondata) => {
                 var hdrlink, linknext, relnext;
                 dadosFiltrados = mergeDeep(filtrarJson(jsondata), dadosFiltrados);
@@ -243,18 +244,23 @@ font-size: 12px;
                     linknext = decodeURIComponent(relnext[0].split('<')[1].split('>')[0]);
                 }
                 catch (e) {
-                    //console.log(e);
+                    console.log(e.message);
+                    erros++;
                 }
                 if (linknext) {
-                    console.log('recursiveCall if dadosTratados', dadosTratados)
                     recursiveCall(linknext, resolve, reject);
                 }
                 else {
                     dadosTratados = tratarDados(dadosFiltrados);
-                    console.log('recursiveCall else dadosTratados', dadosTratados)
                     resolve(dadosTratados);
                 }
             });
+            let msg_erros = `${erros} paginas nao foram carregadas`;
+            if (erros > 0) {
+                console.log(msg_erros);
+                toast.alert(msg_erros);
+            }
+            toast.message(`carregando pagina ${pagina}`);
         }
 
         return new Promise((resolve, reject) => {
@@ -269,26 +275,35 @@ font-size: 12px;
     function filtrarJson(j) {
         var r = {};
         var dt, key;
+        let erros = 0;
         j.forEach((item) => {
             try {
-                dt = {
-                    closed_at: item.closed_at,
-                    created_at: item.created_at,
-                    due_date: item.due_date,
-                    id: item.assignee.id,
-                    name: item.assignee.name,
-                    state: item.state,
-                    total_time_spent: item.time_stats.total_time_spent,
-                    title: item.title,
-                    updated_at: item.updated_at
-                };
+                if (item.assignee) {
+                    dt = {
+                        closed_at: item.closed_at,
+                        created_at: item.created_at,
+                        due_date: item.due_date,
+                        id: item.assignee.id,
+                        name: item.assignee.name,
+                        state: item.state,
+                        total_time_spent: item.time_stats.total_time_spent,
+                        title: item.title,
+                        updated_at: item.updated_at
+                    };
+                    key = dt.name.split(' ')[0] || dt.id;
+                    (r[key] = r[key] || []).push(dt);
+                }
             }
             catch (e) {
-                //console.log(e);
+                console.log(e.message);
+                erros++;
             }
-            key = dt.name.split(' ')[0] || dt.id;
-            (r[key] = r[key] || []).push(dt);
         });
+        let msg_erros = `${erros} registros nao foram filtrados`;
+        if (erros > 0) {
+            console.log(msg_erros);
+            toast.alert(msg_erros);
+        }
         return r;
     }
 
@@ -309,7 +324,6 @@ font-size: 12px;
             media_i = (horas / issues).toFixed(1);
             r.push([nome, issues, horas, media_d, media_i]);
         };
-        console.log('tratarDados dados', dados)
         return r;
     }
 
