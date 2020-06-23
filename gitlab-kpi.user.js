@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.23.1235
+// @version      2020.06.23.1732
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -65,6 +65,42 @@ if (typeof $ == 'undefined') {
 }
 
 // -----------------------------------------------------------------------------
+// OPTIONS / CONFIG MENU
+// -----------------------------------------------------------------------------
+
+var parametros = {
+    project_id: { type: 'number', default: 8969 },
+    campo_data_inicial: { type: 'select', choices: [ 'created_after', 'updated_after' ], default: 'updated_after', variant: "radio" },
+    campo_data_final: { type: 'select', choices: [ 'created_before', 'updated_before' ], default: 'updated_before', variant: "radio" },
+    order_by: { type: 'select', choices: [ 'created_at', 'due_date', 'label_priority', 'milestone_due', 'popularity', 'priority', 'updated_at' ], default: 'created_at' },
+    labels: { type: 'text', default: '' },
+    per_page: { type: 'number', default: 100 },
+    scope: { type: 'select', choices: [ 'all', 'assigned_to_me', 'created_by_me' ], default: 'assigned_to_me' },
+    sort: { type: 'select', choices: [ 'asc', 'desc' ], default: 'asc', variant: "radio" },
+    state: { type: 'select', choices: [ 'all', 'closed', 'opened' ], default: 'all', variant: "radio" },
+    //unassigned: { type: 'checkbox', default: false }, // assignee_id=None
+};
+
+var cfg;
+try {
+    cfg = new MonkeyConfig({
+        title:       'Config GitLab Metrics',
+        menuCommand: true,
+        onSave:      function() { fnSaveChanges(); },
+        params:      parametros
+    });
+    console.log("MonkeyConfig loaded; The settings menu will be enabled");
+}
+catch(err) {
+    console.log(err.message);
+    console.log("MonkeyConfig not loaded; The settings menu will be disabled");
+    cfg = {
+        params: parametros,
+        get: function get(name) { return GM_getValue(name, this.params[name].default) }
+    }
+}
+
+// -----------------------------------------------------------------------------
 // START
 // -----------------------------------------------------------------------------
 
@@ -75,25 +111,37 @@ if (typeof $ == 'undefined') {
     // ---
 
     var menu_mes = `
-<ul id="meses">
-<li id="1"  tabindex="1"  data-start="2020-01-01" data-end="2020-01-30"> <a> Janeiro   </a> </li>
-<li id="2"  tabindex="2"  data-start="2020-02-01" data-end="2020-02-29"> <a> Fevereiro </a> </li>
-<li id="3"  tabindex="3"  data-start="2020-03-01" data-end="2020-03-31"> <a> Março     </a> </li>
-<li id="4"  tabindex="4"  data-start="2020-04-01" data-end="2020-04-30"> <a> Abril     </a> </li>
-<li id="5"  tabindex="5"  data-start="2020-05-01" data-end="2020-05-31"> <a> Maio      </a> </li>
-<li id="6"  tabindex="6"  data-start="2020-06-01" data-end="2020-06-30"> <a> Junho     </a> </li>
-<li id="7"  tabindex="7"  data-start="2020-07-01" data-end="2020-07-30"> <a> Julho     </a> </li>
-<li id="8"  tabindex="8"  data-start="2020-08-01" data-end="2020-08-31"> <a> Agosto    </a> </li>
-<li id="9"  tabindex="9"  data-start="2020-09-01" data-end="2020-09-30"> <a> Setembro  </a> </li>
-<li id="10" tabindex="10" data-start="2020-10-01" data-end="2020-10-31"> <a> Outubro   </a> </li>
-<li id="11" tabindex="11" data-start="2020-11-01" data-end="2020-11-30"> <a> Novembro  </a> </li>
-<li id="12" tabindex="12" data-start="2020-12-01" data-end="2020-12-31"> <a> Dezembro  </a> </li>
+<ul class="menu_mes" id="menuconfig">
+<li id="c" tabindex="1"> <a> Configuracoes </a> </li>
+</ul>
+
+<ul class="menu_mes" id="menumeses">
+<li id="1"  tabindex="1"  data-start="2020-01-01" data-end="2020-01-30T23:59"> <a> Janeiro   </a> </li>
+<li id="2"  tabindex="2"  data-start="2020-02-01" data-end="2020-02-29T23:59"> <a> Fevereiro </a> </li>
+<li id="3"  tabindex="3"  data-start="2020-03-01" data-end="2020-03-31T23:59"> <a> Março     </a> </li>
+<li id="4"  tabindex="4"  data-start="2020-04-01" data-end="2020-04-30T23:59"> <a> Abril     </a> </li>
+<li id="5"  tabindex="5"  data-start="2020-05-01" data-end="2020-05-31T23:59"> <a> Maio      </a> </li>
+<li id="6"  tabindex="6"  data-start="2020-06-01" data-end="2020-06-23T23:59"> <a> Junho     </a> </li>
+<li id="7"  tabindex="7"  data-start="2020-07-01" data-end="2020-07-30T23:59"> <a> Julho     </a> </li>
+<li id="8"  tabindex="8"  data-start="2020-08-01" data-end="2020-08-31T23:59"> <a> Agosto    </a> </li>
+<li id="9"  tabindex="9"  data-start="2020-09-01" data-end="2020-09-30T23:59"> <a> Setembro  </a> </li>
+<li id="10" tabindex="10" data-start="2020-10-01" data-end="2020-10-31T23:59"> <a> Outubro   </a> </li>
+<li id="11" tabindex="11" data-start="2020-11-01" data-end="2020-11-30T23:59"> <a> Novembro  </a> </li>
+<li id="12" tabindex="12" data-start="2020-12-01" data-end="2020-12-31T23:59"> <a> Dezembro  </a> </li>
 </ul>
 `
 
     var styles = `
-#meses li:focus {
-background-color: #eee;
+.menu_mes {
+cursor: default;
+}
+
+.menu_mes li:focus {
+background-color: #fee;
+}
+
+#menuconfig {
+border-bottom: 1px solid gainsboro;
 }
 
 .gridjs {
@@ -156,7 +204,7 @@ font-size: 12px;
 
     $('#nav-groups-dropdown').clone().prop('id', 'btnKPI').appendTo('ul.navbar-sub-nav');
     $('#btnKPI > button.btn').text('KPI');
-    $('#btnKPI').click(() => $(`#meses #${mes}`).click());
+    $('#btnKPI').click(() => $(`#menumeses #${mes}`).click());
 
     $('#btnKPI .frequent-items-dropdown-sidebar').prop('id', 'sidebarKPI').html(menu_mes);
     $('#btnKPI .frequent-items-dropdown-content').prop('id', 'contentKPI').empty();
@@ -166,7 +214,21 @@ font-size: 12px;
     // ---
 
     const meu_cpf = $('a.header-user-dropdown-toggle').attr('href').replace(/\D/g, '');
-    const project_issues_url = (start, end) => `https://git.serpro/api/v4/projects/8969/issues?updated_after=${start}&updated_before=${end}&order_by=created_at&per_page=100`;
+
+    const project_issues_url = (start, end) => {
+        var pid = cfg.get("project_id");
+        var cdi = cfg.get("campo_data_inicial");
+        var cdf = cfg.get("campo_data_final");
+        var oby = cfg.get("order_by");
+        var lbl = cfg.get("labels");
+        var ppg = cfg.get("per_page");
+        var scp = cfg.get("scope");
+        var srt = cfg.get("sort");
+        var stt = cfg.get("state");
+
+        return `https://git.serpro/api/v4/projects/${pid}/issues?${cdi}=${start}&${cdf}=${end}&order_by=${oby}&per_page=${ppg}&scope=${scp}&sort=${srt}&state=${stt}&labels=${lbl}`;
+    }
+
     const minhas_issues_url = (start, end) => project_issues_url(start, end) + `&assignee_username=${meu_cpf}`;
 
     // ---
@@ -209,16 +271,18 @@ font-size: 12px;
     // Atualizar o grid quando o usuario clica no menu
     // ---
 
-    $('#sidebarKPI li').click(function (e) {
-        var u = project_issues_url($(this).data('start'), $(this).data('end'));
+    $('#sidebarKPI #menuconfig li').click(function (e) {
+        cfg.open();
+        return false;
+    });
 
+    $('#sidebarKPI #menumeses li').click(function (e) {
+        var u = project_issues_url($(this).data('start'), $(this).data('end'));
         grid.updateConfig({
             data: () => getAllData(u).then(dados => dados.sort())
         });
-
         try { grid.forceRender(); }
         catch (e) { grid.render(document.getElementById('contentKPI')); }
-
         return false;
     });
 
@@ -358,3 +422,18 @@ font-size: 12px;
         }, {});
     }
 })();
+
+// -----------------------------------------------------------------------------
+
+function fnSaveChanges() {
+
+    $('body').on("click", "#reloadnow", function() {
+        $(this).fadeOut("fast", function() { document.location.reload(false); });
+    });
+
+    var msg_success = 'Settings saved';
+    toast.success(msg_success);
+
+    var msg_reload = '<span id="reloadnow"> Some changes will be applied after you reload the page. <br> Click here to reload now </span>';
+    toast.message(msg_reload, { delay: 3000, duration: 7000 });
+}
