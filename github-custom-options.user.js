@@ -9,7 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include     http*://github.com/*
 // @icon        https://www.google.com/s2/favicons?domain=github.com
-// @version     2020.01.17.1133
+// @version     2020.06.23.2018
 // @grant       GM_addStyle
 // @grant       GM_getMetadata
 // @grant       GM_getResourceText
@@ -110,7 +110,7 @@ function fnCheckChanges(changes, observer) {
 
     var page_size = '';
     if (cfg.get("page_wide")) page_size = 'unset';
-    $('div.container-lg').css({'max-width':page_size});
+    $('div.container-lg, div.container-xl').css({'max-width':page_size});
 }
 
 // -----------------------------------------------------------------------------
