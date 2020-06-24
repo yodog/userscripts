@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.23.2122
+// @version      2020.06.23.2126
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -78,7 +78,6 @@ var parametros = {
     scope: { type: 'select', choices: [ 'all', 'assigned_to_me', 'created_by_me' ], default: 'assigned_to_me' },
     sort: { type: 'select', choices: [ 'asc', 'desc' ], default: 'asc', variant: "radio" },
     state: { type: 'select', choices: [ 'all', 'closed', 'opened' ], default: 'all', variant: "radio" },
-    //unassigned: { type: 'checkbox', default: false }, // assignee_id=None
 };
 
 var cfg;
@@ -342,21 +341,19 @@ font-size: 12px;
         let erros = 0;
         j.forEach((item) => {
             try {
-                //if (item.assignee) {
-                    dt = {
-                        closed_at: item.closed_at,
-                        created_at: item.created_at,
-                        due_date: item.due_date,
-                        id: item.assignee.id,
-                        name: item.assignee.name,
-                        state: item.state,
-                        total_time_spent: item.time_stats.total_time_spent,
-                        title: item.title,
-                        updated_at: item.updated_at
-                    };
-                    key = dt.name.split(' ')[0] || dt.id;
-                    (r[key] = r[key] || []).push(dt);
-                //}
+                dt = {
+                    closed_at: item.closed_at,
+                    created_at: item.created_at,
+                    due_date: item.due_date,
+                    id: item.assignee.id,
+                    name: item.assignee.name,
+                    state: item.state,
+                    total_time_spent: item.time_stats.total_time_spent,
+                    title: item.title,
+                    updated_at: item.updated_at
+                };
+                key = dt.name.split(' ')[0] || dt.id;
+                (r[key] = r[key] || []).push(dt);
             }
             catch (e) {
                 console.log(e.message);
