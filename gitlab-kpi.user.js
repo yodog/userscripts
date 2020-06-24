@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.23.1732
+// @version      2020.06.23.2122
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -207,7 +207,7 @@ font-size: 12px;
     $('#btnKPI').click(() => $(`#menumeses #${mes}`).click());
 
     $('#btnKPI .frequent-items-dropdown-sidebar').prop('id', 'sidebarKPI').html(menu_mes);
-    $('#btnKPI .frequent-items-dropdown-content').prop('id', 'contentKPI').empty();
+    $('#btnKPI .frequent-items-dropdown-content').prop('id', 'contentKPI').empty().click(() => false);
 
     // ---
     // Endpoints
@@ -226,10 +226,10 @@ font-size: 12px;
         var srt = cfg.get("sort");
         var stt = cfg.get("state");
 
-        return `https://git.serpro/api/v4/projects/${pid}/issues?${cdi}=${start}&${cdf}=${end}&order_by=${oby}&per_page=${ppg}&scope=${scp}&sort=${srt}&state=${stt}&labels=${lbl}`;
+        return `https://git.serpro/api/v4/projects/${pid}/issues?${cdi}=${start}&${cdf}=${end}&order_by=${oby}&per_page=${ppg}&scope=${scp}&sort=${srt}&state=${stt}&labels=${lbl}&assignee_id=any`;
     }
 
-    const minhas_issues_url = (start, end) => project_issues_url(start, end) + `&assignee_username=${meu_cpf}`;
+    const minhas_issues_url = (start, end) => project_issues_url(start, end).replace(/assignee_id=any/, `assignee_username=${meu_cpf}`);
 
     // ---
     // diasNoMes() : Retornar quantos dias ha no mes passado como parametro
@@ -277,7 +277,7 @@ font-size: 12px;
     });
 
     $('#sidebarKPI #menumeses li').click(function (e) {
-        var u = project_issues_url($(this).data('start'), $(this).data('end'));
+        var u = project_issues_url( $(this).data('start'), $(this).data('end') );
         grid.updateConfig({
             data: () => getAllData(u).then(dados => dados.sort())
         });
@@ -342,7 +342,7 @@ font-size: 12px;
         let erros = 0;
         j.forEach((item) => {
             try {
-                if (item.assignee) {
+                //if (item.assignee) {
                     dt = {
                         closed_at: item.closed_at,
                         created_at: item.created_at,
@@ -356,7 +356,7 @@ font-size: 12px;
                     };
                     key = dt.name.split(' ')[0] || dt.id;
                     (r[key] = r[key] || []).push(dt);
-                }
+                //}
             }
             catch (e) {
                 console.log(e.message);
