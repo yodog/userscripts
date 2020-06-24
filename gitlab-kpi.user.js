@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.23.2126
+// @version      2020.06.24.1130
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -135,7 +135,7 @@ catch(err) {
 cursor: default;
 }
 
-.menu_mes li:focus {
+.menu_mes li.clicado {
 background-color: #fee;
 }
 
@@ -276,9 +276,12 @@ font-size: 12px;
     });
 
     $('#sidebarKPI #menumeses li').click(function (e) {
+        $(this).addClass('clicado');
+        $(this).siblings().removeClass('clicado');
         var u = project_issues_url( $(this).data('start'), $(this).data('end') );
         grid.updateConfig({
-            data: () => getAllData(u).then(dados => dados.sort())
+            data: () => getAllData(u).then(dados => dados.sort()),
+            autoWidth: false,
         });
         try { grid.forceRender(); }
         catch (e) { grid.render(document.getElementById('contentKPI')); }
