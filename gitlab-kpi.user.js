@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.24.1130
+// @version      2020.06.24.2133
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -71,7 +71,7 @@ if (typeof $ == 'undefined') {
 var parametros = {
     project_id: { type: 'number', default: 8969 },
     campo_data_inicial: { type: 'select', choices: [ 'created_after', 'updated_after' ], default: 'updated_after', variant: "radio" },
-    campo_data_final: { type: 'select', choices: [ 'created_before', 'updated_before' ], default: 'updated_before', variant: "radio" },
+    campo_data_final: { type: 'select', choices: [ 'created_before', 'updated_before' ], default: 'created_before', variant: "radio" },
     order_by: { type: 'select', choices: [ 'created_at', 'due_date', 'label_priority', 'milestone_due', 'popularity', 'priority', 'updated_at' ], default: 'created_at' },
     labels: { type: 'text', default: '' },
     per_page: { type: 'number', default: 100 },
@@ -120,7 +120,7 @@ catch(err) {
 <li id="3"  tabindex="3"  data-start="2020-03-01" data-end="2020-03-31T23:59"> <a> Março     </a> </li>
 <li id="4"  tabindex="4"  data-start="2020-04-01" data-end="2020-04-30T23:59"> <a> Abril     </a> </li>
 <li id="5"  tabindex="5"  data-start="2020-05-01" data-end="2020-05-31T23:59"> <a> Maio      </a> </li>
-<li id="6"  tabindex="6"  data-start="2020-06-01" data-end="2020-06-23T23:59"> <a> Junho     </a> </li>
+<li id="6"  tabindex="6"  data-start="2020-06-01" data-end="2020-06-30T23:59"> <a> Junho     </a> </li>
 <li id="7"  tabindex="7"  data-start="2020-07-01" data-end="2020-07-30T23:59"> <a> Julho     </a> </li>
 <li id="8"  tabindex="8"  data-start="2020-08-01" data-end="2020-08-31T23:59"> <a> Agosto    </a> </li>
 <li id="9"  tabindex="9"  data-start="2020-09-01" data-end="2020-09-30T23:59"> <a> Setembro  </a> </li>
