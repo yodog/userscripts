@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.24.2133
+// @version      2020.06.25.0720
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -20,6 +20,7 @@
 // @grant        GM_registerMenuCommand
 // @grant        GM_setValue
 // @grant        GM_xmlhttpRequest
+// @icon         https://www.google.com/s2/favicons?domain=mail.serpro.gov.br
 // ==/UserScript==
 
 // -----------------------------------------------------------------------------
