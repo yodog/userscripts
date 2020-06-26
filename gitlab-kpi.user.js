@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.25.0720
+// @version      2020.06.26.1110
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -357,7 +357,7 @@ font-size: 12px;
                     updated_at: item.updated_at
                 };
                 key = dt.name.split(' ')[0] || dt.id;
-                (r[key] = r[key] || []).push(dt);
+                if (dt.due_date) (r[key] = r[key] || []).push(dt);
             }
             catch (e) {
                 console.log(e.message);
