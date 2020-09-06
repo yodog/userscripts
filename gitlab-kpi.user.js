@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         GitLab Metrics
 // @namespace    http://stackoverflow.com/users/982924/rasg
-// @version      2020.06.26.1110
+// @version      2020.09.06.1634
 // @description  KPI
 // @author       RASG
 // @match        http*://git.serpro/*
@@ -20,7 +20,7 @@
 // @grant        GM_registerMenuCommand
 // @grant        GM_setValue
 // @grant        GM_xmlhttpRequest
-// @icon         https://www.google.com/s2/favicons?domain=mail.serpro.gov.br
+// @icon         https://www.google.com/s2/favicons?domain=serpro.gov.br
 // ==/UserScript==
 
 // -----------------------------------------------------------------------------
@@ -73,13 +73,15 @@ var parametros = {
     project_id: { type: 'number', default: 8969 },
     campo_data_inicial: { type: 'select', choices: [ 'created_after', 'updated_after' ], default: 'updated_after', variant: "radio" },
     campo_data_final: { type: 'select', choices: [ 'created_before', 'updated_before' ], default: 'created_before', variant: "radio" },
-    order_by: { type: 'select', choices: [ 'created_at', 'due_date', 'label_priority', 'milestone_due', 'popularity', 'priority', 'updated_at' ], default: 'created_at' },
-    labels: { type: 'text', default: '' },
-    per_page: { type: 'number', default: 100 },
-    scope: { type: 'select', choices: [ 'all', 'assigned_to_me', 'created_by_me' ], default: 'assigned_to_me' },
-    sort: { type: 'select', choices: [ 'asc', 'desc' ], default: 'asc', variant: "radio" },
+    //due_date: { type: 'select', choices: [ 0, 'month', 'overdue', 'week' ], default: 'month', variant: "radio" },
+    //order_by: { type: 'select', choices: [ 'created_at', 'due_date', 'label_priority', 'milestone_due', 'popularity', 'priority', 'updated_at' ], default: 'created_at' },
+    //labels: { type: 'text', default: '' },
+    //per_page: { type: 'number', default: 100 },
+    scope: { type: 'select', choices: [ 'all', 'assigned_to_me', 'created_by_me' ], default: 'all' },
+    //sort: { type: 'select', choices: [ 'asc', 'desc' ], default: 'asc', variant: "radio" },
     state: { type: 'select', choices: [ 'all', 'closed', 'opened' ], default: 'all', variant: "radio" },
 };
+
 
 var cfg;
 try {
@@ -219,6 +221,7 @@ font-size: 12px;
         var pid = cfg.get("project_id");
         var cdi = cfg.get("campo_data_inicial");
         var cdf = cfg.get("campo_data_final");
+        var ddt = cfg.get("due_date");
         var oby = cfg.get("order_by");
         var lbl = cfg.get("labels");
         var ppg = cfg.get("per_page");
@@ -226,7 +229,9 @@ font-size: 12px;
         var srt = cfg.get("sort");
         var stt = cfg.get("state");
 
-        return `https://git.serpro/api/v4/projects/${pid}/issues?${cdi}=${start}&${cdf}=${end}&order_by=${oby}&per_page=${ppg}&scope=${scp}&sort=${srt}&state=${stt}&labels=${lbl}&assignee_id=any`;
+        //return `https://git.serpro/api/v4/projects/${pid}/issues?${cdi}=${start}&${cdf}=${end}&order_by=${oby}&per_page=${ppg}&scope=${scp}&sort=${srt}&state=${stt}&labels=${lbl}&due_date=month&assignee_id=any`;
+        //return `https://git.serpro/api/v4/projects/${pid}/issues?${cdi}=${start}&${cdf}=${end}&scope=${scp}&state=${stt}&due_date=${ddt}&per_page=100&assignee_id=any`;
+        return `https://git.serpro/api/v4/projects/${pid}/issues?${cdi}=${start}&${cdf}=${end}&scope=${scp}&state=${stt}&per_page=100&assignee_id=any`;
     }
 
     const minhas_issues_url = (start, end) => project_issues_url(start, end).replace(/assignee_id=any/, `assignee_username=${meu_cpf}`);
@@ -238,6 +243,9 @@ font-size: 12px;
     // diasUteisNoMesOuAteHoje() : Retornar quantos dias uteis ha no mes passado como parametro, ou ate a data de hoje se for o mes corrente
     // ---
 
+    var ds, de;
+    var dsy, dsm, dsd;
+
     const hoje = new Date();
     const ano = hoje.getFullYear();
     const mes = hoje.getMonth() + 1;
@@ -247,25 +255,47 @@ font-size: 12px;
 
     const diasUteisNoMes = (...args) => {
         var du = diasNoMes(args);
+        console.log('diasUteisNoMes - du', du)
         var y = new Date(args).getFullYear();
-        var m = new Date(args).getMonth();
+        var m = new Date(args).getMonth() + 1;
         for (var d = 0; d < du; d++) {
             var t = new Date(y, m, d);
             if (t.getDay(d) == 0 || t.getDay(d) == 6) du--;
+            console.log('diasUteisNoMes - du, y, m, d, t', du, y, m, d, t)
         }
         return du;
     };
 
     const diasUteisAteHoje = () => {
-        var du = dia;
-        for (var d = 0; d < dia; d++) {
-            var t = new Date(ano, mes, d);
-            if (t.getDay(d) == 0 || t.getDay(d) == 6) du--;
+        var diasuteis = dia;
+        for (var d = 1; d <= dia; d++) {
+            var t = new Date(ano, mes-1, d);
+            if (t.getDay(d) == 0 || t.getDay(d) == 6) diasuteis--;
+            console.log('diasUteisAteHoje - diasuteis, d, t', diasuteis, d, t)
         }
-        return du;
+        return diasuteis;
     };
 
-    const diasUteisNoMesOuAteHoje = (...args) => (args.length == 0) ? diasUteisAteHoje() : diasUteisNoMes(args);
+    //const diasUteisNoMesOuAteHoje = (...args) => (args.length == 0) ? diasUteisAteHoje() : diasUteisNoMes(args);
+    const diasUteisNoMesOuAteHoje = (...args) => {
+        const m = new Date().getMonth() + 1;
+        console.log('diasUteisNoMesOuAteHoje - m, dsm', m, dsm)
+        console.log('diasUteisNoMesOuAteHoje - args', args)
+        if (args.length == 0) {
+            if ( m == dsm ) {
+                console.log('1')
+                return diasUteisAteHoje();
+            }
+            else {
+                console.log('2')
+                return diasUteisNoMes(dsy, dsm);
+            }
+        }
+        else {
+            console.log('3')
+            return diasUteisNoMes(args);
+        }
+    }
 
     // ---
     // Atualizar o grid quando o usuario clica no menu
@@ -279,7 +309,14 @@ font-size: 12px;
     $('#sidebarKPI #menumeses li').click(function (e) {
         $(this).addClass('clicado');
         $(this).siblings().removeClass('clicado');
-        var u = project_issues_url( $(this).data('start'), $(this).data('end') );
+
+
+        [ ds, de ] = [ $(this).data('start'), $(this).data('end') ];
+        [ dsy, dsm, dsd ] = ds.split('-').map(e => parseInt(e));;
+        console.log('click - ds, de', ds, de)
+        console.log('click - dsy, dsm, dsd', dsy, dsm, dsd)
+
+        var u = project_issues_url( ds, de );
         grid.updateConfig({
             data: () => getAllData(u).then(dados => dados.sort()),
             autoWidth: false,
