@@ -7,10 +7,14 @@
 // @require         http://code.jquery.com/jquery.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @require         https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
+// @require         https://raw.githubusercontent.com/yodog/userscripts/master/online-store-beautifier/boletando.js
+// @require         https://raw.githubusercontent.com/yodog/userscripts/master/online-store-beautifier/magazinevoce.js
+// @require         https://raw.githubusercontent.com/yodog/userscripts/master/online-store-beautifier/pelando.js
 // @resource        toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
-// @include         http*://www.magazinevoce.com.br/*
+// @include         http*://*boletando.com/*
+// @include         http*://*magazinevoce.com.br/*
 // @icon            https://www.google.com/s2/favicons?domain=pelando.com.br
-// @version         2021.09.05.2008
+// @version         2021.09.10.1449
 // @grant           GM_addStyle
 // @grant           GM_getMetadata
 // @grant           GM_getResourceText
@@ -111,43 +115,8 @@ $(function() {
 
 function fnCheckChanges(changes, observer) {
 
-    // Diminuir tamanho da fonte
-    var code_font_size = '';
-    if (cfg.get("code_font_resize")) code_font_size = cfg.get("code_font_size") + 'px';
-    $('td.blob-code-inner, td.blob-num').css({'font-size':code_font_size});
-
-    // Alinhamento do texto
-    $('.g-items .g-desc').css({'text-align':'left'});
-
-    // Expandir a tela para aproveitar todo o espaco
-    var page_size = '';
-    if (cfg.get("page_wide")) page_size = 'unset';
-    $('div.container').css({'max-width':page_size});
-    $('.g-items').css({'width':page_size});
-
-    // Adicionar borda nos itens para facilitar a visualizacao
-    $('.g-items .g-item').css({'border':'1px dotted blue'});
-
-    // Dimimuir espaco entre os itens
-    $('.g-items .g-item').css({'margin-top':'1em', 'margin-right':'1em', 'padding-left':'0.5em'});
-
-    // ---
-    // Visualizacao em lista
-    // ---
-
-    var layout = '';
-    if (cfg.get("layout") == 'lista') {
-        $('.g-items .g-item').css({'display':'table', 'width':'45%', 'height':'130px'});
-        $('.g-items .g-img-wrapper').css({'display':'table-cell', 'width':'40%', 'height':'unset'});
-        $('.g-items .g-img-wrapper>img').css({'width':'40%'});
-        $('.g-items .g-desc').css({'display':'table-cell'});
-    }
-    if (cfg.get("layout") == 'mini lista') {
-        $('.g-items .g-item').css({'display':'table', 'width':'30%', 'height':'100px'});
-        $('.g-items .g-img-wrapper').css({'display':'table-cell', 'width':'35%', 'height':'unset'});
-        $('.g-items .g-img-wrapper>img').css({'width':'35%'});
-        $('.g-items .g-desc').css({'display':'table-cell'});
-    }
+    aplicar_boletando();
+    aplicar_magazinevoce();
 }
 
 // -----------------------------------------------------------------------------
