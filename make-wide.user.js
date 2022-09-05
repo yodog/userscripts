@@ -14,7 +14,7 @@
 // @match       *://*.google.com/finance/*
 // @match       *://*.oceans14.com.br/acoes/comparador-acoes/*
 // @icon        https://www.google.com/s2/favicons?domain=google.com/finance
-// @version     2022.08.17.1520
+// @version     2022.09.05.0937
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
