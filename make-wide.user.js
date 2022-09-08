@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Make my Whole Wide
+// @name        Make my Whole Wide - stonks edition
 // @namespace   http://stackoverflow.com/users/982924/rasg
 // @author      RASG
 // @description Enlarge selected pages to use the entire viewport width (perfect for wide screen monitors)
@@ -7,14 +7,16 @@
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @require     https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
+// @match       *://*.analisedeacoes.com/*
 // @match       *://*.clubefii.com.br/*
 // @match       *://*.fiis.com.br/lupa-de-fiis/
 // @match       *://*.fundsexplorer.com.br/ranking
-// @match       *://*.investing.com/*
 // @match       *://*.google.com/finance/*
-// @match       *://*.oceans14.com.br/acoes/comparador-acoes/*
-// @icon        https://www.google.com/s2/favicons?domain=google.com/finance
-// @version     2022.09.05.0937
+// @match       *://*.investing.com/*
+// @match       *://*.oceans14.com.br/acoes/*
+// @match       *://*.simplywall.st/*
+// @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
+// @version     2022.09.08.2006
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -85,33 +87,62 @@ $(function() {
 // FUNCTIONS
 // -----------------------------------------------------------------------------
 
+var i = 0;
 function fnCheckChanges(changes, observer) {
 
-    console.log('fnCheckChanges');
+    console.log('fnCheckChanges', i++);
 
-    // All
-    $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
-    $('tr:even').filter(':visible').css('background-color', 'inherit');
+    $('footer, #footer').hide();
 
-    // Clube FII
-    $('span.exibir-resposta:lt(3)').filter(':visible').click();
-    $('div[id*="sem_autorizacao"], footer, #modulo_seja_assinante').hide();
-    $('div.container_comentarios, #tabela_rentabilidade, ul#posts').css({'max-width':'unset'});
-    $('div[id*="grafico"], input, .adiciona_blur, .bloqueado, .desativa_selecao, .icon-regular_lock, .lock-assinatura, #travar').removeClass('adiciona_blur adiciona_blur_light bloqueado cadeado desativa_selecao icon-regular_lock lock-assinatura').css({'pointer-events':'unset'});
+    if ( (window.location.href).includes('analisedeacoes.com') ) {
+        $('div.container').css({'max-width':'unset'});
+        $('div.table-fixed').css({'max-height':'unset'});
+    }
 
-    // fiis.com.br
-    $('div.dataTables_scrollBody').css({'max-height':'unset', 'height':'unset'});
+    if ( (window.location.href).includes('clubefii.com.br') ) {
+        $('span.exibir-resposta:lt(3)').filter(':visible').click();
+        $('div[id*="sem_autorizacao"], #modulo_seja_assinante').hide();
+        $('div.container_comentarios, #tabela_rentabilidade, ul#posts').css({'max-width':'unset'});
+        $('div[id*="grafico"], input, .adiciona_blur, .bloqueado, .desativa_selecao, .icon-regular_lock, .lock-assinatura, #travar').removeClass('adiciona_blur adiciona_blur_light bloqueado cadeado desativa_selecao icon-regular_lock lock-assinatura').css({'pointer-events':'unset'});
+        $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
+        $('tr:even').filter(':visible').css('background-color', 'inherit');
+    }
 
-    // Funds Explorer
-    $('div.container').width('unset');
-    $('div#scroll-wrapper').css({'height':'unset'});
-    $('td, th').css({'font-size':'0.9em', 'padding':'3px', 'vertical-align':'middle'});
+    if ( (window.location.href).includes('fiis.com.br') ) {
+        $('div.container').width('unset');
+        $('div.dataTables_scrollBody').css({'max-height':'unset', 'height':'unset'});
+        $('td, th').css({'font-size':'0.9em', 'padding':'3px', 'vertical-align':'middle'});
+    }
 
-    // Google Finance
-    $('div').filter(function() {return ($(this).width() == 1024);}).css({'max-width':'unset'});
+    if ( (window.location.href).includes('fundsexplorer.com.br') ) {
+        $('div.container').width('unset');
+        $('div#scroll-wrapper').css({'height':'unset'});
+        $('td, th').css({'font-size':'0.9em', 'padding':'4px', 'vertical-align':'middle'});
+        $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
+        $('tr:even').filter(':visible').css('background-color', 'inherit');
+    }
 
-    // Investing
-    $('#leftColumn').width('unset');
+    if ( (window.location.href).includes('google.com') ) {
+        $('div').filter(function() {return ($(this).width() == 1024);}).css({'max-width':'unset'});
+    }
+
+    if ( (window.location.href).includes('investing.com') ) {
+        $('div.wrapper').width('1200px');
+        $('#leftColumn').width('unset');
+        $('span.earnCalCompanyName').css({'max-width':'unset'});
+        $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
+        $('tr:even').filter(':visible').css('background-color', 'inherit');
+    }
+
+    if ( (window.location.href).includes('oceans14.com.br') ) {
+        $('div.container').width('unset');
+    }
+
+    if ( (window.location.href).includes('simplywall.st') ) {
+        $('section').css({'max-width':'unset'});
+        $('button:contains("Show all")').filter(':visible').click();
+        $('div').filter(function() {return ($(this).width() > 1024);}).css({'max-width':'1800px'});
+    }
 }
 
 // -----------------------------------------------------------------------------
