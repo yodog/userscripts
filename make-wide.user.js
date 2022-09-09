@@ -12,11 +12,12 @@
 // @match       *://*.fiis.com.br/lupa-de-fiis/
 // @match       *://*.fundsexplorer.com.br/ranking
 // @match       *://*.google.com/finance/*
+// @match       *://*.investidor10.com.br/*
 // @match       *://*.investing.com/*
 // @match       *://*.oceans14.com.br/acoes/*
 // @match       *://*.simplywall.st/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.09.08.2006
+// @version     2022.09.08.2242
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -124,6 +125,19 @@ function fnCheckChanges(changes, observer) {
 
     if ( (window.location.href).includes('google.com') ) {
         $('div').filter(function() {return ($(this).width() == 1024);}).css({'max-width':'unset'});
+    }
+
+    if ( (window.location.href).includes('investidor10.com.br') ) {
+        $('div.container').css({'max-width':'unset'});
+        $('div.grid').css({'grid-template-columns':'repeat(6,1fr)'});
+        $('#indicators').addClass('do-medias');
+        $('div.box.especial div.collapsed').removeClass('collapsed').addClass('expanded');
+        $('div.payment').filter(function() {
+            var strDataCom = $(this).find('p.payment-with').text().match(/(\d+\/\d+\/\d+)/);
+            var objDataCom = new Date(strDataCom[0].split('/').reverse().join('/'));
+            var objHoje = new Date();
+            return (objDataCom < objHoje);
+        }).hide();
     }
 
     if ( (window.location.href).includes('investing.com') ) {
