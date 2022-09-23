@@ -14,10 +14,12 @@
 // @match       *://*.google.com/finance/*
 // @match       *://*.investidor10.com.br/*
 // @match       *://*.investing.com/*
+// @match       *://*.justetf.com/*
+// @match       *://*.mycapital.com.br/*
 // @match       *://*.oceans14.com.br/acoes/*
 // @match       *://*.simplywall.st/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.09.08.2242
+// @version     2022.09.23.2048
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -104,9 +106,12 @@ function fnCheckChanges(changes, observer) {
         $('span.exibir-resposta:lt(3)').filter(':visible').click();
         $('div[id*="sem_autorizacao"], #modulo_seja_assinante').hide();
         $('div.container_comentarios, #tabela_rentabilidade, ul#posts').css({'max-width':'unset'});
-        $('div[id*="grafico"], input, .adiciona_blur, .bloqueado, .desativa_selecao, .icon-regular_lock, .lock-assinatura, #travar').removeClass('adiciona_blur adiciona_blur_light bloqueado cadeado desativa_selecao icon-regular_lock lock-assinatura').css({'pointer-events':'unset'});
         $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
         $('tr:even').filter(':visible').css('background-color', 'inherit');
+
+        $('div[id*="grafico"], input, .adiciona_blur, .bloqueado, .desativa_selecao, .icon-regular_lock, .lock-assinatura, #travar')
+            .removeClass('adiciona_blur adiciona_blur_light bloqueado cadeado desativa_selecao icon-regular_lock lock-assinatura')
+            .css({'pointer-events':'unset'});
     }
 
     if ( (window.location.href).includes('fiis.com.br') ) {
@@ -132,6 +137,7 @@ function fnCheckChanges(changes, observer) {
         $('div.grid').css({'grid-template-columns':'repeat(6,1fr)'});
         $('#indicators').addClass('do-medias');
         $('div.box.especial div.collapsed').removeClass('collapsed').addClass('expanded');
+
         $('div.payment').filter(function() {
             var strDataCom = $(this).find('p.payment-with').text().match(/(\d+\/\d+\/\d+)/);
             var objDataCom = new Date(strDataCom[0].split('/').reverse().join('/'));
@@ -141,11 +147,27 @@ function fnCheckChanges(changes, observer) {
     }
 
     if ( (window.location.href).includes('investing.com') ) {
-        $('div.wrapper').width('1200px');
-        $('#leftColumn').width('unset');
+        $('div.wrapper').width('unset').css({'max-width':'1500px'});
+        $('#fullColumn, #leftColumn').width('unset');
         $('span.earnCalCompanyName').css({'max-width':'unset'});
         $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
         $('tr:even').filter(':visible').css('background-color', 'inherit');
+        $('#marketsPerformance').css({'table-layout':'unset'});
+    }
+
+    if ( (window.location.href).includes('justetf.com') ) {
+        $('div.container').width('unset');
+        $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
+        $('tr:even').filter(':visible').css('background-color', 'inherit');
+    }
+
+    if ( (window.location.href).includes('mycapital.com.br') ) {
+        $('p-sidebar').removeClass('sidebar-retraida sidebar-mobile-fechada').addClass('sidebar-expandida sidebar-mobile-aberta');
+        $('div.p-sidebar').css({'float':'left', 'position':'sticky'});
+        $('div.layout-content').css({'position':'relative'});
+        $('div.p-overlaypanel').css({'position':'fixed'});
+        $('.card-previsao-imposto').height('unset');
+        $('.card-previsao-imposto__valores, .valores-imposto-irrf').removeClass('fechar valores-imposto-irrf-fechado').addClass('expandir').css({'position':'unset'});
     }
 
     if ( (window.location.href).includes('oceans14.com.br') ) {
@@ -153,9 +175,10 @@ function fnCheckChanges(changes, observer) {
     }
 
     if ( (window.location.href).includes('simplywall.st') ) {
+        $('#root').css({'filter':'unset'});
         $('section').css({'max-width':'unset'});
         $('button:contains("Show all")').filter(':visible').click();
-        $('div').filter(function() {return ($(this).width() > 1024);}).css({'max-width':'1800px'});
+        $('div').filter(function() {return ($(this).width() > 1024);}).css({'max-width':'unset'});
     }
 }
 
