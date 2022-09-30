@@ -2,7 +2,7 @@
 // @name            Force Forms AutoComplete
 // @namespace       https://github.com/yodog/userscripts
 // @author          RASG
-// @version         2018.08.23.1853
+// @version         2022.09.30.1354
 // @description     Forces the autocomplete attribute for all forms and input fields in the page
 // @require         http://code.jquery.com/jquery.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
@@ -11,6 +11,8 @@
 // @grant           GM_addStyle
 // @grant           GM_getMetadata
 // @grant           GM_registerMenuCommand
+// @include         http*://*
+// @noframes
 // ==/UserScript==
 
 // -----------------------------------------------------------------------------
