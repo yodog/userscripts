@@ -19,14 +19,14 @@
 // @match       *://*.oceans14.com.br/acoes/*
 // @match       *://*.simplywall.st/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.09.23.2048
+// @version     2022.10.07.1607
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
 // @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_xmlhttpRequest
-// @run-at      document-start
+// @run-at      document-idle
 // @noframes
 // ==/UserScript==
 
@@ -64,16 +64,19 @@ if (typeof $ == 'undefined') console.log('JQuery not found; The script will cert
 var shouldreload = false;
 
 // apply imediately at document start
-fnCheckChanges();
+//fnCheckChanges();
 
 // here the DOM is ready (but not JQuery)
 (function() {
 
     console.log('DOM ready. Waiting for JQuery');
 
+    // this function is applied only once
+    if ( (window.location.href).includes('clubefii.com.br') ) sortUsingNestedText('ul#menu', 'li', 'a');
+
 })();
 
-// here JQuery is ready
+// here JQuery is ready (and the DOM also)
 $(function() {
 
     console.log('JQuery ready');
@@ -87,7 +90,7 @@ $(function() {
 });
 
 // -----------------------------------------------------------------------------
-// FUNCTIONS
+// FUNCTION TO RUN ON EVERY CHANGE
 // -----------------------------------------------------------------------------
 
 var i = 0;
@@ -183,6 +186,8 @@ function fnCheckChanges(changes, observer) {
 }
 
 // -----------------------------------------------------------------------------
+// AUX FUNCTIONS
+// -----------------------------------------------------------------------------
 
 function fnSaveChanges() {
 
@@ -196,3 +201,20 @@ function fnSaveChanges() {
     var msg_reload = '<span id="reloadnow"> Some changes will be applied after you reload the page. <br> Click here to reload now </span>';
     if (shouldreload) toast.message(msg_reload, { delay: 3000, duration: 7000 });
 }
+
+// -----------------------------------------------------------------------------
+
+function sortUsingNestedText(parent, childSelector, keySelector) {
+    parent = $(parent);
+    childSelector = $(childSelector);
+
+    var items = parent.children(childSelector).sort(function(a, b) {
+        var vA = $(keySelector, a).text().trim();
+        var vB = $(keySelector, b).text().trim();
+        return (vA < vB) ? -1 : (vA > vB) ? 1 : 0;
+    });
+
+    parent.append(items);
+}
+
+// -----------------------------------------------------------------------------
