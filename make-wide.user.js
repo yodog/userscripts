@@ -7,10 +7,13 @@
 // @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @require     https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
+// @match       *://admin.carteiradeinvestimentos.com/*
+// @match       *://app.dividendos.me/*
 // @match       *://*.analisedeacoes.com/*
 // @match       *://*.clubefii.com.br/*
 // @match       *://*.fiis.com.br/lupa-de-fiis/
 // @match       *://*.fundsexplorer.com.br/ranking
+// @match       *://*.genialinvestimentos.com.br/*
 // @match       *://*.google.com/finance/*
 // @match       *://*.investidor10.com.br/*
 // @match       *://*.investing.com/*
@@ -19,7 +22,7 @@
 // @match       *://*.oceans14.com.br/acoes/*
 // @match       *://*.simplywall.st/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.10.07.1607
+// @version     2022.11.02.1430
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -63,22 +66,28 @@ if (typeof $ == 'undefined') console.log('JQuery not found; The script will cert
 
 var shouldreload = false;
 
-// apply imediately at document start
+// ---
+// apply imediately at '@run-at'
+// ---
+
 //fnCheckChanges();
 
+// ---
 // here the DOM is ready (but not JQuery)
-(function() {
+// ---
 
+(function() {
     console.log('DOM ready. Waiting for JQuery');
 
     // this function is applied only once
-    if ( (window.location.href).includes('clubefii.com.br') ) sortUsingNestedText('ul#menu', 'li', 'a');
-
+    if ( (window.location.href).includes('clubefii') ) sortUsingNestedText('ul#menu', 'li', 'a');
 })();
 
+// ---
 // here JQuery is ready (and the DOM also)
-$(function() {
+// ---
 
+$(function() {
     console.log('JQuery ready');
 
     // monitor the page for changes and reapply if necessary
@@ -87,6 +96,12 @@ $(function() {
     var observer = new MutationObserver(fnCheckChanges);
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
 
+    // ainda nao encontrei uma forma automatica que nao foda com processador
+    if ( (window.location.href).includes('genialinvestimentos') ) {
+        $(document).on('click load ready scroll', function() {
+            if ( (window.location.href).includes('extrato/a-liquidar') ) sortUsingNestedText('tbody.MuiBox-root', 'tr', 'td:first');
+        })
+    }
 });
 
 // -----------------------------------------------------------------------------
@@ -100,9 +115,17 @@ function fnCheckChanges(changes, observer) {
 
     $('footer, #footer').hide();
 
+    if ( (window.location.href).includes('carteiradeinvestimentos.com') ) {
+        $('div[class*="blocked"], div[class*="pro-func"]').alterClass( 'blocked* pro-func*', 'rasg' )
+    }
+
     if ( (window.location.href).includes('analisedeacoes.com') ) {
         $('div.container').css({'max-width':'unset'});
         $('div.table-fixed').css({'max-height':'unset'});
+    }
+
+    if ( (window.location.href).includes('app.dividendos.me') ) {
+        $('div.PageDetailsContainer, div.PortfolioSummaryView').css({'max-width':'unset'});
     }
 
     if ( (window.location.href).includes('clubefii.com.br') ) {
@@ -205,6 +228,7 @@ function fnSaveChanges() {
 // -----------------------------------------------------------------------------
 
 function sortUsingNestedText(parent, childSelector, keySelector) {
+
     parent = $(parent);
     childSelector = $(childSelector);
 
@@ -216,5 +240,47 @@ function sortUsingNestedText(parent, childSelector, keySelector) {
 
     parent.append(items);
 }
+
+// -----------------------------------------------------------------------------
+
+/**
+ * jQuery alterClass plugin
+ *
+ * Remove element classes with wildcard matching. Optionally add classes:
+ *   $( '#foo' ).alterClass( 'foo-* bar-*', 'foobar' )
+ *
+ * Copyright (c) 2011 Pete Boere (the-echoplex.net)
+ * Free under terms of the MIT license: http://www.opensource.org/licenses/mit-license.php
+ *
+ */
+
+(function ($) {
+    $.fn.alterClass = function (removals, additions) {
+        var self = this;
+
+        if (removals.indexOf('*') === -1) {
+            // Use native jQuery methods if there is no wildcard matching
+            self.removeClass(removals);
+            return !additions ? self : self.addClass(additions);
+        }
+
+        var patt = new RegExp('\\s' +
+            removals.
+                replace(/\*/g, '[A-Za-z0-9-_]+').
+                split(' ').
+                join('\\s|\\s') +
+            '\\s', 'g');
+
+        self.each(function (i, it) {
+            var cn = ' ' + it.className + ' ';
+            while (patt.test(cn)) {
+                cn = cn.replace(patt, ' ');
+            }
+            it.className = $.trim(cn);
+        });
+
+        return !additions ? self : self.addClass(additions);
+    };
+})(jQuery);
 
 // -----------------------------------------------------------------------------
