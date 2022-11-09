@@ -9,6 +9,7 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @match       *://admin.carteiradeinvestimentos.com/*
 // @match       *://app.dividendos.me/*
+// @match       *://experiencia.xpi.com.br/*
 // @match       *://*.analisedeacoes.com/*
 // @match       *://*.clubefii.com.br/*
 // @match       *://*.fiis.com.br/lupa-de-fiis/
@@ -22,7 +23,7 @@
 // @match       *://*.oceans14.com.br/acoes/*
 // @match       *://*.simplywall.st/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.02.1430
+// @version     2022.11.09.0936
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -115,10 +116,6 @@ function fnCheckChanges(changes, observer) {
 
     $('footer, #footer').hide();
 
-    if ( (window.location.href).includes('carteiradeinvestimentos.com') ) {
-        $('div[class*="blocked"], div[class*="pro-func"]').alterClass( 'blocked* pro-func*', 'rasg' )
-    }
-
     if ( (window.location.href).includes('analisedeacoes.com') ) {
         $('div.container').css({'max-width':'unset'});
         $('div.table-fixed').css({'max-height':'unset'});
@@ -126,6 +123,10 @@ function fnCheckChanges(changes, observer) {
 
     if ( (window.location.href).includes('app.dividendos.me') ) {
         $('div.PageDetailsContainer, div.PortfolioSummaryView').css({'max-width':'unset'});
+    }
+
+    if ( (window.location.href).includes('carteiradeinvestimentos.com') ) {
+        $('div[class*="blocked"], div[class*="pro-func"]').alterClass( 'blocked* pro-func*', 'rasg' )
     }
 
     if ( (window.location.href).includes('clubefii.com.br') ) {
@@ -138,6 +139,10 @@ function fnCheckChanges(changes, observer) {
         $('div[id*="grafico"], input, .adiciona_blur, .bloqueado, .desativa_selecao, .icon-regular_lock, .lock-assinatura, #travar')
             .removeClass('adiciona_blur adiciona_blur_light bloqueado cadeado desativa_selecao icon-regular_lock lock-assinatura')
             .css({'pointer-events':'unset'});
+    }
+
+    if ( (window.location.href).includes('experiencia.xpi.com.br') ) {
+        $('div.advanced-filters, div.secondary-wrapper-content').css({'max-width':'unset'});
     }
 
     if ( (window.location.href).includes('fiis.com.br') ) {
