@@ -9,7 +9,6 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @match       *://admin.carteiradeinvestimentos.com/*
 // @match       *://app.dividendos.me/*
-// @match       *://experiencia.xpi.com.br/*
 // @match       *://*.analisedeacoes.com/*
 // @match       *://*.clubefii.com.br/*
 // @match       *://*.fiis.com.br/lupa-de-fiis/
@@ -22,8 +21,9 @@
 // @match       *://*.mycapital.com.br/*
 // @match       *://*.oceans14.com.br/acoes/*
 // @match       *://*.simplywall.st/*
+// @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.09.0936
+// @version     2022.11.09.1706
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -141,7 +141,9 @@ function fnCheckChanges(changes, observer) {
             .css({'pointer-events':'unset'});
     }
 
-    if ( (window.location.href).includes('experiencia.xpi.com.br') ) {
+    if ( (window.location.href).includes('xpi.com.br') ) {
+        $('div.container_12, div.grid_12').width('unset');
+        $('div.grid_12').css({'float':'unset'});
         $('div.advanced-filters, div.secondary-wrapper-content').css({'max-width':'unset'});
     }
 
