@@ -23,7 +23,7 @@
 // @match       *://*.simplywall.st/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.09.1706
+// @version     2022.11.10.1413
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -141,12 +141,6 @@ function fnCheckChanges(changes, observer) {
             .css({'pointer-events':'unset'});
     }
 
-    if ( (window.location.href).includes('xpi.com.br') ) {
-        $('div.container_12, div.grid_12').width('unset');
-        $('div.grid_12').css({'float':'unset'});
-        $('div.advanced-filters, div.secondary-wrapper-content').css({'max-width':'unset'});
-    }
-
     if ( (window.location.href).includes('fiis.com.br') ) {
         $('div.container').width('unset');
         $('div.dataTables_scrollBody').css({'max-height':'unset', 'height':'unset'});
@@ -212,6 +206,12 @@ function fnCheckChanges(changes, observer) {
         $('section').css({'max-width':'unset'});
         $('button:contains("Show all")').filter(':visible').click();
         $('div').filter(function() {return ($(this).width() > 1024);}).css({'max-width':'unset'});
+    }
+
+    if ( (window.location.href).includes('xpi.com.br') ) {
+        $('div.container_12').css({'margin':'1em'}).width('unset');
+        $('div.grid_12').css({'float':'unset'}).width('unset');
+        $('div.advanced-filters, div.secondary-wrapper-content').css({'max-width':'unset'});
     }
 }
 
