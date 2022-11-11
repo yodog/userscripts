@@ -9,11 +9,11 @@
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @match       *://admin.carteiradeinvestimentos.com/*
 // @match       *://app.dividendos.me/*
+// @match       *://app.genialinvestimentos.com.br/*
 // @match       *://*.analisedeacoes.com/*
 // @match       *://*.clubefii.com.br/*
 // @match       *://*.fiis.com.br/lupa-de-fiis/
 // @match       *://*.fundsexplorer.com.br/ranking
-// @match       *://*.genialinvestimentos.com.br/*
 // @match       *://*.google.com/finance/*
 // @match       *://*.investidor10.com.br/*
 // @match       *://*.investing.com/*
@@ -23,7 +23,7 @@
 // @match       *://*.simplywall.st/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.10.1413
+// @version     2022.11.11.1200
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -97,10 +97,10 @@ $(function() {
     var observer = new MutationObserver(fnCheckChanges);
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
 
-    // ainda nao encontrei uma forma automatica que nao foda com processador
+    // esta fora de 'fnCheckChanges' porque ainda nao encontrei uma forma automatica que nao foda com processador
     if ( (window.location.href).includes('genialinvestimentos') ) {
         $(document).on('click load ready scroll', function() {
-            if ( (window.location.href).includes('extrato/a-liquidar') ) sortUsingNestedText('tbody.MuiBox-root', 'tr', 'td:first');
+            if ( (window.location.href).includes('extrato/a-liquidar') ) sortUsingNestedText('tbody.MuiBox-root', 'tr', 'td:first', true);
         })
     }
 });
@@ -234,7 +234,7 @@ function fnSaveChanges() {
 
 // -----------------------------------------------------------------------------
 
-function sortUsingNestedText(parent, childSelector, keySelector) {
+function sortUsingNestedText(parent, childSelector, keySelector, keyIsDate=false) {
 
     parent = $(parent);
     childSelector = $(childSelector);
@@ -242,6 +242,13 @@ function sortUsingNestedText(parent, childSelector, keySelector) {
     var items = parent.children(childSelector).sort(function(a, b) {
         var vA = $(keySelector, a).text().trim();
         var vB = $(keySelector, b).text().trim();
+
+        // converte dd/mm/yyyy para yyyy/mm/dd
+        if (keyIsDate) {
+            vA = new Date(vA.split('/').reverse().join('/'));
+            vB = new Date(vB.split('/').reverse().join('/'));
+        }
+
         return (vA < vB) ? -1 : (vA > vB) ? 1 : 0;
     });
 
