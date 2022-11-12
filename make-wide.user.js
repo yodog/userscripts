@@ -23,7 +23,7 @@
 // @match       *://*.simplywall.st/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.11.1200
+// @version     2022.11.12.1843
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -97,10 +97,20 @@ $(function() {
     var observer = new MutationObserver(fnCheckChanges);
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
 
-    // esta fora de 'fnCheckChanges' porque ainda nao encontrei uma forma automatica que nao foda com processador
+    // not in 'fnCheckChanges' because it freezes the page (too many changes to monitor)
     if ( (window.location.href).includes('genialinvestimentos') ) {
         $(document).on('click load ready scroll', function() {
-            if ( (window.location.href).includes('extrato/a-liquidar') ) sortUsingNestedText('tbody.MuiBox-root', 'tr', 'td:first', true);
+            // click something every 90 seconds so the session doesnt expires
+            setInterval(function() { $('a.MuiListItem-button[href="/investir"]').click(); console.log('click'); }, 90000);
+            // sort statement by date
+            if ( (window.location.href).includes('extrato/a-liquidar') ) {
+                sortUsingNestedText('tbody.MuiBox-root', 'tr', 'td:first', true);
+            }
+            // expand investments info
+            if ( (window.location.href).includes('investir/renda-fixa') ) {
+                var linhas = $('div.MuiContainer-root[role=item]');
+                $('[data-testid=list-item__content]', linhas).css({'justify-content':'unset'});
+            }
         })
     }
 });
