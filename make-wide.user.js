@@ -20,10 +20,11 @@
 // @match       *://*.justetf.com/*
 // @match       *://*.mycapital.com.br/*
 // @match       *://*.oceans14.com.br/acoes/*
+// @match       *://*.reddit.com/*
 // @match       *://*.simplywall.st/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.12.1843
+// @version     2022.11.14.2051
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -125,6 +126,12 @@ function fnCheckChanges(changes, observer) {
     console.log('fnCheckChanges', i++);
 
     $('footer, #footer').hide();
+
+    // reddit (waiting for a dedicated script)
+    if ( (window.location.href).includes('reddit.com') ) {
+        $('div._1OVBBWLtHoSPfGCRaPzpTf, div._3xX726aBn29LDbsDtzr_6E, div._3tw__eCCe7j-epNCKGXUKk').width('unset').css('max-width', 'unset');
+        $('div.Chtkt3BCZQruf0LtmFg2c').css({'max-height':'unset', '-webkit-mask-image':'unset'});
+    }
 
     if ( (window.location.href).includes('analisedeacoes.com') ) {
         $('div.container').css({'max-width':'unset'});
