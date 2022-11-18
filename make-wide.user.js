@@ -10,6 +10,7 @@
 // @match       *://admin.carteiradeinvestimentos.com/*
 // @match       *://app.dividendos.me/*
 // @match       *://app.genialinvestimentos.com.br/*
+// @match       *://web.whatsapp.com/*
 // @match       *://*.analisedeacoes.com/*
 // @match       *://*.clubefii.com.br/*
 // @match       *://*.fiis.com.br/lupa-de-fiis/
@@ -24,7 +25,7 @@
 // @match       *://*.simplywall.st/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.14.2051
+// @version     2022.11.18.2053
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -127,10 +128,16 @@ function fnCheckChanges(changes, observer) {
 
     $('footer, #footer').hide();
 
-    // reddit (waiting for a dedicated script)
+    // --- reddit (waiting for a dedicated script)
     if ( (window.location.href).includes('reddit.com') ) {
         $('div._1OVBBWLtHoSPfGCRaPzpTf, div._3xX726aBn29LDbsDtzr_6E, div._3tw__eCCe7j-epNCKGXUKk').width('unset').css('max-width', 'unset');
         $('div.Chtkt3BCZQruf0LtmFg2c').css({'max-height':'unset', '-webkit-mask-image':'unset'});
+    }
+
+    // --- whatsapp (waiting for a dedicated script)
+    if ( (window.location.href).includes('web.whatsapp') ) {
+        $('div._3mSPV, div._26F99, div.O2yv0').width('unset').css('max-width', 'unset');
+        $('div.message-in').css('align-items', 'unset');
     }
 
     if ( (window.location.href).includes('analisedeacoes.com') ) {
