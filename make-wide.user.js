@@ -10,6 +10,7 @@
 // @match       *://admin.carteiradeinvestimentos.com/*
 // @match       *://app.dividendos.me/*
 // @match       *://app.genialinvestimentos.com.br/*
+// @match       *://app.kinvo.com.br/*
 // @match       *://web.whatsapp.com/*
 // @match       *://*.analisedeacoes.com/*
 // @match       *://*.clubefii.com.br/*
@@ -25,7 +26,7 @@
 // @match       *://*.simplywall.st/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.18.2053
+// @version     2022.11.21.1637
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -136,8 +137,10 @@ function fnCheckChanges(changes, observer) {
 
     // --- whatsapp (waiting for a dedicated script)
     if ( (window.location.href).includes('web.whatsapp') ) {
+        $('footer, #footer').show();
         $('div._3mSPV, div._26F99, div.O2yv0').width('unset').css('max-width', 'unset');
         $('div.message-in').css('align-items', 'unset');
+        $('div.mwp4sxku').css('min-height', '5em');
     }
 
     if ( (window.location.href).includes('analisedeacoes.com') ) {
@@ -147,6 +150,11 @@ function fnCheckChanges(changes, observer) {
 
     if ( (window.location.href).includes('app.dividendos.me') ) {
         $('div.PageDetailsContainer, div.PortfolioSummaryView').css({'max-width':'unset'});
+    }
+
+    if ( (window.location.href).includes('app.kinvo') ) {
+        $('section.premium-feature-lock').remove();
+        $('filter["blur"]').css('filter', 'unset');
     }
 
     if ( (window.location.href).includes('carteiradeinvestimentos.com') ) {
