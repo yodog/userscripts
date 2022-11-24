@@ -24,9 +24,10 @@
 // @match       *://*.oceans14.com.br/acoes/*
 // @match       *://*.reddit.com/*
 // @match       *://*.simplywall.st/*
+// @match       *://*.statusinvest.com.br/carteira/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.21.1637
+// @version     2022.11.24.0038
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -40,6 +41,8 @@
 // -----------------------------------------------------------------------------
 // LOAD TOAST NOTIFICATIONS LIBRARY
 // -----------------------------------------------------------------------------
+
+/* global siiimpleToast */
 
 // @require     https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
 // @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
@@ -57,8 +60,7 @@ var toast = siiimpleToast.setOptions({
 // PREVENT JQUERY CONFLICT
 // -----------------------------------------------------------------------------
 
-var $      = window.$;
-var jQuery = window.jQuery;
+/* global $, jQuery */
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
@@ -69,12 +71,6 @@ if (typeof $ == 'undefined') console.log('JQuery not found; The script will cert
 // -----------------------------------------------------------------------------
 
 var shouldreload = false;
-
-// ---
-// apply imediately at '@run-at'
-// ---
-
-//fnCheckChanges();
 
 // ---
 // here the DOM is ready (but not JQuery)
@@ -99,6 +95,19 @@ $(function() {
     var alvo = document.querySelector('body');
     var observer = new MutationObserver(fnCheckChanges);
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
+
+    // statusinvest requires only 'childList: true' to monitor for changes (sometimes not even that)
+    if ( (window.location.href).includes('statusinvest.com.br') ) {
+        const dq = document.querySelector('body');
+        const mo = new MutationObserver((changes, observer) => {
+            $('#rf-transaction-result ul.dropdown-content li:contains("TODOS")').click();
+        });
+        mo.observe(dq, { attributes: false, characterData: false, childList: true, subtree: false });
+
+        $('#dropdown-year-to-year-categories-grid li').addClass('selected').first().click();
+        $('#main-result a[role="button"] :contains("Categoria")').click();
+        $('#earning-maint-result a[role="button"] :contains("Categoria")').click();
+    }
 
     // not in 'fnCheckChanges' because it freezes the page (too many changes to monitor)
     if ( (window.location.href).includes('genialinvestimentos') ) {
