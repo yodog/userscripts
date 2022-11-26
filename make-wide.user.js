@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        Make my Whole Wide - stonks edition
+// @name        Make my Whole Wide (yes, its a pun) - stonks edition
 // @namespace   http://stackoverflow.com/users/982924/rasg
 // @author      RASG
 // @description Enlarge selected pages to use the entire viewport width (perfect for wide screen monitors)
@@ -25,9 +25,10 @@
 // @match       *://*.reddit.com/*
 // @match       *://*.simplywall.st/*
 // @match       *://*.statusinvest.com.br/carteira/*
+// @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.24.0038
+// @version     2022.11.26.0159
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -96,7 +97,7 @@ $(function() {
     var observer = new MutationObserver(fnCheckChanges);
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
 
-    // statusinvest requires only 'childList: true' to monitor for changes (sometimes not even that)
+    // statusinvest requires only 'childList: true' to monitor for changes (oftentimes not even that)
     if ( (window.location.href).includes('statusinvest.com.br') ) {
         const dq = document.querySelector('body');
         const mo = new MutationObserver((changes, observer) => {
@@ -136,7 +137,7 @@ function fnCheckChanges(changes, observer) {
 
     console.log('fnCheckChanges', i++);
 
-    $('footer, #footer').hide();
+    //$('footer, #footer').hide();
 
     // --- reddit (waiting for a dedicated script)
     if ( (window.location.href).includes('reddit.com') ) {
@@ -163,7 +164,10 @@ function fnCheckChanges(changes, observer) {
 
     if ( (window.location.href).includes('app.kinvo') ) {
         $('section.premium-feature-lock').remove();
-        $('filter["blur"]').css('filter', 'unset');
+        //$('filter["blur"]').css('filter', 'unset');
+        if ( (window.location.href).includes('carteira/analises/ganho-de-capital') ) {
+            $('div.card__content section.card ul div').css('max-height', 'unset');
+        }
     }
 
     if ( (window.location.href).includes('carteiradeinvestimentos.com') ) {
@@ -247,6 +251,13 @@ function fnCheckChanges(changes, observer) {
         $('section').css({'max-width':'unset'});
         $('button:contains("Show all")').filter(':visible').click();
         $('div').filter(function() {return ($(this).width() > 1024);}).css({'max-width':'unset'});
+    }
+
+    if ( (window.location.href).includes('trademap.com.br/portfolio/statement/agenda') ) {
+        $('fla-tab').css('display', 'flex');
+        $('schedule-component > div.schedule-month').detach().appendTo('fla-tab');
+        $('div.calendar-width').css('max-width', '40vw');
+        $('div#schedule-grid').width('-webkit-fill-available').css({'max-width':'45vw', 'min-height':'50vh'});
     }
 
     if ( (window.location.href).includes('xpi.com.br') ) {
