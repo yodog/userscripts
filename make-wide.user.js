@@ -28,7 +28,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.26.0159
+// @version     2022.11.27.2108
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -247,10 +247,13 @@ function fnCheckChanges(changes, observer) {
     }
 
     if ( (window.location.href).includes('simplywall.st') ) {
-        $('#root').css({'filter':'unset'});
-        $('section').css({'max-width':'unset'});
-        $('button:contains("Show all")').filter(':visible').click();
-        $('div').filter(function() {return ($(this).width() > 1024);}).css({'max-width':'unset'});
+        $(document.body).css('overflow', 'auto');
+        $('div#root div.hfyYtE').css('display', 'unset');
+        $('section.gKkKsf, div.gVuFnq, section.hKzrpd, section.FIHPB').css('max-width', 'unset');
+        //$('#root').css({'filter':'unset'});
+        //$('section').css({'max-width':'unset'});
+        //$('button:contains("Show all")').filter(':visible').click();
+        //$('div').filter(function() {return ($(this).width() > 1024);}).css({'max-width':'unset'});
     }
 
     if ( (window.location.href).includes('trademap.com.br/portfolio/statement/agenda') ) {
