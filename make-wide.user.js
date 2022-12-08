@@ -14,7 +14,7 @@
 // @match       *://web.whatsapp.com/*
 // @match       *://*.analisedeacoes.com/*
 // @match       *://*.clubefii.com.br/*
-// @match       *://*.fiis.com.br/lupa-de-fiis/
+// @match       *://*.fiis.com.br/*
 // @match       *://*.fundsexplorer.com.br/ranking
 // @match       *://*.google.com/finance/*
 // @match       *://*.investidor10.com.br/*
@@ -28,7 +28,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.11.27.2108
+// @version     2022.12.08.1441
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -187,9 +187,12 @@ function fnCheckChanges(changes, observer) {
     }
 
     if ( (window.location.href).includes('fiis.com.br') ) {
-        $('div.container').width('unset');
-        $('div.dataTables_scrollBody').css({'max-height':'unset', 'height':'unset'});
-        $('td, th').css({'font-size':'0.9em', 'padding':'3px', 'vertical-align':'middle'});
+        $('div.wrapper').css({'max-width':'unset'});
+        $('div.default-fiis-table').width('unset').css({'max-width':'unset', 'text-align':'-webkit-center'});
+        $('div.default-fiis-table__container').css({'max-width':'unset', 'max-height':'unset'});
+        $('table.default-fiis-table__container__table').width('unset');
+        $('td, th').css({'border-left':'1px dotted black', 'font-size':'0.7em', 'max-width':'150px', 'padding':'5px', 'vertical-align':'middle'});
+        $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
     }
 
     if ( (window.location.href).includes('fundsexplorer.com.br') ) {
