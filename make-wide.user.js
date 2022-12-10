@@ -28,7 +28,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.12.08.1441
+// @version     2022.12.10.1627
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -164,9 +164,12 @@ function fnCheckChanges(changes, observer) {
 
     if ( (window.location.href).includes('app.kinvo') ) {
         $('section.premium-feature-lock').remove();
-        //$('filter["blur"]').css('filter', 'unset');
-        if ( (window.location.href).includes('carteira/analises/ganho-de-capital') ) {
-            $('div.card__content section.card ul div').css('max-height', 'unset');
+        if ( (window.location.href).includes('carteira/') ) {
+            $('div.card__content div').css('max-height', '70vh');
+            //$('div.card__content div').css('overflow', 'unset');
+            if ( (window.location.href).includes('analises/proventos') ) {
+                $('main section section section').filter(':contains("Hist"), :contains("Proventos por ativo")').css('grid-row-start', '6');
+            }
         }
     }
 
