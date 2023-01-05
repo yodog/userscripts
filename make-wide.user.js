@@ -28,7 +28,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2022.12.10.1627
+// @version     2023.01.05.1629
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -76,16 +76,26 @@ var shouldreload = false;
 // ---
 // here the DOM is ready (but not JQuery)
 // ---
+// its a safe place to add elements to the page without interfering with the mutation observer
+// and to call non-jquery functions that should run only once
+// ---
 
 (function() {
     console.log('DOM ready. Waiting for JQuery');
 
-    // this function is applied only once
-    if ( (window.location.href).includes('clubefii') ) sortUsingNestedText('ul#menu', 'li', 'a');
+    // ordenar alfabeticamente o menu lateral
+    // adicionar uma barra no topo que depois ira conter o total dos rendimentos
+    if ( (window.location.href).includes('clubefii') ) {
+        sortUsingNestedText('ul#menu', 'li', 'a');
+        $('div#barra').prepend('<div id="rasg" style="background:pink ; border:1px dotted red ; text-align:center"> ACUMULADO: <span id="soma"> 0 </span> MEDIA: <span id="media"> 0 </span> </div>');
+    }
 })();
 
 // ---
 // here JQuery is ready (and the DOM also)
+// ---
+// we can call jquery functions
+// and its a good place to start the mutation observer
 // ---
 
 $(function() {
@@ -96,6 +106,30 @@ $(function() {
     var alvo = document.querySelector('body');
     var observer = new MutationObserver(fnCheckChanges);
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
+
+    // soma e media dos rendimentos trava a pagina se deixado no bloco padrao, por isso separei
+    if ( (window.location.href).includes('clubefii') ) {
+        const dq = document.querySelector('body');
+        const mo = new MutationObserver((changes, observer) => {
+            if ( (window.location.href).includes('proventos') ) {
+                let media = 0;
+                let soma = 0;
+                let celulas = $('div.tabela-proventos table tbody td:nth-child(7)');
+                celulas.each(function() {
+                    let value = +($(this).text().replace(',', '.').replace('%', ''));
+                    soma += value;
+                    console.log('value', value, 'soma', soma);
+                });
+                let m = (soma / celulas.length);
+                media = Math.trunc(m * 100) / 100;
+                console.log('soma', soma, 'media', media);
+
+                $('span#soma').text(soma);
+                $('span#media').text(media);
+            }
+        });
+        mo.observe(dq, { attributes: true, characterData: false, childList: false, subtree: true });
+    }
 
     // statusinvest requires only 'childList: true' to monitor for changes (oftentimes not even that)
     if ( (window.location.href).includes('statusinvest.com.br') ) {
