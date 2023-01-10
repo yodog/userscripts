@@ -28,7 +28,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.01.05.1629
+// @version     2023.01.10.1542
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -107,6 +107,34 @@ $(function() {
     var observer = new MutationObserver(fnCheckChanges);
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
 
+    // not in 'fnCheckChanges' because it freezes the page (too many changes to monitor)
+    if ( (window.location.href).includes('app.genialinvestimentos') ) {
+        $(document).on('click load ready scroll', 'div.MuiButtonBase-root', () => {
+            // sort bonds by due date
+            if ( (window.location.href).includes('carteira/posicao') ) {
+                console.log('carteira/posicao');
+                sortUsingNestedText('div.Mui-expanded:contains("Renda Fixa") tbody.MuiTableBody-root', 'tr.MuiTableRow-root', 'td:nth-child(6)', true);
+            }
+        });
+        const mo2 = new MutationObserver((changes, observer) => {
+            // sort statement by date
+            if ( (window.location.href).includes('extrato/a-liquidar') ) {
+                console.log('extrato/a-liquidar', changes);
+                sortUsingNestedText('tbody.MuiBox-root', 'tr[data-testid="item__box"]', 'td:first', true);
+            }
+        });
+        mo2.observe(document.querySelector('main'), { attributes: true, characterData: true, childList: true, subtree: false });
+        const mo3 = new MutationObserver((changes, observer) => {
+            // expand investments info
+            if ( (window.location.href).includes('investir/renda-fixa') ) {
+                console.log('investir/renda-fixa', changes);
+                var linhas = $('div.MuiContainer-root[role=item]');
+                $('[data-testid=list-item__content]', linhas).css({'justify-content':'unset'});
+            }
+        });
+        mo3.observe(document.querySelector('main'), { attributes: false, characterData: true, childList: true, subtree: true });
+    }
+
     // soma e media dos rendimentos trava a pagina se deixado no bloco padrao, por isso separei
     if ( (window.location.href).includes('clubefii') ) {
         const dq = document.querySelector('body');
@@ -142,23 +170,6 @@ $(function() {
         $('#dropdown-year-to-year-categories-grid li').addClass('selected').first().click();
         $('#main-result a[role="button"] :contains("Categoria")').click();
         $('#earning-maint-result a[role="button"] :contains("Categoria")').click();
-    }
-
-    // not in 'fnCheckChanges' because it freezes the page (too many changes to monitor)
-    if ( (window.location.href).includes('genialinvestimentos') ) {
-        $(document).on('click load ready scroll', function() {
-            // click something every 90 seconds so the session doesnt expires
-            setInterval(function() { $('a.MuiListItem-button[href="/investir"]').click(); console.log('click'); }, 90000);
-            // sort statement by date
-            if ( (window.location.href).includes('extrato/a-liquidar') ) {
-                sortUsingNestedText('tbody.MuiBox-root', 'tr', 'td:first', true);
-            }
-            // expand investments info
-            if ( (window.location.href).includes('investir/renda-fixa') ) {
-                var linhas = $('div.MuiContainer-root[role=item]');
-                $('[data-testid=list-item__content]', linhas).css({'justify-content':'unset'});
-            }
-        })
     }
 });
 
@@ -329,25 +340,33 @@ function fnSaveChanges() {
 
 // -----------------------------------------------------------------------------
 
-function sortUsingNestedText(parent, childSelector, keySelector, keyIsDate=false) {
+function sortUsingNestedText(parentSelector, childSelector, keySelector, keyIsDate=false) {
 
-    parent = $(parent);
-    childSelector = $(childSelector);
+    console.log('---> ordenando o elemento', parentSelector);
 
-    var items = parent.children(childSelector).sort(function(a, b) {
+    parentSelector = $(parentSelector);
+
+    var items = parentSelector.children(childSelector).sort(function(a, b) {
         var vA = $(keySelector, a).text().trim();
         var vB = $(keySelector, b).text().trim();
+
+        //console.log('texto', vA, vB);
 
         // converte dd/mm/yyyy para yyyy/mm/dd
         if (keyIsDate) {
             vA = new Date(vA.split('/').reverse().join('/'));
+            if ( isNaN(vA.getTime()) ) vA = new Date('2029/01/01');
+
             vB = new Date(vB.split('/').reverse().join('/'));
+            if ( isNaN(vB.getTime()) ) vB = new Date('2029/01/01');
         }
 
+        //console.log('data', vA, vB);
         return (vA < vB) ? -1 : (vA > vB) ? 1 : 0;
     });
 
-    parent.append(items);
+    //console.log('items', items);
+    parentSelector.append(items);
 }
 
 // -----------------------------------------------------------------------------
