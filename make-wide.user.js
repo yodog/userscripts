@@ -28,14 +28,13 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.01.10.1542
+// @version     2023.01.12.1433
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
 // @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_xmlhttpRequest
-// @run-at      document-idle
 // @noframes
 // ==/UserScript==
 
@@ -74,6 +73,53 @@ if (typeof $ == 'undefined') console.log('JQuery not found; The script will cert
 var shouldreload = false;
 
 // ---
+// this is a test
+// ---
+// im calling the mutation observer before the 'DOM ready' status
+// trying to see if jquery fails
+// ---
+
+if ( (window.location.href).includes('app.genialinvestimentos') ) {
+    console.log('app.genialinvestimentos');
+
+    // sort bonds by due date
+    $(document).on('click load ready scroll', 'div.MuiButtonBase-root', () => {
+        if ( (window.location.href).includes('carteira/posicao') ) {
+            //console.log('carteira/posicao');
+            sortUsingNestedText('div.Mui-expanded:contains("Renda Fixa") tbody.MuiTableBody-root', 'tr.MuiTableRow-root', 'td:nth-child(6)', true);
+        }
+    });
+
+    const mo = new MutationObserver((changes, observer) => {
+        changes.forEach(function(mutation) {
+            var newNodes = mutation.addedNodes;
+            //console.log('newNodes', newNodes);
+
+            // click button to show hidden values
+            $('button span:contains("Exibir valores")').click();
+
+            // sort statement by date
+            if ( (window.location.href).includes('extrato/a-liquidar') ) {
+                //console.log('extrato/a-liquidar', changes);
+                $(newNodes).filter('div.MuiBox-root.MuiGrid-root').has('tbody.MuiBox-root').each(function() {
+                    sortUsingNestedText('tbody.MuiBox-root', 'tr[data-testid="item__box"]', 'td:first', true);
+                });
+            }
+
+            // expand investments info
+            if ( (window.location.href).includes('investir/renda-fixa') ) {
+                //console.log('investir/renda-fixa', changes);
+                $(newNodes).filter('div.MuiContainer-root[role=item]').each(function() {
+                    var linha = $(this);
+                    $('[data-testid=list-item__content]', linha).css({'justify-content':'unset'});
+                });
+            }
+        });
+    });
+    mo.observe(document.querySelector('body'), { attributes: false, characterData: false, childList: true, subtree: true });
+}
+
+// ---
 // here the DOM is ready (but not JQuery)
 // ---
 // its a safe place to add elements to the page without interfering with the mutation observer
@@ -106,34 +152,6 @@ $(function() {
     var alvo = document.querySelector('body');
     var observer = new MutationObserver(fnCheckChanges);
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
-
-    // not in 'fnCheckChanges' because it freezes the page (too many changes to monitor)
-    if ( (window.location.href).includes('app.genialinvestimentos') ) {
-        $(document).on('click load ready scroll', 'div.MuiButtonBase-root', () => {
-            // sort bonds by due date
-            if ( (window.location.href).includes('carteira/posicao') ) {
-                console.log('carteira/posicao');
-                sortUsingNestedText('div.Mui-expanded:contains("Renda Fixa") tbody.MuiTableBody-root', 'tr.MuiTableRow-root', 'td:nth-child(6)', true);
-            }
-        });
-        const mo2 = new MutationObserver((changes, observer) => {
-            // sort statement by date
-            if ( (window.location.href).includes('extrato/a-liquidar') ) {
-                console.log('extrato/a-liquidar', changes);
-                sortUsingNestedText('tbody.MuiBox-root', 'tr[data-testid="item__box"]', 'td:first', true);
-            }
-        });
-        mo2.observe(document.querySelector('main'), { attributes: true, characterData: true, childList: true, subtree: false });
-        const mo3 = new MutationObserver((changes, observer) => {
-            // expand investments info
-            if ( (window.location.href).includes('investir/renda-fixa') ) {
-                console.log('investir/renda-fixa', changes);
-                var linhas = $('div.MuiContainer-root[role=item]');
-                $('[data-testid=list-item__content]', linhas).css({'justify-content':'unset'});
-            }
-        });
-        mo3.observe(document.querySelector('main'), { attributes: false, characterData: true, childList: true, subtree: true });
-    }
 
     // soma e media dos rendimentos trava a pagina se deixado no bloco padrao, por isso separei
     if ( (window.location.href).includes('clubefii') ) {
