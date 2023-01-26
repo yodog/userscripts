@@ -28,7 +28,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.01.12.1433
+// @version     2023.01.26.0152
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -204,6 +204,8 @@ function fnCheckChanges(changes, observer) {
 
     // --- reddit (waiting for a dedicated script)
     if ( (window.location.href).includes('reddit.com') ) {
+        $('div[data-click-id=media]').css('max-height', '50vh');
+        $('div.media-element').css('overflow', 'unset');
         $('div._1OVBBWLtHoSPfGCRaPzpTf, div._3xX726aBn29LDbsDtzr_6E, div._3tw__eCCe7j-epNCKGXUKk').width('unset').css('max-width', 'unset');
         $('div.Chtkt3BCZQruf0LtmFg2c').css({'max-height':'unset', '-webkit-mask-image':'unset'});
     }
@@ -237,7 +239,8 @@ function fnCheckChanges(changes, observer) {
     }
 
     if ( (window.location.href).includes('carteiradeinvestimentos.com') ) {
-        $('div[class*="blocked"], div[class*="pro-func"]').alterClass( 'blocked* pro-func*', 'rasg' )
+        $('[class*="blocked"], [class*="pro-func"]').alterClass( 'blocked* low-blocked* pro-func*', 'rasg' );
+        $('select#years_blocked').removeAttr("onmousedown");
     }
 
     if ( (window.location.href).includes('clubefii.com.br') ) {
@@ -423,6 +426,10 @@ function sortUsingNestedText(parentSelector, childSelector, keySelector, keyIsDa
                 cn = cn.replace(patt, ' ');
             }
             it.className = $.trim(cn);
+
+            //console.log('alterClass i', i);
+            //console.log('alterClass it', it);
+            //console.log('alterClass patt', patt);
         });
 
         return !additions ? self : self.addClass(additions);
