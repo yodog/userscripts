@@ -30,7 +30,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.01.28.0231
+// @version     2023.01.28.1400
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -69,16 +69,31 @@ this.$ = this.jQuery = jQuery.noConflict(true);
 if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
 
 // -----------------------------------------------------------------------------
-// DATATABLES DEFAULTS
+// DATATABLES
 // -----------------------------------------------------------------------------
 
 var datatableloaded = false;
 
+// default for all tables
 $.extend($.fn.dataTable.defaults, {
     language: { decimal: ',' , thousands: '.' },
     ordering:  true,
     paging: false,
     searching: true,
+});
+
+// datatables type date-uk: sort table columns by date format dd/mm/yyyy
+$.extend($.fn.dataTableExt.oSort, {
+    "date-uk-pre": function ( a ) {
+        var ukDatea = a.split('/');
+        return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
+    },
+    "date-uk-asc": function ( a, b ) {
+        return ((a < b) ? -1 : ((a > b) ? 1 : 0));
+    },
+    "date-uk-desc": function ( a, b ) {
+        return ((a < b) ? 1 : ((a > b) ? -1 : 0));
+    }
 });
 
 // -----------------------------------------------------------------------------
@@ -134,6 +149,64 @@ if ( (window.location.href).includes('app.genialinvestimentos') ) {
     mo.observe(document.querySelector('body'), { attributes: false, characterData: false, childList: true, subtree: true });
 }
 
+// -----------------------------------------------------------------------------
+
+if ( (window.location.href).includes('clubefii') ) {
+    console.log('clubefii');
+
+    const mo = new MutationObserver((changes, observer) => {
+        changes.forEach(function(mutation) {
+            var newNodes = mutation.addedNodes;
+
+            $('[id*="banner_ads"], [id*="seja_assinante"], [id*="sem_autorizacao"]').remove();
+            $('div[id*="grafico"], input, .adiciona_blur, .bloqueado, .desativa_selecao, .icon-regular_lock, .lock-assinatura, #travar')
+                .removeClass('adiciona_blur adiciona_blur_light bloqueado cadeado desativa_selecao icon-regular_lock lock-assinatura')
+                .css({'pointer-events':'unset'});
+            $('span.exibir-resposta:lt(3)').filter(':visible').click();
+            $('div.container_comentarios, #tabela_rentabilidade, ul#posts').css({'max-width':'unset'});
+            // $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
+            // $('tr:even').filter(':visible').css('background-color', 'inherit');
+
+            if ( (window.location.href).includes('proventos') ) {
+                // mover tabela para o topo da pagina e iniciar o 'parse'
+                $('div#tabela_proventos', newNodes).insertBefore('table#tabela_info_basica').each(function() {
+                    const tabelaproventos = $('table', this).attr('class', 'compact display');
+                    const linhas = $('tbody tr', tabelaproventos);
+                    const dytd = $('td:nth-child(7)', linhas).addClass('dy');
+
+                    // adicionar 2 colunas com soma e media do DY
+                    $('thead tr', tabelaproventos).append(`<th>dy acumulado</th> <th>dy medio</th>`);
+                    linhas.each(function(i) {
+                        // const dy = +( $('.dy', this).text().replace(',', '.').replace('%', '') );
+                        const linhasabaixo = $(this).nextAll().andSelf();
+                        const dyarray = ($('.dy', linhasabaixo).text().replaceAll(',', '.').replaceAll('%', '')).trim().split(" ");
+                        const soma = Math.trunc(dyarray.reduce((a, b) => Number(a) + Number(b)) * 100) / 100;
+                        const media = Math.trunc((soma / dyarray.length) * 100) / 100;
+                        $(this).append(`<td>${soma} %</td> <td>${media} %</td>`);
+                    })
+
+                    // convert regular table to datatables object
+                    if ( ! $.fn.DataTable.isDataTable(tabelaproventos) ) {
+                        tabelaproventos.DataTable({
+                            columnDefs: [
+                                { targets: [0, 1, 4], type:"date-uk" },
+                            ],
+                            "initComplete": function(settings, json) {
+                                datatableloaded = true;
+                                console.log('DataTables initComplete', datatableloaded);
+                            },
+                        });
+                    }
+                });
+                // datables compact style isnt working. using mine.
+                $('td, th', 'div#tabela_proventos').css({'height':'unset', 'padding':'0.2em', 'text-align':'center'});
+            }
+        });
+    });
+    mo.observe(document.querySelector('body'), { attributes: false, characterData: false, childList: true, subtree: true });
+}
+
+
 // ---
 // here the DOM is ready (but not JQuery)
 // ---
@@ -166,39 +239,6 @@ $(function() {
     var alvo = document.querySelector('body');
     var observer = new MutationObserver(fnCheckChanges);
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
-
-    // soma e media dos rendimentos trava a pagina se deixado no bloco padrao, por isso separei
-    if ( (window.location.href).includes('clubefii') ) {
-        const dq = document.querySelector('body');
-        const mo = new MutationObserver((changes, observer) => {
-            if ( (window.location.href).includes('proventos') ) {
-                let tabelaproventos = $('div.tabela-proventos table').addClass('compact display');
-                let linhas = $('tbody tr', tabelaproventos);
-                if ( $('thead th', tabelaproventos).length == 9 ) $('thead tr', tabelaproventos).append(`<th>dy acumulado</th> <th>dy medio</th>`);
-                linhas.each(function(i) {
-                    if ($('td', this).length == 9) {
-                        let dytd = $('td:nth-child(7)', linhas).addClass('dy');
-                        // let dy = +( $('.dy', this).text().replace(',', '.').replace('%', '') );
-                        let linhasabaixo = $(this).nextAll().andSelf();
-                        let dyarray = ($('.dy', linhasabaixo).text().replaceAll(',', '.').replaceAll('%', '')).trim().split(" ");
-                        const soma = Math.trunc(dyarray.reduce((a, b) => Number(a) + Number(b)) * 100) / 100;
-                        const media = Math.trunc((soma / dyarray.length) * 100) / 100;
-                        $(this).append(`<td class="soma">${soma} %</td> <td class="media">${media} %</td>`);
-                    }
-                });
-                if ( ! $.fn.DataTable.isDataTable(tabelaproventos) ) {
-                    tabelaproventos.DataTable({
-                        order: [[0, 'desc']],
-                        "initComplete": function(settings, json) {
-                            datatableloaded = true;
-                            console.log('DataTables initComplete', datatableloaded);
-                        },
-                    });
-                }
-            }
-        });
-        mo.observe(dq, { attributes: true, characterData: false, childList: false, subtree: true });
-    }
 
     // statusinvest requires only 'childList: true' to monitor for changes (oftentimes not even that)
     if ( (window.location.href).includes('statusinvest.com.br') ) {
@@ -265,18 +305,6 @@ function fnCheckChanges(changes, observer) {
     if ( (window.location.href).includes('carteiradeinvestimentos.com') ) {
         $('[class*="blocked"], [class*="pro-func"]').alterClass( 'blocked* low-blocked* pro-func*', 'rasg' );
         $('select#years_blocked').removeAttr("onmousedown");
-    }
-
-    if ( (window.location.href).includes('clubefii.com.br') ) {
-        $('span.exibir-resposta:lt(3)').filter(':visible').click();
-        $('div[id*="sem_autorizacao"], #modulo_seja_assinante').hide();
-        $('div.container_comentarios, #tabela_rentabilidade, ul#posts').css({'max-width':'unset'});
-        // $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
-        // $('tr:even').filter(':visible').css('background-color', 'inherit');
-
-        $('div[id*="grafico"], input, .adiciona_blur, .bloqueado, .desativa_selecao, .icon-regular_lock, .lock-assinatura, #travar')
-            .removeClass('adiciona_blur adiciona_blur_light bloqueado cadeado desativa_selecao icon-regular_lock lock-assinatura')
-            .css({'pointer-events':'unset'});
     }
 
     if ( (window.location.href).includes('fiis.com.br') ) {
