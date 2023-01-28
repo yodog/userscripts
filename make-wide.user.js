@@ -4,9 +4,11 @@
 // @author      RASG
 // @description Enlarge selected pages to use the entire viewport width (perfect for wide screen monitors)
 // @require     http://code.jquery.com/jquery.min.js
-// @require     https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
-// @require     https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
-// @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
+// @require     http://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
+// @require     http://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
+// @require     http://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js
+// @resource    toastcss   http://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
+// @resource    datatables http://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css
 // @match       *://admin.carteiradeinvestimentos.com/*
 // @match       *://app.dividendos.me/*
 // @match       *://app.genialinvestimentos.com.br/*
@@ -28,7 +30,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.01.26.0152
+// @version     2023.01.28.0231
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -65,6 +67,19 @@ var toast = siiimpleToast.setOptions({
 this.$ = this.jQuery = jQuery.noConflict(true);
 
 if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
+
+// -----------------------------------------------------------------------------
+// DATATABLES DEFAULTS
+// -----------------------------------------------------------------------------
+
+var datatableloaded = false;
+
+$.extend($.fn.dataTable.defaults, {
+    language: { decimal: ',' , thousands: '.' },
+    ordering:  true,
+    paging: false,
+    searching: true,
+});
 
 // -----------------------------------------------------------------------------
 // START
@@ -133,7 +148,6 @@ if ( (window.location.href).includes('app.genialinvestimentos') ) {
     // adicionar uma barra no topo que depois ira conter o total dos rendimentos
     if ( (window.location.href).includes('clubefii') ) {
         sortUsingNestedText('ul#menu', 'li', 'a');
-        $('div#barra').prepend('<div id="rasg" style="background:pink ; border:1px dotted red ; text-align:center"> ACUMULADO: <span id="soma"> 0 </span> MEDIA: <span id="media"> 0 </span> </div>');
     }
 })();
 
@@ -158,20 +172,29 @@ $(function() {
         const dq = document.querySelector('body');
         const mo = new MutationObserver((changes, observer) => {
             if ( (window.location.href).includes('proventos') ) {
-                let media = 0;
-                let soma = 0;
-                let celulas = $('div.tabela-proventos table tbody td:nth-child(7)');
-                celulas.each(function() {
-                    let value = +($(this).text().replace(',', '.').replace('%', ''));
-                    soma += value;
-                    console.log('value', value, 'soma', soma);
+                let tabelaproventos = $('div.tabela-proventos table').addClass('compact display');
+                let linhas = $('tbody tr', tabelaproventos);
+                if ( $('thead th', tabelaproventos).length == 9 ) $('thead tr', tabelaproventos).append(`<th>dy acumulado</th> <th>dy medio</th>`);
+                linhas.each(function(i) {
+                    if ($('td', this).length == 9) {
+                        let dytd = $('td:nth-child(7)', linhas).addClass('dy');
+                        // let dy = +( $('.dy', this).text().replace(',', '.').replace('%', '') );
+                        let linhasabaixo = $(this).nextAll().andSelf();
+                        let dyarray = ($('.dy', linhasabaixo).text().replaceAll(',', '.').replaceAll('%', '')).trim().split(" ");
+                        const soma = Math.trunc(dyarray.reduce((a, b) => Number(a) + Number(b)) * 100) / 100;
+                        const media = Math.trunc((soma / dyarray.length) * 100) / 100;
+                        $(this).append(`<td class="soma">${soma} %</td> <td class="media">${media} %</td>`);
+                    }
                 });
-                let m = (soma / celulas.length);
-                media = Math.trunc(m * 100) / 100;
-                console.log('soma', soma, 'media', media);
-
-                $('span#soma').text(soma);
-                $('span#media').text(media);
+                if ( ! $.fn.DataTable.isDataTable(tabelaproventos) ) {
+                    tabelaproventos.DataTable({
+                        order: [[0, 'desc']],
+                        "initComplete": function(settings, json) {
+                            datatableloaded = true;
+                            console.log('DataTables initComplete', datatableloaded);
+                        },
+                    });
+                }
             }
         });
         mo.observe(dq, { attributes: true, characterData: false, childList: false, subtree: true });
@@ -190,6 +213,7 @@ $(function() {
         $('#earning-maint-result a[role="button"] :contains("Categoria")').click();
     }
 });
+
 
 // -----------------------------------------------------------------------------
 // FUNCTION TO RUN ON EVERY CHANGE
@@ -247,8 +271,8 @@ function fnCheckChanges(changes, observer) {
         $('span.exibir-resposta:lt(3)').filter(':visible').click();
         $('div[id*="sem_autorizacao"], #modulo_seja_assinante').hide();
         $('div.container_comentarios, #tabela_rentabilidade, ul#posts').css({'max-width':'unset'});
-        $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
-        $('tr:even').filter(':visible').css('background-color', 'inherit');
+        // $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
+        // $('tr:even').filter(':visible').css('background-color', 'inherit');
 
         $('div[id*="grafico"], input, .adiciona_blur, .bloqueado, .desativa_selecao, .icon-regular_lock, .lock-assinatura, #travar')
             .removeClass('adiciona_blur adiciona_blur_light bloqueado cadeado desativa_selecao icon-regular_lock lock-assinatura')
