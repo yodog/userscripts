@@ -2,7 +2,7 @@
 // @name            Force Forms AutoComplete
 // @namespace       https://github.com/yodog/userscripts
 // @author          RASG
-// @version         2022.10.17.1640
+// @version         2023.01.29.1217
 // @description     Forces the autocomplete attribute for all forms and input fields in the page
 // @require         http://code.jquery.com/jquery.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
@@ -62,39 +62,22 @@ function togglePassword() {
 
 function parse(element) {
     if ( cfg.get("enable_field") ) {
-        $(element).removeAttr("disabled readonly");
-        $(element).removeProp("disabled readonly");
+        $('input', element).andSelf().removeAttr("disabled readonly").removeProp("disabled readonly");
     }
-
     if ( cfg.get("save_password") ) {
-        $(element).attr("autocomplete", "on");
-        $(element).prop("autocomplete", "on");
+        $('input', element).andSelf().attr("autocomplete", "on").prop("autocomplete", "on");
     }
-
     togglePassword();
 }
+
+$(function() {
+    $("body").on("click focus load ready", "form, input" , function() {
+        parse(this)
+    });
+});
 
 // -----------------------------------------------------------------------------
 // KNOWN FUNCTIONS THAT PREVENTS AUTOCOMPLETE FROM WORKING
 // -----------------------------------------------------------------------------
 
 unsafeWindow.C = function(G) { return false };
-
-// -----------------------------------------------------------------------------
-// here the DOM is ready (but not JQuery)
-// -----------------------------------------------------------------------------
-
-(function() {
-    console.log('DOM ready. Waiting for JQuery');
-})();
-
-// -----------------------------------------------------------------------------
-// here JQuery is ready (and the DOM also)
-// -----------------------------------------------------------------------------
-
-$(function() {
-    console.log('JQuery ready');
-
-    $("body").on("focus click focusout", "form" , function() { parse( this ) });
-    $("body").on("focus click focusout", "input", function() { parse( this ) });
-});
