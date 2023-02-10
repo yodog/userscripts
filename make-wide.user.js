@@ -18,7 +18,8 @@
 // @match       *://*.clubefii.com.br/*
 // @match       *://*.fiis.com.br/*
 // @match       *://*.fundsexplorer.com.br/ranking
-// @match       *://*.google.com/finance/*
+// @match       *://*.google.com/*
+// @match       *://*.google.com.br/*
 // @match       *://*.investidor10.com.br/*
 // @match       *://*.investing.com/*
 // @match       *://*.justetf.com/*
@@ -30,7 +31,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.01.28.1400
+// @version     2023.02.10.0035
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -154,6 +155,10 @@ if ( (window.location.href).includes('app.genialinvestimentos') ) {
 if ( (window.location.href).includes('clubefii') ) {
     console.log('clubefii');
 
+    // ordenar alfabeticamente o menu lateral
+    // adicionar uma barra no topo que depois ira conter o total dos rendimentos
+    sortUsingNestedText('ul#menu', 'li', 'a');
+
     const mo = new MutationObserver((changes, observer) => {
         changes.forEach(function(mutation) {
             var newNodes = mutation.addedNodes;
@@ -189,7 +194,7 @@ if ( (window.location.href).includes('clubefii') ) {
                     if ( ! $.fn.DataTable.isDataTable(tabelaproventos) ) {
                         tabelaproventos.DataTable({
                             columnDefs: [
-                                { targets: [0, 1, 4], type:"date-uk" },
+                                { targets: [0, 1, 4], type: "date-uk" },
                             ],
                             "initComplete": function(settings, json) {
                                 datatableloaded = true;
@@ -206,6 +211,22 @@ if ( (window.location.href).includes('clubefii') ) {
     mo.observe(document.querySelector('body'), { attributes: false, characterData: false, childList: true, subtree: true });
 }
 
+// -----------------------------------------------------------------------------
+
+if ( (window.location.href).includes('google.com') ) {
+    $(document).on('click load ready scroll', () => {
+        if ( (window.location.href).includes('finance') ) {
+            $('div').filter(function() { return ($(this).width() == 1024) }).css({'max-width':'unset'});
+            $('span[data-is-tooltip-wrapper=true] div').css({'max-width':'unset', 'overflow':'unset', 'text-overflow':'unset'});
+        }
+        if ( (window.location.href).includes('search') ) {
+            $('div#rcnt').css({'max-width':'unset'});
+            $('div#center_col').css({'flex':'0.5 auto'});
+        }
+    });
+}
+
+// -----------------------------------------------------------------------------
 
 // ---
 // here the DOM is ready (but not JQuery)
@@ -216,19 +237,12 @@ if ( (window.location.href).includes('clubefii') ) {
 
 (function() {
     console.log('DOM ready. Waiting for JQuery');
-
-    // ordenar alfabeticamente o menu lateral
-    // adicionar uma barra no topo que depois ira conter o total dos rendimentos
-    if ( (window.location.href).includes('clubefii') ) {
-        sortUsingNestedText('ul#menu', 'li', 'a');
-    }
 })();
 
 // ---
 // here JQuery is ready (and the DOM also)
 // ---
 // we can call jquery functions
-// and its a good place to start the mutation observer
 // ---
 
 $(function() {
@@ -322,10 +336,6 @@ function fnCheckChanges(changes, observer) {
         $('td, th').css({'font-size':'0.9em', 'padding':'4px', 'vertical-align':'middle'});
         $('tr:odd').filter(':visible').css('background-color', 'mistyrose');
         $('tr:even').filter(':visible').css('background-color', 'inherit');
-    }
-
-    if ( (window.location.href).includes('google.com') ) {
-        $('div').filter(function() {return ($(this).width() == 1024);}).css({'max-width':'unset'});
     }
 
     if ( (window.location.href).includes('investidor10.com.br') ) {
