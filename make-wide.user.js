@@ -31,7 +31,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.02.10.0035
+// @version     2023.02.12.2202
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -114,7 +114,7 @@ if ( (window.location.href).includes('app.genialinvestimentos') ) {
     console.log('app.genialinvestimentos');
 
     // sort bonds by due date
-    $(document).on('click load ready scroll', 'div.MuiButtonBase-root', () => {
+    $(window, document).on('click load pageshow ready scroll', 'div.MuiButtonBase-root', () => {
         if ( (window.location.href).includes('carteira/posicao') ) {
             //console.log('carteira/posicao');
             sortUsingNestedText('div.Mui-expanded:contains("Renda Fixa") tbody.MuiTableBody-root', 'tr.MuiTableRow-root', 'td:nth-child(6)', true);
@@ -214,16 +214,39 @@ if ( (window.location.href).includes('clubefii') ) {
 // -----------------------------------------------------------------------------
 
 if ( (window.location.href).includes('google.com') ) {
-    $(document).on('click load ready scroll', () => {
+    console.log('google.com');
+
+    const f = (function f() {
         if ( (window.location.href).includes('finance') ) {
+            // console.log('function call:', arguments.callee.name);
             $('div').filter(function() { return ($(this).width() == 1024) }).css({'max-width':'unset'});
+            $('div.H8Ch1').css({'max-width':'unset'});
             $('span[data-is-tooltip-wrapper=true] div').css({'max-width':'unset', 'overflow':'unset', 'text-overflow':'unset'});
+            $('div.ZvmM7').css({'overflow':'unset', 'text-overflow':'unset', 'width':'unset'});
         }
+        return f;
+    })();
+
+    const s = (function s() {
         if ( (window.location.href).includes('search') ) {
+            // console.log('function call:', arguments.callee.name);
             $('div#rcnt').css({'max-width':'unset'});
             $('div#center_col').css({'flex':'0.5 auto'});
         }
+        return s;
+    })();
+
+    const mo = new MutationObserver((changes, observer) => {
+        changes.forEach(function(mutation) {
+            var newNodes = mutation.addedNodes;
+            if ( $('svg', newNodes).length ) {
+                // console.log('MutationObserver newNodes:', newNodes);
+                f();
+                s();
+            }
+        });
     });
+    mo.observe(document, { attributes: false, characterData: false, childList: true, subtree: true });
 }
 
 // -----------------------------------------------------------------------------
