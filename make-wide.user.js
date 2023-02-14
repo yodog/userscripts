@@ -31,7 +31,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.02.12.2202
+// @version     2023.02.13.2147
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -114,9 +114,9 @@ if ( (window.location.href).includes('app.genialinvestimentos') ) {
     console.log('app.genialinvestimentos');
 
     // sort bonds by due date
-    $(window, document).on('click load pageshow ready scroll', 'div.MuiButtonBase-root', () => {
+    $('body').on('click load pageshow ready scroll', 'div.MuiButtonBase-root', () => {
         if ( (window.location.href).includes('carteira/posicao') ) {
-            //console.log('carteira/posicao');
+            console.log('carteira/posicao');
             sortUsingNestedText('div.Mui-expanded:contains("Renda Fixa") tbody.MuiTableBody-root', 'tr.MuiTableRow-root', 'td:nth-child(6)', true);
         }
     });
@@ -216,37 +216,68 @@ if ( (window.location.href).includes('clubefii') ) {
 if ( (window.location.href).includes('google.com') ) {
     console.log('google.com');
 
+    // selecionar grafico de 5 dias ao entrar na pagina
+    $('div[data-period="5d"][role="button"]').not('.fw-ch-sel').click();
+    $('button#5dayTab[aria-selected="false"]').click();
+
+    // preparar observer
+    let config = { childList: true, subtree: true };
+    const mo = new MutationObserver((changes, observer) => {
+        changes.forEach(function(mutation) {
+            // console.log('MutationObserver changes:', mutation.target);
+            $(mutation.target).filter('body').each(function() {
+                // console.log('---> mutation.target body:', mutation);
+                if ( (window.location.href).includes('finance') ) f();
+                if ( (window.location.href).includes('search') ) s();
+            });
+        });
+    });
+    mo.observe(document, config);
+
+    // parser do google finance
     const f = (function f() {
-        if ( (window.location.href).includes('finance') ) {
-            // console.log('function call:', arguments.callee.name);
-            $('div').filter(function() { return ($(this).width() == 1024) }).css({'max-width':'unset'});
-            $('div.H8Ch1').css({'max-width':'unset'});
-            $('span[data-is-tooltip-wrapper=true] div').css({'max-width':'unset', 'overflow':'unset', 'text-overflow':'unset'});
-            $('div.ZvmM7').css({'overflow':'unset', 'text-overflow':'unset', 'width':'unset'});
-        }
+        // console.log('function call:', arguments.callee.name);
+        // disconnect observer temporarily
+        mo.disconnect();
+        // extend page to full width
+        $('div').filter(function() { return ($(this).width() == 1024) }).css({'max-width':'unset'});
+        $('section[aria-labelledby="smart-watchlist-title"]').parent().css({'max-width':'unset'});
+        $('div.ZvmM7, div.xJvDsc, div.Ly3r6e, div.AuGxse').css({'max-width':'unset', 'overflow':'unset', 'text-overflow':'unset', 'min-width':'unset'});
+        $('span[data-is-tooltip-wrapper=true] div').css({'max-width':'unset', 'overflow':'unset', 'text-overflow':'unset'});
+        // append graph size to links
+        // $('a[href^="./quote/"]:not([href*="window"])').each(function() { const olnk = $(this).attr('href'); $(this).attr('href', olnk + '?window=5D'); });
+        // reconnect observer
+        // config = { attributes: false, characterData: false, childList: true, subtree: true };
+        mo.observe(document, config);
         return f;
     })();
 
+    // parser do google search
     const s = (function s() {
+        // console.log('function call:', arguments.callee.name);
         if ( (window.location.href).includes('search') ) {
-            // console.log('function call:', arguments.callee.name);
+            mo.disconnect();
             $('div#rcnt').css({'max-width':'unset'});
             $('div#center_col').css({'flex':'0.5 auto'});
+            // mo.observe(document, config);
         }
         return s;
     })();
+}
 
+// -----------------------------------------------------------------------------
+
+// statusinvest requires only 'childList: true' to monitor for changes (oftentimes not even that)
+if ( (window.location.href).includes('statusinvest.com.br') ) {
+    const dq = document.querySelector('body');
     const mo = new MutationObserver((changes, observer) => {
-        changes.forEach(function(mutation) {
-            var newNodes = mutation.addedNodes;
-            if ( $('svg', newNodes).length ) {
-                // console.log('MutationObserver newNodes:', newNodes);
-                f();
-                s();
-            }
-        });
+        $('#rf-transaction-result ul.dropdown-content li:contains("TODOS")').click();
     });
-    mo.observe(document, { attributes: false, characterData: false, childList: true, subtree: true });
+    mo.observe(dq, { attributes: false, characterData: false, childList: true, subtree: false });
+
+    $('#dropdown-year-to-year-categories-grid li').addClass('selected').first().click();
+    $('#main-result a[role="button"] :contains("Categoria")').click();
+    $('#earning-maint-result a[role="button"] :contains("Categoria")').click();
 }
 
 // -----------------------------------------------------------------------------
@@ -273,22 +304,10 @@ $(function() {
 
     // monitor the page for changes and reapply if necessary
     // use 'observer.disconnect()' in 'fnCheckChanges()' to stop monitoring
-    var alvo = document.querySelector('body');
-    var observer = new MutationObserver(fnCheckChanges);
-    observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
+    // var alvo = document.querySelector('body');
+    // var observer = new MutationObserver(fnCheckChanges);
+    // observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
 
-    // statusinvest requires only 'childList: true' to monitor for changes (oftentimes not even that)
-    if ( (window.location.href).includes('statusinvest.com.br') ) {
-        const dq = document.querySelector('body');
-        const mo = new MutationObserver((changes, observer) => {
-            $('#rf-transaction-result ul.dropdown-content li:contains("TODOS")').click();
-        });
-        mo.observe(dq, { attributes: false, characterData: false, childList: true, subtree: false });
-
-        $('#dropdown-year-to-year-categories-grid li').addClass('selected').first().click();
-        $('#main-result a[role="button"] :contains("Categoria")').click();
-        $('#earning-maint-result a[role="button"] :contains("Categoria")').click();
-    }
 });
 
 
