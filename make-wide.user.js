@@ -1,7 +1,8 @@
 // ==UserScript==
 // @name        Make my Whole Wide (yes, its a pun) - stonks edition
-// @namespace   http://stackoverflow.com/users/982924/rasg
-// @author      RASG
+// @namespace   http://github.com/yodog
+// @downloadURL http://github.com/yodog/userscripts/raw/master/make-wide.user.js
+// @author      yodog
 // @description Enlarge selected pages to use the entire viewport width (perfect for wide screen monitors)
 // @require     http://code.jquery.com/jquery.min.js
 // @require     http://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
@@ -24,6 +25,7 @@
 // @match       *://*.investing.com/*
 // @match       *://*.justetf.com/*
 // @match       *://*.mycapital.com.br/*
+// @match       *://*.myprofitweb.com/*
 // @match       *://*.oceans14.com.br/acoes/*
 // @match       *://*.reddit.com/*
 // @match       *://*.simplywall.st/*
@@ -31,7 +33,7 @@
 // @match       *://*.trademap.com.br/portfolio/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.02.13.2147
+// @version     2023.06.10.1504
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -68,6 +70,22 @@ var toast = siiimpleToast.setOptions({
 this.$ = this.jQuery = jQuery.noConflict(true);
 
 if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
+
+// -----------------------------------------------------------------------------
+// PREVENT ANIMATIONS THAT SLOW DOWN THE PAGE
+// -----------------------------------------------------------------------------
+
+console.log("Disabling animations");
+
+GM_addStyle(`
+  *, *:before, *:after {
+    animation: none !important;
+    animation-duration: 0s !important;
+    animation-play-state: paused;
+    transition: none !important;
+    transition-property: none !important;
+  }`
+);
 
 // -----------------------------------------------------------------------------
 // DATATABLES
@@ -213,6 +231,13 @@ if ( (window.location.href).includes('clubefii') ) {
 
 // -----------------------------------------------------------------------------
 
+if ( (window.location.href).includes('myprofitweb.com') ) {
+    console.log('myprofitweb.com');
+    $('div.container').css({'max-width':'unset'});
+}
+
+// -----------------------------------------------------------------------------
+
 if ( (window.location.href).includes('google.com') ) {
     console.log('google.com');
 
@@ -220,13 +245,13 @@ if ( (window.location.href).includes('google.com') ) {
     $('div[data-period="5d"][role="button"]').not('.fw-ch-sel').click();
     $('button#5dayTab[aria-selected="false"]').click();
 
-    // preparar observer
+    // preparar observer (monitorar body e title, que o google atualiza a cada 10 segundos)
     let config = { childList: true, subtree: true };
     const mo = new MutationObserver((changes, observer) => {
         changes.forEach(function(mutation) {
             // console.log('MutationObserver changes:', mutation.target);
-            $(mutation.target).filter('body').each(function() {
-                // console.log('---> mutation.target body:', mutation);
+            $(mutation.target).filter('body, title').each(function() {
+                // console.log('---> mutation.target:', mutation.target, mutation);
                 if ( (window.location.href).includes('finance') ) f();
                 if ( (window.location.href).includes('search') ) s();
             });
@@ -244,6 +269,7 @@ if ( (window.location.href).includes('google.com') ) {
         $('section[aria-labelledby="smart-watchlist-title"]').parent().css({'max-width':'unset'});
         $('div.ZvmM7, div.xJvDsc, div.Ly3r6e, div.AuGxse').css({'max-width':'unset', 'overflow':'unset', 'text-overflow':'unset', 'min-width':'unset'});
         $('span[data-is-tooltip-wrapper=true] div').css({'max-width':'unset', 'overflow':'unset', 'text-overflow':'unset'});
+        $('div[data-tab-number] .qIEjSe.bjCJpf').css({'width':'unset', 'overflow':'unset', 'text-overflow':'unset'});
         // append graph size to links
         // $('a[href^="./quote/"]:not([href*="window"])').each(function() { const olnk = $(this).attr('href'); $(this).attr('href', olnk + '?window=5D'); });
         // reconnect observer
@@ -305,8 +331,8 @@ $(function() {
     // monitor the page for changes and reapply if necessary
     // use 'observer.disconnect()' in 'fnCheckChanges()' to stop monitoring
     // var alvo = document.querySelector('body');
-    // var observer = new MutationObserver(fnCheckChanges);
-    // observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
+    var observer = new MutationObserver(fnCheckChanges);
+    observer.observe(document.body, { attributes: false, characterData: false, childList: true, subtree: true });
 
 });
 
