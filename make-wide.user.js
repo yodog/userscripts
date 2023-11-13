@@ -1,7 +1,6 @@
 // ==UserScript==
 // @name        Make my Whole Wide (yes, its a pun) - stonks edition
 // @namespace   http://github.com/yodog
-// @downloadURL http://github.com/yodog/userscripts/raw/master/make-wide.user.js
 // @author      yodog
 // @description Enlarge selected pages to use the entire viewport width (perfect for wide screen monitors)
 // @require     http://code.jquery.com/jquery.min.js
@@ -28,12 +27,13 @@
 // @match       *://*.myprofitweb.com/*
 // @match       *://*.oceans14.com.br/acoes/*
 // @match       *://*.reddit.com/*
+// @match       *://*.redgifs.com/*
 // @match       *://*.simplywall.st/*
 // @match       *://*.statusinvest.com.br/carteira/*
-// @match       *://*.trademap.com.br/portfolio/*
+// @match       *://*.trademap.com.br/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.06.10.1504
+// @version     2023.12.11.2146
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -227,6 +227,16 @@ if ( (window.location.href).includes('clubefii') ) {
         });
     });
     mo.observe(document.querySelector('body'), { attributes: false, characterData: false, childList: true, subtree: true });
+}
+
+// -----------------------------------------------------------------------------
+
+if ( (window.location.href).includes('redgifs.com') ) {
+    console.log('redgifs.com');
+    $(document, 'body').on('click load pageshow ready scroll', () => {
+        $('div.homeFeed').css({'max-width':'unset'});
+        $('div.previewFeed').css({'display':'contents'});
+    });
 }
 
 // -----------------------------------------------------------------------------
@@ -458,11 +468,15 @@ function fnCheckChanges(changes, observer) {
         //$('div').filter(function() {return ($(this).width() > 1024);}).css({'max-width':'unset'});
     }
 
-    if ( (window.location.href).includes('trademap.com.br/portfolio/statement/agenda') ) {
-        $('fla-tab').css('display', 'flex');
-        $('schedule-component > div.schedule-month').detach().appendTo('fla-tab');
-        $('div.calendar-width').css('max-width', '40vw');
-        $('div#schedule-grid').width('-webkit-fill-available').css({'max-width':'45vw', 'min-height':'50vh'});
+    if ( (window.location.href).includes('trademap.com.br') ) {
+        $('banner-access-modal, div.modal-backdrop').hide();
+
+        if ( (window.location.href).includes('portfolio/statement/agenda') ) {
+            $('fla-tab').css('display', 'flex');
+            $('schedule-component > div.schedule-month').detach().appendTo('fla-tab');
+            $('div.calendar-width').css('max-width', '40vw');
+            $('div#schedule-grid').width('-webkit-fill-available').css({'max-width':'45vw', 'min-height':'50vh'});
+        }
     }
 
     if ( (window.location.href).includes('xpi.com.br') ) {
