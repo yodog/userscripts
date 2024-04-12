@@ -3,7 +3,7 @@
 // @namespace    http://github.com/yodog
 // @author       yodog
 // @require      http://code.jquery.com/jquery.min.js
-// @version      2024.04.10.1914
+// @version      2024.04.12.1402
 // @description  reservar-quadra
 // @match        https://uniaocorinthians.areadosocio.com.br/
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=areadosocio.com.br
@@ -40,15 +40,15 @@ if (typeof $ == 'undefined') console.log('JQuery not found; The script will cert
 
 function checkAndClick() {
     const now = new Date();
-    const clickTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 59, 59);
+    const clickTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 14, 0, 0);
 
     if (now >= clickTime) {
         $('button#salvarButton').click();
         console.log('Click no botao as', now);
     }
     else {
-        setTimeout(checkAndClick, 500);
-        console.log('Esperando...', now);
+        setTimeout(checkAndClick, 200);
+        console.log('Esperando 14:00:00 ...', now);
     }
 }
 
