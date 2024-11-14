@@ -33,7 +33,7 @@
 // @match       *://*.trademap.com.br/*
 // @match       *://*.xpi.com.br/*
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2023.12.11.2146
+// @version     2024.11.14.1242
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -127,6 +127,15 @@ var shouldreload = false;
 // im calling the mutation observer before the 'DOM ready' status
 // trying to see if jquery fails
 // ---
+
+// --- reddit (waiting for a dedicated script)
+if ( (window.location.href).includes('reddit.com') ) {
+    $('#right-sidebar-container').remove();
+    $('.subgrid-container').css({'max-width':'calc(98vw - 272px)','width':'unset'});
+    $('#main-content').css('max-width', 'unset');
+}
+
+// -----------------------------------------------------------------------------
 
 if ( (window.location.href).includes('app.genialinvestimentos') ) {
     console.log('app.genialinvestimentos');
@@ -358,13 +367,6 @@ function fnCheckChanges(changes, observer) {
 
     //$('footer, #footer').hide();
 
-    // --- reddit (waiting for a dedicated script)
-    if ( (window.location.href).includes('reddit.com') ) {
-        $('div[data-click-id=media]').css('max-height', '50vh');
-        $('div.media-element').css('overflow', 'unset');
-        $('div._1OVBBWLtHoSPfGCRaPzpTf, div._3xX726aBn29LDbsDtzr_6E, div._3tw__eCCe7j-epNCKGXUKk').width('unset').css('max-width', 'unset');
-        $('div.Chtkt3BCZQruf0LtmFg2c').css({'max-height':'unset', '-webkit-mask-image':'unset'});
-    }
 
     // --- whatsapp (waiting for a dedicated script)
     if ( (window.location.href).includes('web.whatsapp') ) {
