@@ -32,8 +32,9 @@
 // @match       *://*.statusinvest.com.br/carteira/*
 // @match       *://*.trademap.com.br/*
 // @match       *://*.xpi.com.br/*
+// @connect     *
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2024.11.14.1242
+// @version     2024.12.04.1742
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -77,13 +78,33 @@ if (typeof $ == 'undefined') console.log('JQuery not found; The script will cert
 
 console.log("Disabling animations");
 
+document.getAnimations().forEach((animation) => {
+   animation.cancel();
+});
+
 GM_addStyle(`
   *, *:before, *:after {
-    animation: none !important;
+    -moz-animation: none !important;
+    -moz-transform: none !important;
+    -moz-transition-property: none !important;
+    -moz-transition: none !important;
+    -ms-animation: none !important;
+    -ms-transform: none !important;
+    -ms-transition-property: none !important;
+    -o-animation: none !important;
+    -o-transform: none !important;
+    -o-transition-property: none !important;
+    -o-transition: none !important;
+    -webkit-animation: none !important;
+    -webkit-transform: none !important;
+    -webkit-transition-property: none !important;
+    -webkit-transition: none !important;
     animation-duration: 0s !important;
     animation-play-state: paused;
-    transition: none !important;
+    animation: none !important;
+    transform: none !important;
     transition-property: none !important;
+    transition: none !important;
   }`
 );
 
@@ -130,9 +151,23 @@ var shouldreload = false;
 
 // --- reddit (waiting for a dedicated script)
 if ( (window.location.href).includes('reddit.com') ) {
-    $('#right-sidebar-container').remove();
-    $('.subgrid-container').css({'max-width':'calc(98vw - 272px)','width':'unset'});
-    $('#main-content').css('max-width', 'unset');
+    console.log('reddit.com');
+    const mo = new MutationObserver((changes, observer) => {
+        $('#right-sidebar-container').remove();
+        $('.subgrid-container').css({'max-width':'calc(98vw - 272px)','width':'unset'});
+        $('#main-content').css('max-width', 'unset');
+    });
+    mo.observe(document.body, { attributes: false, characterData: false, childList: true, subtree: false });
+}
+
+// -----------------------------------------------------------------------------
+
+if ( (window.location.href).includes('redgifs.com') ) {
+    console.log('redgifs.com');
+    $(document, 'body').on('click load pageshow ready scroll', () => {
+        $('div.homeFeed').css({'max-width':'unset'});
+        $('div.previewFeed').css({'display':'contents'});
+    });
 }
 
 // -----------------------------------------------------------------------------
@@ -236,16 +271,6 @@ if ( (window.location.href).includes('clubefii') ) {
         });
     });
     mo.observe(document.querySelector('body'), { attributes: false, characterData: false, childList: true, subtree: true });
-}
-
-// -----------------------------------------------------------------------------
-
-if ( (window.location.href).includes('redgifs.com') ) {
-    console.log('redgifs.com');
-    $(document, 'body').on('click load pageshow ready scroll', () => {
-        $('div.homeFeed').css({'max-width':'unset'});
-        $('div.previewFeed').css({'display':'contents'});
-    });
 }
 
 // -----------------------------------------------------------------------------
