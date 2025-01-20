@@ -13,13 +13,11 @@
 // @match       *://app.dividendos.me/*
 // @match       *://app.genialinvestimentos.com.br/*
 // @match       *://app.kinvo.com.br/*
-// @match       *://web.whatsapp.com/*
 // @match       *://*.analisedeacoes.com/*
 // @match       *://*.clubefii.com.br/*
 // @match       *://*.fiis.com.br/*
+// @match       *://*.fragrantica.com.br/*
 // @match       *://*.fundsexplorer.com.br/ranking
-// @match       *://*.google.com/*
-// @match       *://*.google.com.br/*
 // @match       *://*.investidor10.com.br/*
 // @match       *://*.investing.com/*
 // @match       *://*.justetf.com/*
@@ -34,7 +32,7 @@
 // @match       *://*.xpi.com.br/*
 // @connect     *
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2024.12.04.1742
+// @version     2025.01.20.1001
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -149,7 +147,18 @@ var shouldreload = false;
 // trying to see if jquery fails
 // ---
 
+// -----------------------------------------------------------------------------
+
+if ( (window.location.href).includes('fragrantica.com') ) {
+    console.log('fragrantica.com');
+    $(document, 'body').on('click load pageshow ready scroll', () => {
+        $('div.grid-container').css({'max-width':'unset'});
+        $('div.callout > div.grid-x').css({'max-height':'26em'});
+    });
+}
+
 // --- reddit (waiting for a dedicated script)
+
 if ( (window.location.href).includes('reddit.com') ) {
     console.log('reddit.com');
     const mo = new MutationObserver((changes, observer) => {
