@@ -32,7 +32,7 @@
 // @match       *://*.xpi.com.br/*
 // @connect     *
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2025.01.20.1001
+// @version     2025.01.25.1016
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -94,15 +94,15 @@ GM_addStyle(`
     -o-transition-property: none !important;
     -o-transition: none !important;
     -webkit-animation: none !important;
-    -webkit-transform: none !important;
-    -webkit-transition-property: none !important;
-    -webkit-transition: none !important;
+    // -webkit-transform: none !important;
+    // -webkit-transition: none !important;
+    // -webkit-transition-property: none !important;
+    animation: none !important;
     animation-duration: 0s !important;
     animation-play-state: paused;
-    animation: none !important;
-    transform: none !important;
-    transition-property: none !important;
-    transition: none !important;
+    // transform: none !important;
+    // transition: none !important;
+    // transition-property: none !important;
   }`
 );
 
@@ -153,8 +153,18 @@ if ( (window.location.href).includes('fragrantica.com') ) {
     console.log('fragrantica.com');
     $(document, 'body').on('click load pageshow ready scroll', () => {
         $('div.grid-container').css({'max-width':'unset'});
-        $('div.callout > div.grid-x').css({'max-height':'26em'});
     });
+    if ( (window.location.href).includes('busca-notas') ) {
+        $(document, 'body').on('click load pageshow ready scroll', () => {
+            $('div.callout > div.grid-x').css({'max-height':'26em'});
+        });
+    }
+    if ( (window.location.href).includes('perfume') ) {
+        $(document, 'body').on('click load pageshow ready scroll', () => {
+            $('iframe#idIframeMMM').remove();
+            $('input#showDiagram:not(:checked)').click();
+        });
+    }
 }
 
 // --- reddit (waiting for a dedicated script)
@@ -162,9 +172,13 @@ if ( (window.location.href).includes('fragrantica.com') ) {
 if ( (window.location.href).includes('reddit.com') ) {
     console.log('reddit.com');
     const mo = new MutationObserver((changes, observer) => {
-        $('#right-sidebar-container').remove();
-        $('.subgrid-container').css({'max-width':'calc(98vw - 272px)','width':'unset'});
-        $('#main-content').css('max-width', 'unset');
+        // $('#right-sidebar-container').remove();
+        $('div.subgrid-container').css({
+            // 'max-width':'calc(98vw - 272px)',
+            'min-width':'-webkit-fill-available',
+            // 'width':'unset'
+        });
+        $('main.main').css('max-width', 'unset');
     });
     mo.observe(document.body, { attributes: false, characterData: false, childList: true, subtree: false });
 }
