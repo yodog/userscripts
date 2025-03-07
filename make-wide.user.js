@@ -32,7 +32,7 @@
 // @match       *://*.xpi.com.br/*
 // @connect     *
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2025.03.07.1533
+// @version     2025.03.07.1608
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -172,17 +172,15 @@ if ( (window.location.href).includes('fragrantica.com') ) {
 
 if ( (window.location.href).includes('reddit.com') ) {
     console.log('reddit.com');
-    const mo = new MutationObserver((changes, observer) => {
-        // $('#right-sidebar-container').remove();
-        $('div.subgrid-container').css({
-            // 'max-width':'calc(98vw - 272px)',
-            'min-width':'-webkit-fill-available',
-            // 'width':'unset'
-        });
-        $('div.main-container').css('grid-template-columns', 'minmax(0,1fr) minmax(0,auto)');
-        $('main.main').css('max-width', 'unset');
-    });
-    mo.observe(document.body, { attributes: false, characterData: false, childList: true, subtree: false });
+
+    const redditcss = `
+<style type='text/css' id='redditcss'>
+div.subgrid-container { min-width: -webkit-fill-available !important ; }
+div.main-container { grid-template-columns: minmax(0,1fr) minmax(0,auto) !important ; }
+main.main { max-width: unset !important ; }
+</style>
+`
+    $(redditcss).appendTo('head');
 }
 
 // -----------------------------------------------------------------------------
