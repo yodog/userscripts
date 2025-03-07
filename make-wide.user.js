@@ -27,13 +27,12 @@
 // @match       *://*.reddit.com/*
 // @match       *://*.redgifs.com/*
 // @match       *://*.simplywall.st/*
-// @match       *://*.solucoes.corporativo.serpro/*
 // @match       *://*.statusinvest.com.br/carteira/*
 // @match       *://*.trademap.com.br/*
 // @match       *://*.xpi.com.br/*
 // @connect     *
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2025.03.07.1158
+// @version     2025.03.07.1159
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
