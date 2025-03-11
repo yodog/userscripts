@@ -32,7 +32,7 @@
 // @match       *://*.xpi.com.br/*
 // @connect     *
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2025.03.07.1608
+// @version     2025.03.11.1627
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -175,9 +175,11 @@ if ( (window.location.href).includes('reddit.com') ) {
 
     const redditcss = `
 <style type='text/css' id='redditcss'>
-div.subgrid-container { min-width: -webkit-fill-available !important ; }
+div.subgrid-container { min-width: -moz-available !important ; min-width: -webkit-fill-available !important ; }
 div.main-container { grid-template-columns: minmax(0,1fr) minmax(0,auto) !important ; }
 main.main { max-width: unset !important ; }
+@media (min-width: 768px) { #right-sidebar-container { display: none ; } }
+@media (min-width: 1200px) { #right-sidebar-container { display: block ; } }
 </style>
 `
     $(redditcss).appendTo('head');
