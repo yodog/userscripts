@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name        MakeWide - stonks edition
+// @name        MakeWide
 // @namespace   http://github.com/yodog/userscripts
 // @author      yodog
 // @description Enlarge selected pages to use the entire viewport width (perfect for wide screen monitors)
@@ -14,7 +14,7 @@
 // @match       *://*.redgifs.com/*
 // @connect     *
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2025.06.02.1537
+// @version     2025.06.02.1552
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
