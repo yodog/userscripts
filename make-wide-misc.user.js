@@ -9,12 +9,13 @@
 // @require     http://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js
 // @resource    toastcss   http://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @resource    datatables http://cdn.datatables.net/1.13.1/css/jquery.dataTables.min.css
+// @match       *://*.fragrantica.com/*
 // @match       *://*.fragrantica.com.br/*
 // @match       *://*.reddit.com/*
 // @match       *://*.redgifs.com/*
 // @connect     *
-// @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2025.06.02.1552
+// @icon        https://images.icon-icons.com/3251/PNG/512/panel_left_expand_regular_icon_203421.png
+// @version     2025.06.04.1152
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -87,34 +88,6 @@ GM_addStyle(`
 );
 
 // -----------------------------------------------------------------------------
-// DATATABLES
-// -----------------------------------------------------------------------------
-
-var datatableloaded = false;
-
-// default for all tables
-$.extend($.fn.dataTable.defaults, {
-    language: { decimal: ',' , thousands: '.' },
-    ordering:  true,
-    paging: false,
-    searching: true,
-});
-
-// datatables type date-uk: sort table columns by date format dd/mm/yyyy
-$.extend($.fn.dataTableExt.oSort, {
-    "date-uk-pre": function ( a ) {
-        var ukDatea = a.split('/');
-        return (ukDatea[2] + ukDatea[1] + ukDatea[0]) * 1;
-    },
-    "date-uk-asc": function ( a, b ) {
-        return ((a < b) ? -1 : ((a > b) ? 1 : 0));
-    },
-    "date-uk-desc": function ( a, b ) {
-        return ((a < b) ? 1 : ((a > b) ? -1 : 0));
-    }
-});
-
-// -----------------------------------------------------------------------------
 // START
 // -----------------------------------------------------------------------------
 
@@ -131,15 +104,31 @@ var shouldreload = false;
 
 if ( (window.location.href).includes('fragrantica.com') ) {
     console.log('fragrantica.com');
-    $(document, 'body').on('click load pageshow ready scroll', () => {
-        $('div.grid-container').css({'max-width':'unset'});
-    });
-    if ( (window.location.href).includes('busca-notas') ) {
-        $(document, 'body').on('click load pageshow ready scroll', () => {
-            $('div.callout > div.grid-x').css({'max-height':'26em'});
-        });
-    }
+
+    const css = `
+<style type='text/css' id='redditcss'>
+div.grid-container { max-width: unset ; }
+div.callout > div.grid-x { max-height: 26em !important ; }
+</style>
+    `
+    $(css).appendTo('head');
+
+    //$(document, 'body').on('click load pageshow ready scroll', () => {
+        //$('div.grid-container').css({'max-width':'unset'});
+    //});
+
+    //if ( (window.location.href).includes('busca-notas') ) {
+        //$(document, 'body').on('click load pageshow ready scroll', () => {
+            //$('div.callout > div.grid-x').css({'max-height':'26em'});
+        //});
+    //}
+
     if ( (window.location.href).includes('perfume') ) {
+        const socialcardlink = $('div#toptop a[href*=perfume-social-cards]').attr('href');
+        const container = $('div.grid-x.grid-margin-x.grid-margin-y > div.cell.small-6:has(img[itemprop=image])');
+        const socialcard = container.clone().find('img[itemprop=image]').attr('src', socialcardlink).removeAttr('height width');
+        socialcard.prependTo(container);
+
         $(document, 'body').on('click load pageshow ready scroll', () => {
             $('iframe#idIframeMMM').remove();
             $('input#showDiagram:not(:checked)').click();
