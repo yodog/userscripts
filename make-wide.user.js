@@ -15,7 +15,7 @@
 // @match       *://*.redgifs.com/*
 // @connect     *
 // @icon        https://images.icon-icons.com/3251/PNG/512/panel_left_expand_regular_icon_203421.png
-// @version     2025.06.13.1341
+// @version     2025.06.13.1344
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
@@ -107,11 +107,8 @@ img.perfume-on-shelf { height: unset !important ; }
 
     if ( (window.location.href).includes('perfume') ) {
         const socialcardlink = $('div#toptop a[href*=perfume-social-cards]').attr('href');
-        console.log('socialcardlink', socialcardlink);
         const container = $('div.grid-x.grid-margin-x.grid-margin-y > div.cell.small-6:has(img[itemprop=image])');
-        console.log('container', container);
         const socialcard = container.clone().find('img[itemprop=image]').attr('src', socialcardlink).removeAttr('srcset height width');
-        console.log('socialcard', socialcard);
         socialcard.prependTo(container);
 
         $(document, 'body').on('click load pageshow ready scroll', () => {
