@@ -11,7 +11,7 @@
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
 // @icon        https://images.icon-icons.com/3251/PNG/512/panel_left_expand_regular_icon_203421.png
-// @version     2025.07.22.1649
+// @version     2025.07.22.1650
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
