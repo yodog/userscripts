@@ -4,11 +4,12 @@
 // @author      yodog
 // @description Fragrantica new options: use wide screen, bigger perfume pictures on shelf; bring shelf to top of page, add fragrantica.com reviews/pros/cons to fragrantica.com.br
 // @require     http://code.jquery.com/jquery-3.7.1.min.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/datejs/1.0/date.min.js
 // @match       *://*.fragrantica.com/*
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
 // @icon        https://images.icon-icons.com/3251/PNG/512/panel_left_expand_regular_icon_203421.png
-// @version     2025.07.30.0040
+// @version     2025.07.30.0213
 // @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -300,6 +301,23 @@ async function injetarProsCons(html, container) {
 
 // -----------------------------------------------------------------------------
 
+function extractReviewDate(div, markLocal = false) {
+    const span = div.querySelector('span.vote-button-legend[itemprop="datePublished"]');
+    const rawDate = span ? (span.textContent.trim() || span.getAttribute('content')) : "";
+    const timestamp = Date.parse(rawDate);
+    const date = isNaN(timestamp) ? new Date(0) : new Date(timestamp);
+    const formatted = date.toString("yyyy-MM-dd HH:mm:ss"); // Usando date.js
+
+    if (span && date) {
+        span.textContent = formatted;
+        span.setAttribute('content', formatted);
+    }
+
+    return markLocal ? {div, date, formatted, isLocal: true} : {div, date, formatted};
+}
+
+// -----------------------------------------------------------------------------
+
 function parseReviews(html) {
     try {
         console.log('parseReviews', 'Iniciando');
@@ -312,35 +330,15 @@ function parseReviews(html) {
             return [];
         }
 
-        let reviewsEn = $(reviewsContainerEn).find('div.fragrance-review-box[itemprop="review"]:lt(2)').toArray();
+        let reviewsEn = $(reviewsContainerEn).find('div.fragrance-review-box[itemprop="review"]:lt(5)').toArray();
 
+        // Elimina duplicatas via outerHTML
         const uniqueReviewsMap = new Map();
-        reviewsEn.forEach(div => {uniqueReviewsMap.set(div.outerHTML, div);});
+        reviewsEn.forEach(div => uniqueReviewsMap.set(div.outerHTML, div));
         reviewsEn = Array.from(uniqueReviewsMap.values());
 
-        const parseDate = div => {
-            const span = div.querySelector('span.vote-button-legend[itemprop="datePublished"]');
-            if (!span) return new Date(0);
-            const rawDate = span.getAttribute('content') || span.textContent.trim();
-            const date = new Date(rawDate);
-            if (!isNaN(date)) {
-                const yyyy = date.getFullYear();
-                const mm = String(date.getMonth() + 1).padStart(2, '0');
-                const dd = String(date.getDate()).padStart(2, '0');
-                const hh = String(date.getHours()).padStart(2, '0');
-                const min = String(date.getMinutes()).padStart(2, '0');
-                const ss = String(date.getSeconds()).padStart(2, '0');
-                const formato = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
-                span.textContent = formato;
-                span.setAttribute('content', formato);
-            }
-            return date;
-        };
-
-        return reviewsEn.map(div => {
-            const date = parseDate(div);
-            return {div, date};
-        });
+        // Usa função utilitária para extrair review e data
+        return reviewsEn.map(div => extractReviewDate(div));
     }
     catch (error) {
         console.error('parseReviews', 'Erro ao analisar as reviews:', error);
@@ -350,18 +348,16 @@ function parseReviews(html) {
 
 // -----------------------------------------------------------------------------
 
-async function injetarReviews(html, container) {
+async function injetarReviews(parsedReviews, container) {
     console.log('injetarReviews', 'Iniciando');
 
-    const parsedLocal = $('#all-reviews div.fragrance-review-box[itemprop="review"]:lt(2)').map(function () {
-        const div = this;
-        const span = div.querySelector('span.vote-button-legend[itemprop="datePublished"]');
-        const date = span ? new Date(span.getAttribute('content') || span.textContent.trim()) : new Date(0);
-        return {div, date, isLocal: true};
-    }).get(); // .get() converts the jQuery object back to a plain JavaScript array
+    // Reviews locais do DOM, usando utilitário
+    const parsedLocal = $('#all-reviews div.fragrance-review-box[itemprop="review"]:lt(5)').toArray().map(div => extractReviewDate(div, true));
 
-    const allSortedReviews = html.concat(parsedLocal).sort((a, b) => b.date - a.date);
+    // Mescla reviews importadas (parsedReviews) e locais (parsedLocal)
+    const allSortedReviews = parsedReviews.concat(parsedLocal).sort((a, b) => b.date - a.date);
 
+    // Prepara os elementos para injeção
     const elementosParaInjetar = allSortedReviews.map(({div, isLocal}) => {
         if (!isLocal) {
             div.classList.add('fr-review-injetado');
@@ -373,7 +369,6 @@ async function injetarReviews(html, container) {
 
     if (container && elementosParaInjetar) {
         container.dataset.reviewsMerged = 'true';
-
         if (Array.isArray(elementosParaInjetar)) {
             elementosParaInjetar.forEach(elemento => container.appendChild(elemento));
         }
