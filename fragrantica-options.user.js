@@ -3,12 +3,12 @@
 // @namespace   http://github.com/yodog/userscripts
 // @author      yodog
 // @description Fragrantica new options: use wide screen, bigger perfume pictures on shelf; bring shelf to top of page, add fragrantica.com reviews/pros/cons to fragrantica.com.br
-// @require     http://code.jquery.com/jquery.min.js
+// @require     http://code.jquery.com/jquery-3.7.1.min.js
 // @match       *://*.fragrantica.com/*
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
 // @icon        https://images.icon-icons.com/3251/PNG/512/panel_left_expand_regular_icon_203421.png
-// @version     2025.07.29.2358
+// @version     2025.07.30.0040
 // @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
