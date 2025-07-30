@@ -3,7 +3,7 @@
 // @namespace   http://github.com/yodog/userscripts
 // @author      yodog
 // @description Enlarge selected pages to use the entire viewport width (perfect for wide screen monitors)
-// @require     http://code.jquery.com/jquery.min.js
+// @require     http://code.jquery.com/jquery-3.7.1.min.js
 // @require     http://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @require     http://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
 // @require     http://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js
@@ -13,7 +13,7 @@
 // @match       *://*.redgifs.com/*
 // @connect     *
 // @icon        https://images.icon-icons.com/3251/PNG/512/panel_left_expand_regular_icon_203421.png
-// @version     2025.07.29.2359
+// @version     2025.07.30.0041
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
