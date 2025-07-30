@@ -4,46 +4,18 @@
 // @author      yodog
 // @description Fragrantica new options: use wide screen, bigger perfume pictures on shelf; bring shelf to top of page, add fragrantica.com reviews/pros/cons to fragrantica.com.br
 // @require     http://code.jquery.com/jquery.min.js
-// @require     http://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
-// @require     http://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
-// @resource    toastcss   http://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @match       *://*.fragrantica.com/*
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
 // @icon        https://images.icon-icons.com/3251/PNG/512/panel_left_expand_regular_icon_203421.png
-// @version     2025.07.22.1650
+// @version     2025.07.29.2358
 // @grant       GM_addStyle
-// @grant       GM_getResourceText
 // @grant       GM_getValue
-// @grant       GM_registerMenuCommand
 // @grant       GM_setValue
 // @grant       GM_xmlhttpRequest
+// @grant       unsafeWindow
 // @noframes
 // ==/UserScript==
-
-// -----------------------------------------------------------------------------
-//
-// -----------------------------------------------------------------------------
-
-GM_registerMenuCommand('🔄 Forçar Reload Estilos', () => {document.location.reload();});
-
-// -----------------------------------------------------------------------------
-// LOAD TOAST NOTIFICATIONS LIBRARY
-// -----------------------------------------------------------------------------
-
-/* global siiimpleToast */
-
-// @require     https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
-// @resource    toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
-// @grant       GM_addStyle
-// @grant       GM_getResourceText
-
-fnInjectStyle(GM_getResourceText("toastcss"));
-
-var toast = siiimpleToast.setOptions({
-    position: 'top|right',
-    duration: 3000,
-});
 
 // -----------------------------------------------------------------------------
 // PREVENT JQUERY CONFLICT
@@ -56,50 +28,177 @@ this.$ = this.jQuery = jQuery.noConflict(true);
 if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
 
 // -----------------------------------------------------------------------------
-// START
+// ERROR HANDLING - CAPTURING ERRORS FROM THE PAGE THAT COULD BREAK THE SCRIPT
 // -----------------------------------------------------------------------------
 
-if ((window.location.href).includes('fragrantica.com.br')) {
-    console.log('fragrantica.com');
+const isUserscriptError = (sourceOrStack) => {
+    return (sourceOrStack && (sourceOrStack.includes('blob:') || sourceOrStack.includes('userscript.html')));
+};
 
-    const css = `
-div.grid-container { max-width: unset !important ; }
-div.callout > div.grid-x { max-height: 26em !important ; }
-div.grid-x:has(img.perfume-on-shelf) { flex-flow: wrap-reverse !important ; }
-img.perfume-on-shelf { height: unset !important ; }
+// A. window.onerror (para erros síncronos)
+const originalOnError = unsafeWindow.onerror;
+unsafeWindow.onerror = function (message, source, lineno, colno, error) {
+    // Se o erro tem um 'source' e não é este script, tentar ignorar.
+    // Erros sem 'source' (ex: erro de sintaxe) ou que são claramente do userscript devem ser passados para o handler original.
+    if (source && !isUserscriptError(source)) {
+        console.warn('Userscript: Erro síncrono da página ignorado:', message, source);
+        return true; // Suprime o erro
+    }
 
-.fr-review-injetado {
-  border: 1px dashed #888;
-  margin: 1em 0;
-  padding: 0.5em;
-  background: #fafafa;
-}
+    // Se for um erro do userscript ou sem source, passe para o handler original
+    if (originalOnError) {
+        return originalOnError.apply(this, arguments);
+    }
+    return false; // Deixa o erro ser Uncaught se não houver handler original
+};
+
+// B. addEventListener para 'error' (para erros síncronos, DOM errors)
+unsafeWindow.addEventListener('error', function (event) {
+    const source = event.filename || '';
+    // console.log('Erro via addEventListener. Source:', source, 'Message:', event.message || event.error);
+
+    // Ignorar se o erro vem de um arquivo .js da página e não é seu userscript ou se é um erro genérico sem source específico do seu userscript.
+    if (source && !isUserscriptError(source)) {
+        console.warn('Userscript: Erro da página via addEventListener ignorado:', event.message || event.error, source);
+        event.preventDefault(); // Impede o comportamento padrão
+        event.stopImmediatePropagation(); // Impede que outros listeners recebam o evento
+    }
+    // Se for um erro do userscript ou sem source, não previne.
+}, true); // Use `true` para fase de captura
+
+// C. Captura de Erros em Promises Não Tratadas (para "Uncaught (in promise)")
+unsafeWindow.addEventListener('unhandledrejection', function (event) {
+    const reason = event.reason || {};
+    // Para rejections, é mais difícil determinar a origem do arquivo, então precisamos inspecionar o stack trace, se disponível.
+    const stack = reason.stack || '';
+
+    // Se a stack trace existe e não parece vir do seu script, ignore. Ou seja, se o erro não foi gerado dentro do seu userscript.
+    if (stack && !isUserscriptError(stack)) {
+        console.warn('Userscript: Rejeição de promise não tratada da página ignorada:', reason);
+        event.preventDefault(); // Impede o comportamento padrão de "Uncaught"
+        event.stopImmediatePropagation();
+    }
+    // Se a stack for do seu userscript ou for indeterminada, não previna.
+});
+
+// -----------------------------------------------------------------------------
+// MAIN
+// -----------------------------------------------------------------------------
+
+// ---
+// funcoes que podem podem ser executadas no document start
+// ---
+
+// criar meu elemento que sera o container para injetar os reviews e pros/cons
+$('<div id="meuelemento"></div>').prependTo('reviews-wrapper');
+
+// adicionar socialcard como primeira imagem do perfume
+const socialcardlink = $('div#toptop a[href*=perfume-social-cards]').attr('href');
+const container = $('div.grid-x.grid-margin-x.grid-margin-y > div.cell.small-6:has(img[itemprop=image])');
+const socialcard = container.clone().find('img[itemprop=image]').attr('src', socialcardlink).removeAttr('srcset height width');
+socialcard.prependTo(container);
+
+// injetar meu css na pagina
+const css = `
+    div.grid-container { max-width: unset !important ; }
+    div.callout > div.grid-x { max-height: 26em !important ; }
+    /* div.grid-x:has(img.perfume-on-shelf) { flex-flow: wrap-reverse !important ; } */
+    img.perfume-on-shelf { height: unset !important ; }
+
+    #meuelemento {
+    border: 1px dotted red;
+    }
+
+    .fr-review-injetado {
+    border: 1px dashed #888;
+    margin: 1em 0;
+    padding: 0.5em;
+    background: #fafafa;
+    }
 `;
 
-    fnInjectStyle(css);
+fnInjectStyle(css);
 
-    //const elementoProsEContras = $('div.grid-x.grid-margin-x.grid-margin-y:has(:contains(Pros))');
-    //console.log('elementoProsEContras', elementoProsEContras);
-    //injetarElementoDaPaginaInglesa('#pros-cons-section', '.perfume-main-content', 'append');
+// ---
+// funcoes assincronas
+// ---
 
-    if ((window.location.href).includes('perfume')) {
-        const socialcardlink = $('div#toptop a[href*=perfume-social-cards]').attr('href');
-        const container = $('div.grid-x.grid-margin-x.grid-margin-y > div.cell.small-6:has(img[itemprop=image])');
-        const socialcard = container.clone().find('img[itemprop=image]').attr('src', socialcardlink).removeAttr('srcset height width');
-        socialcard.prependTo(container);
+(async () => {
+    if ((window.location.href).includes('fragrantica.com.br/perfume')) {
+        const paginaEN = await obterPaginaEmInglesCompleta();
+        const reviewsEn = parseReviews(paginaEN);
+        const prosContrasElemento = parseProsCons(paginaEN);
 
-        injetarReviewsDaPaginaInglesa();
-        injetarProsContrasDaPaginaInglesa();
-
-        $(document, 'body').on('click load pageshow ready scroll', () => {
-            $('iframe#idIframeMMM').remove();
-            $('input#showDiagram:not(:checked)').click();
-        });
+        const meuelemento = await waitForElement('#meuelemento');
+        if (meuelemento) {
+            console.log('meuelemento encontrado -> injetando...', meuelemento);
+            if (reviewsEn) {
+                console.log('reviewsEn encontrado -> chamando promises...');
+                await injetarReviews(reviewsEn, meuelemento);
+            }
+            if (prosContrasElemento) {
+                console.log('prosContrasElemento encontrado -> chamando promises...');
+                await injetarProsCons(prosContrasElemento, meuelemento);
+            }
+        }
     }
-}
+
+    const showDiagram = await waitForElement('#showDiagram:not(:checked)');
+    if (showDiagram) {
+        showDiagram.click();
+        console.log('showDiagram encontrado -> clicando...');
+    }
+
+    const iframe = await waitForElement('#idIframeMMM');
+    if (iframe) {
+        iframe.remove();
+        console.log('idIframeMMM encontrado -> removendo...');
+    }
+})();
+
+// ---
+// funcoes que dependem do DOM
+// ---
+
+$().ready(() => {
+    console.log('DOM e jQuery prontos');
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    window.scrollTo(0, 0);
+});
+
+// ---
+// funcoes que dependem de outros eventos
+// ---
+
+$([window, document, 'body']).on('load pageshow ready', (e) => {
+    //console.log(`[${performance.now().toFixed(2)}ms] evento: ${e.type}`, e);
+});
 
 // -----------------------------------------------------------------------------
 // AUX FUNCTIONS
+// -----------------------------------------------------------------------------
+
+// Função auxiliar que espera um elemento aparecer no DOM
+function waitForElement(selector) {
+    return new Promise(resolve => {
+        if (document.querySelector(selector)) {
+            console.log('waitForElement', 'elemento ja existe:', selector);
+            return resolve(document.querySelector(selector));
+        }
+
+        console.log('waitForElement', 'monitorando:', selector);
+        const observer = new MutationObserver(mutations => {
+            if (document.querySelector(selector)) {
+                resolve(document.querySelector(selector));
+                console.log('waitForElement', 'elemento encontrado:', selector);
+                observer.disconnect();
+            }
+        });
+
+        observer.observe(document.body, {childList: true, subtree: true});
+    });
+}
+
 // -----------------------------------------------------------------------------
 
 function fnInjectStyle(css) {
@@ -111,52 +210,6 @@ function fnInjectStyle(css) {
         console.warn('GM_addStyle falhou, usando fallback com jQuery');
         $('<style>').attr('type', 'text/css').text(css).addClass('cssinjetado').appendTo('head');
     }
-}
-
-// -----------------------------------------------------------------------------
-
-function fnSaveChanges() {
-
-    $('body').on("click", "#reloadnow", function () {
-        $(this).fadeOut("fast", function () {document.location.reload(false);});
-    });
-
-    var msg_success = 'Settings saved';
-    toast.success(msg_success);
-
-    var msg_reload = '<span id="reloadnow"> Some changes will be applied after you reload the page. <br> Click here to reload now </span>';
-    if (shouldreload) toast.message(msg_reload, {delay: 3000, duration: 7000});
-}
-
-// -----------------------------------------------------------------------------
-
-function sortUsingNestedText(parentSelector, childSelector, keySelector, keyIsDate = false) {
-
-    console.log('---> ordenando o elemento', parentSelector);
-
-    parentSelector = $(parentSelector);
-
-    var items = parentSelector.children(childSelector).sort(function (a, b) {
-        var vA = $(keySelector, a).text().trim();
-        var vB = $(keySelector, b).text().trim();
-
-        //console.log('texto', vA, vB);
-
-        // converte dd/mm/yyyy para yyyy/mm/dd
-        if (keyIsDate) {
-            vA = new Date(vA.split('/').reverse().join('/'));
-            if (isNaN(vA.getTime())) vA = new Date('2029/01/01');
-
-            vB = new Date(vB.split('/').reverse().join('/'));
-            if (isNaN(vB.getTime())) vB = new Date('2029/01/01');
-        }
-
-        //console.log('data', vA, vB);
-        return (vA < vB) ? -1 : (vA > vB) ? 1 : 0;
-    });
-
-    //console.log('items', items);
-    parentSelector.append(items);
 }
 
 // -----------------------------------------------------------------------------
@@ -177,227 +230,159 @@ function fetchAsyncGM(options) {
 
 // -----------------------------------------------------------------------------
 
-/**
- * (Versão async/await)
- * Busca um elemento de uma página correspondente no fragrantica.com e o injeta na página atual do fragrantica.com.br.
- *
- * @param {string} selectorDoElementoFonte - O seletor CSS do elemento a ser copiado da página em inglês. Ex: '#notas_de_topo'.
- * @param {string} selectorDoElementoAlvo - O seletor CSS do elemento na página em português onde o novo conteúdo será injetado. Ex: '#bloco_principal'.
- * @param {string} [posicaoDeInjecao='append'] - Como injetar o elemento. Opções: 'append', 'prepend', 'before', 'after'.
- */
+async function obterPaginaEmInglesCompleta() {
+    console.log('obterPaginaEmInglesCompleta', 'Iniciando');
+    if (!location.hostname.includes('fragrantica.com.br')) return null;
 
-async function injetarElementoDaPaginaInglesa(selectorDoElementoFonte, selectorDoElementoAlvo, posicaoDeInjecao = 'append') {
-    // 1. Só executa o código se estivermos no site em português
-    if (!window.location.hostname.includes('fragrantica.com.br')) {
-        return;
-    }
-
-    const elementoAlvo = $(selectorDoElementoAlvo);
-    if (elementoAlvo.length === 0) {
-        console.warn(`[Userscript] Elemento alvo "${selectorDoElementoAlvo}" não encontrado na página. A injeção foi cancelada.`);
-        return;
-    }
-
-    const urlAtual = window.location.href;
-    const urlFonte = urlAtual.replace('fragrantica.com.br', 'fragrantica.com');
-
-    console.log(`[Userscript] Buscando elemento "${selectorDoElementoFonte}" de: ${urlFonte}`);
+    const urlEn = location.href.replace('.com.br', '.com') + '#all-reviews';
 
     try {
-        // 2. Usa 'await' para esperar a resposta da requisição de forma não-bloqueante
-        const response = await fetchAsyncGM({
-            method: 'GET',
-            url: urlFonte
-        });
+        const response = await fetchAsyncGM({method: 'GET', url: urlEn});
+        console.log('obterPaginaEmInglesCompleta', 'response', response);
 
-        // O código abaixo só executa DEPOIS que a requisição for bem-sucedida
-        const parser = new DOMParser();
-        const docFonte = parser.parseFromString(response.responseText, 'text/html');
-        const elementoParaInjetar = $(docFonte).find(selectorDoElementoFonte);
-
-        if (elementoParaInjetar.length > 0) {
-            console.log(`[Userscript] Elemento "${selectorDoElementoFonte}" encontrado. Injetando em "${selectorDoElementoAlvo}".`);
-
-            // Corrige URLs relativas de links e imagens
-            elementoParaInjetar.find('a[href^="/"]').each(function () {
-                $(this).attr('href', 'https://www.fragrantica.com' + $(this).attr('href'));
-            });
-            elementoParaInjetar.find('img[src^="/"]').each(function () {
-                $(this).attr('src', 'https://www.fragrantica.com' + $(this).attr('src'));
-            });
-
-            // Injeta o elemento na página
-            switch (posicaoDeInjecao) {
-                case 'prepend': elementoAlvo.prepend(elementoParaInjetar); break;
-                case 'before': elementoAlvo.before(elementoParaInjetar); break;
-                case 'after': elementoAlvo.after(elementoParaInjetar); break;
-                default: elementoAlvo.append(elementoParaInjetar); break;
-            }
-        } else {
-            console.warn(`[Userscript] Elemento "${selectorDoElementoFonte}" não foi encontrado na página de origem.`);
+        if (response.status >= 200 && response.status < 400) {
+            const parser = new DOMParser();
+            paginaEN = parser.parseFromString(response.responseText, 'text/html');
+            console.log('obterPaginaEmInglesCompleta', 'Página em inglês obtida e armazenada em paginaEN (completa usando fetchAsyncGM).');
+            return paginaEN;
         }
-
-    } catch (error) {
-        // 3. O bloco 'catch' lida com erros de rede ou respostas com status de erro (ex: 404, 500)
-        console.error(`[Userscript] Falha ao buscar elemento de ${urlFonte}.`, error);
+        else {
+            console.error('obterPaginaEmInglesCompleta', 'Falha ao buscar a página em inglês (completa usando fetchAsyncGM). Status:', response.status);
+            paginaEN = null;
+            return null;
+        }
+    }
+    catch (error) {
+        console.error('obterPaginaEmInglesCompleta', 'Erro ao buscar a página em inglês (completa usando fetchAsyncGM):', error);
+        paginaEN = null;
+        return null;
     }
 }
 
 // -----------------------------------------------------------------------------
 
-async function fetchWithRetries(url, options = {}, retries = 5, baseDelay = 1000) {
-  for (let attempt = 0; attempt <= retries; attempt++) {
-    const resp = await fetchAsyncGM({ method: options.method || 'GET', url, ...options });
-    if (resp.status !== 429) return resp;
+function parseProsCons(html) {
+    console.log('parseProsCons', 'Iniciando');
+    const doc = (typeof html == 'string') ? new DOMParser().parseFromString(html, 'text/html') : html;
+    const pc = doc.querySelector('pros-cons');
+    const fa = pc ? pc.querySelector(':has(div.fa-lg)') : null;
 
-    const retryMatch = resp.responseHeaders.match(/Retry-After:\s*(\S+)/i);
-    let waitMs = baseDelay * 2 ** attempt;
+    console.log('parseProsCons', 'entrada', doc);
+    console.log('parseProsCons', 'meio', pc);
+    console.log('parseProsCons', 'saida', fa);
 
-    if (retryMatch) {
-      const ra = retryMatch[1];
-      const seconds = isNaN(ra) ? (new Date(ra) - new Date()) / 1000 : parseInt(ra, 10);
-      if (!isNaN(seconds) && seconds > 0) waitMs = seconds * 1000;
+    if (fa) {
+        allReviews_ok = true;
+    }
+    else {
+        console.log('parseProsCons', 'elemento <pros-cons> nao encontrado no html');
     }
 
-    console.warn(`[MakeWide] 429 received — waiting ${Math.round(waitMs)}ms before retry #${attempt+1}`);
-    await new Promise(r => setTimeout(r, waitMs));
-  }
-  throw new Error(`Failed after ${retries + 1} attempts (429 Too Many Requests)`);
+    return fa;
 }
 
-async function buscarConteudoPaginaInglesa(urlEn) {
-    try {
-        const resp = await fetchWithRetries(urlEn);
-        return resp.responseText;
-    } catch (e) {
-        console.error('[MakeWide] Falha ao buscar página EN:', e);
-        return null;
+// -----------------------------------------------------------------------------
+
+async function injetarProsCons(html, container) {
+    console.log('injetarProsCons', 'Iniciando');
+    console.log('injetarProsCons', 'entrada', html);
+    console.log('injetarProsCons', 'container', container);
+
+    if (html && container) {
+        console.log('injetarProsCons', 'container.prepend(html)');
+        container.dataset.prosConsMerged = 'true';
+        $(container).prepend(html);
+    }
+    else {
+        console.log('injetarProsCons', 'Box de Pros/Contras encontrado vazio ou não encontrado após delay.');
     }
 }
+
+// -----------------------------------------------------------------------------
 
 function parseReviews(html) {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    const reviewsContainerEn = doc.getElementById('all-reviews');
-    if (!reviewsContainerEn) {
-        console.log('[MakeWide] Contêiner #all-reviews não encontrado na página EN para reviews.');
+    try {
+        console.log('parseReviews', 'Iniciando');
+
+        const doc = (typeof html === 'string') ? new DOMParser().parseFromString(html, 'text/html') : html;
+        const reviewsContainerEn = doc.getElementById('all-reviews');
+
+        if (!reviewsContainerEn) {
+            console.log('parseReviews', 'Contêiner #all-reviews não encontrado na página EN para reviews.');
+            return [];
+        }
+
+        let reviewsEn = $(reviewsContainerEn).find('div.fragrance-review-box[itemprop="review"]:lt(2)').toArray();
+
+        const uniqueReviewsMap = new Map();
+        reviewsEn.forEach(div => {uniqueReviewsMap.set(div.outerHTML, div);});
+        reviewsEn = Array.from(uniqueReviewsMap.values());
+
+        const parseDate = div => {
+            const span = div.querySelector('span.vote-button-legend[itemprop="datePublished"]');
+            if (!span) return new Date(0);
+            const rawDate = span.getAttribute('content') || span.textContent.trim();
+            const date = new Date(rawDate);
+            if (!isNaN(date)) {
+                const yyyy = date.getFullYear();
+                const mm = String(date.getMonth() + 1).padStart(2, '0');
+                const dd = String(date.getDate()).padStart(2, '0');
+                const hh = String(date.getHours()).padStart(2, '0');
+                const min = String(date.getMinutes()).padStart(2, '0');
+                const ss = String(date.getSeconds()).padStart(2, '0');
+                const formato = `${yyyy}-${mm}-${dd} ${hh}:${min}:${ss}`;
+                span.textContent = formato;
+                span.setAttribute('content', formato);
+            }
+            return date;
+        };
+
+        return reviewsEn.map(div => {
+            const date = parseDate(div);
+            return {div, date};
+        });
+    }
+    catch (error) {
+        console.error('parseReviews', 'Erro ao analisar as reviews:', error);
         return [];
     }
-
-    let reviewsEn = Array.from(reviewsContainerEn.querySelectorAll('div.fragrance-review-box[itemprop="review"]'));
-    const uniqueReviewsMap = new Map();
-    reviewsEn.forEach(div => {
-        uniqueReviewsMap.set(div.outerHTML, div);
-    });
-    reviewsEn = Array.from(uniqueReviewsMap.values());
-
-    const parseDate = div => {
-        const span = div.querySelector('span.vote-button-legend[itemprop="datePublished"]');
-        if (!span) return new Date(0);
-        const cd = span.getAttribute('content') || '';
-        return new Date(cd || span.textContent.trim());
-    };
-
-    return reviewsEn.map(div => ({ div, date: parseDate(div) }));
 }
 
+// -----------------------------------------------------------------------------
 
-function parseProsContras(html) {
-    const doc = new DOMParser().parseFromString(html, 'text/html');
-    console.log("Objeto recebido por parseProsContras:", doc);
-    return doc.querySelector('pros-cons');
-}
+async function injetarReviews(html, container) {
+    console.log('injetarReviews', 'Iniciando');
 
-
-
-function injetarConteudo(containerSelector, elementosParaInjetar, injectionMethod = 'appendChild') {
-    const container = document.querySelector(containerSelector);
-    if (!container) {
-        return console.error(`[MakeWide] Contêiner "${containerSelector}" não encontrado.`);
-    }
-
-    if (Array.isArray(elementosParaInjetar)) {
-        elementosParaInjetar.forEach(elemento => {
-            switch (injectionMethod) {
-                case 'prepend':
-                    container.prepend(elemento);
-                    break;
-                case 'append':
-                    container.append(elemento);
-                    break;
-                default:
-                    container.appendChild(elemento);
-                    break;
-            }
-        });
-        console.log(`[MakeWide] Injetados ${elementosParaInjetar.length} elementos em ${containerSelector} usando ${injectionMethod}.`);
-    } else if (elementosParaInjetar) {
-        switch (injectionMethod) {
-            case 'prepend':
-                container.prepend(elementosParaInjetar);
-                break;
-            case 'append':
-                container.append(elementosParaInjetar);
-                break;
-            default:
-                container.appendChild(elementosParaInjetar);
-                break;
-        }
-        console.log(`[MakeWide] Conteúdo injetado em ${containerSelector} usando ${injectionMethod}.`);
-    }
-}
-
-
-
-async function injetarReviewsDaPaginaInglesa() {
-    if (!location.hostname.includes('fragrantica.com.br')) return;
-
-    const urlEn = location.href.replace('.com.br', '.com');
-    const htmlEn = await buscarConteudoPaginaInglesa(urlEn);
-    if (!htmlEn) return;
-
-    const reviewsEn = parseReviews(htmlEn);
-    const localEls = Array.from(document.querySelectorAll('#all-reviews div.fragrance-review-box[itemprop="review"]'));
-    const parsedLocal = localEls.map(div => {
+    const parsedLocal = $('#all-reviews div.fragrance-review-box[itemprop="review"]:lt(2)').map(function () {
+        const div = this;
         const span = div.querySelector('span.vote-button-legend[itemprop="datePublished"]');
         const date = span ? new Date(span.getAttribute('content') || span.textContent.trim()) : new Date(0);
-        return { div, date, isLocal: true };
+        return {div, date, isLocal: true};
+    }).get(); // .get() converts the jQuery object back to a plain JavaScript array
+
+    const allSortedReviews = html.concat(parsedLocal).sort((a, b) => b.date - a.date);
+
+    const elementosParaInjetar = allSortedReviews.map(({div, isLocal}) => {
+        if (!isLocal) {
+            div.classList.add('fr-review-injetado');
+            div.style.borderLeft = '3px solid #007bff';
+            div.style.backgroundColor = '#f7f7f9';
+        }
+        return div;
     });
 
-    const allSortedReviews = reviewsEn.concat(parsedLocal).sort((a, b) => b.date - a.date);
-
-    const container = document.querySelector('#all-reviews');
-    if (container) {
+    if (container && elementosParaInjetar) {
         container.dataset.reviewsMerged = 'true';
-        const elementosParaInjetar = allSortedReviews.map(({ div, isLocal }) => {
-            if (!isLocal) {
-                div.classList.add('fr-review-injetado');
-                div.style.borderLeft = '3px solid #007bff';
-                div.style.backgroundColor = '#f7f7f9';
-            }
-            return div;
-        });
-        injetarConteudo('#all-reviews', elementosParaInjetar, 'appendChild');
-        console.log(`[MakeWide] Mesclados ${elementosParaInjetar.length} reviews.`);
+
+        if (Array.isArray(elementosParaInjetar)) {
+            elementosParaInjetar.forEach(elemento => container.appendChild(elemento));
+        }
+        else {
+            container.appendChild(elementosParaInjetar);
+        }
+        console.log('injetarReviews', `Mesclados ${elementosParaInjetar.length} reviews.`);
+    }
+    else {
+        console.log('injetarReviews', 'Nao injetamos reviews');
     }
 }
-
-
-async function injetarProsContrasDaPaginaInglesa() {
-    if (!location.hostname.includes('fragrantica.com.br')) return;
-
-    const urlEn = location.href.replace('.com.br', '.com');
-    const htmlEn = await buscarConteudoPaginaInglesa(urlEn);
-    if (!htmlEn) return;
-
-    await new Promise(resolve => setTimeout(resolve, 1000));
-
-    const prosContrasElemento = parseProsContras(htmlEn);
-    console.log("Objeto recebido por injetarProsContrasDaPaginaInglesa() após delay:", prosContrasElemento);
-
-    if (prosContrasElemento) {
-        injetarConteudo('#all-reviews', prosContrasElemento, 'prepend');
-    } else {
-        console.log('[MakeWide] Box de Pros/Contras encontrado vazio ou não encontrado após delay.');
-    }
-}
-
