@@ -3,7 +3,7 @@
 // @namespace   http://github.com/yodog/userscripts
 // @author      yodog
 // @description Enlarge selected pages to use the entire viewport width (perfect for wide screen monitors)
-// @require     http://code.jquery.com/jquery.min.js
+// @require     http://code.jquery.com/jquery-3.7.1.min.js
 // @require     http://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
 // @require     http://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
 // @require     http://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js
@@ -29,7 +29,7 @@
 // @match       *://*.xpi.com.br/*
 // @connect     *
 // @icon        https://cdn3.emoji.gg/emojis/6645_Stonks.png
-// @version     2025.06.02.1534
+// @version     2025.07.30.0042
 // @grant       GM_addStyle
 // @grant       GM_getResourceText
 // @grant       GM_getValue
