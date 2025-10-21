@@ -8,8 +8,8 @@
 // @match       *://*.fragrantica.com/*
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
-// @icon        https://images.icon-icons.com/3251/PNG/512/panel_left_expand_regular_icon_203421.png
-// @version     2025.07.30.0213
+// @icon        https://www.google.com/s2/favicons?domain=fragrantica.com
+// @version     2025.10.21.0022
 // @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -91,7 +91,12 @@ unsafeWindow.addEventListener('unhandledrejection', function (event) {
 // ---
 
 // criar meu elemento que sera o container para injetar os reviews e pros/cons
-$('<div id="meuelemento"></div>').prependTo('reviews-wrapper');
+// esperar ate que qualquer um dos elementos ancora exista
+//if ((window.location.href).includes('fragrantica.com.br/perfume')) {
+    //const ancorar_em = await waitForElement('reviews-wrapper, #all-reviews');
+    //const ancorar_em = document.querySelector('reviews-wrapper, #all-reviews');
+    //$('<div id="meuelemento"></div>').prependTo(ancorar_em);
+//}
 
 // adicionar socialcard como primeira imagem do perfume
 const socialcardlink = $('div#toptop a[href*=perfume-social-cards]').attr('href');
@@ -126,11 +131,15 @@ fnInjectStyle(css);
 
 (async () => {
     if ((window.location.href).includes('fragrantica.com.br/perfume')) {
+
+        const ancorar_em = await waitForElement('reviews-wrapper, #all-reviews');
+        let meuelemento = $('<div id="meuelemento"></div>').prependTo(ancorar_em);
+
         const paginaEN = await obterPaginaEmInglesCompleta();
         const reviewsEn = parseReviews(paginaEN);
         const prosContrasElemento = parseProsCons(paginaEN);
 
-        const meuelemento = await waitForElement('#meuelemento');
+        meuelemento = await waitForElement('#meuelemento');
         if (meuelemento) {
             console.log('meuelemento encontrado -> injetando...', meuelemento);
             if (reviewsEn) {
@@ -171,8 +180,10 @@ $().ready(() => {
 // funcoes que dependem de outros eventos
 // ---
 
-$([window, document, 'body']).on('load pageshow ready', (e) => {
-    //console.log(`[${performance.now().toFixed(2)}ms] evento: ${e.type}`, e);
+$([window, document, document.documentElement]).on('load pageshow ready', (e) => {
+    console.log(`[${performance.now().toFixed(2)}ms] evento: ${e.type}`, e);
+    window.scrollTo(0, document.documentElement.scrollHeight);
+    window.scrollTo(0, 0);
 });
 
 // -----------------------------------------------------------------------------
@@ -196,7 +207,7 @@ function waitForElement(selector) {
             }
         });
 
-        observer.observe(document.body, {childList: true, subtree: true});
+        observer.observe((document), {childList: true, subtree: true});
     });
 }
 
@@ -237,6 +248,7 @@ async function obterPaginaEmInglesCompleta() {
 
     const urlEn = location.href.replace('.com.br', '.com') + '#all-reviews';
 
+    let paginaEN = null
     try {
         const response = await fetchAsyncGM({method: 'GET', url: urlEn});
         console.log('obterPaginaEmInglesCompleta', 'response', response);
@@ -245,19 +257,15 @@ async function obterPaginaEmInglesCompleta() {
             const parser = new DOMParser();
             paginaEN = parser.parseFromString(response.responseText, 'text/html');
             console.log('obterPaginaEmInglesCompleta', 'Página em inglês obtida e armazenada em paginaEN (completa usando fetchAsyncGM).');
-            return paginaEN;
         }
         else {
             console.error('obterPaginaEmInglesCompleta', 'Falha ao buscar a página em inglês (completa usando fetchAsyncGM). Status:', response.status);
-            paginaEN = null;
-            return null;
         }
     }
     catch (error) {
         console.error('obterPaginaEmInglesCompleta', 'Erro ao buscar a página em inglês (completa usando fetchAsyncGM):', error);
-        paginaEN = null;
-        return null;
     }
+    return paginaEN;
 }
 
 // -----------------------------------------------------------------------------
@@ -268,15 +276,15 @@ function parseProsCons(html) {
     const pc = doc.querySelector('pros-cons');
     const fa = pc ? pc.querySelector(':has(div.fa-lg)') : null;
 
-    console.log('parseProsCons', 'entrada', doc);
-    console.log('parseProsCons', 'meio', pc);
-    console.log('parseProsCons', 'saida', fa);
+    console.debug('parseProsCons', 'entrada', doc);
+    console.debug('parseProsCons', 'meio', pc);
+    console.debug('parseProsCons', 'saida', fa);
 
     if (fa) {
-        allReviews_ok = true;
+        console.log('parseProsCons', 'elemento <pros-cons> encontrado', fa);
     }
     else {
-        console.log('parseProsCons', 'elemento <pros-cons> nao encontrado no html');
+        console.log('parseProsCons', 'elemento <pros-cons> nao encontrado', fa);
     }
 
     return fa;
@@ -285,9 +293,9 @@ function parseProsCons(html) {
 // -----------------------------------------------------------------------------
 
 async function injetarProsCons(html, container) {
-    console.log('injetarProsCons', 'Iniciando');
-    console.log('injetarProsCons', 'entrada', html);
-    console.log('injetarProsCons', 'container', container);
+    console.debug('injetarProsCons', 'Iniciando');
+    console.debug('injetarProsCons', 'entrada', html);
+    console.debug('injetarProsCons', 'container', container);
 
     if (html && container) {
         console.log('injetarProsCons', 'container.prepend(html)');
