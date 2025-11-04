@@ -9,7 +9,7 @@
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
 // @icon        https://www.google.com/s2/favicons?domain=fragrantica.com
-// @version     2025.10.21.0022
+// @version     2025.11.4.1300
 // @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -108,18 +108,25 @@ socialcard.prependTo(container);
 const css = `
     div.grid-container { max-width: unset !important ; }
     div.callout > div.grid-x { max-height: 26em !important ; }
-    /* div.grid-x:has(img.perfume-on-shelf) { flex-flow: wrap-reverse !important ; } */
+
+    /* meu perfil - versao antiga */
     img.perfume-on-shelf { height: unset !important ; }
 
-    #meuelemento {
-    border: 1px dotted red;
+    /* meu perfil - versao nova */
+    main.container { max-width: unset; }
+    img.h-14 {
+      height: unset;
+      width: -moz-available;
+      width: -webkit-fill-available;
     }
 
+    #meuelemento { border: 1px dotted red; }
+
     .fr-review-injetado {
-    border: 1px dashed #888;
-    margin: 1em 0;
-    padding: 0.5em;
-    background: #fafafa;
+      border: 1px dashed #888;
+      margin: 1em 0;
+      padding: 0.5em;
+      background: #fafafa;
     }
 `;
 
