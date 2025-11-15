@@ -9,7 +9,7 @@
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
 // @icon        https://www.google.com/s2/favicons?domain=fragrantica.com
-// @version     2025.11.4.1300
+// @version     2025.11.15.0052
 // @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -90,13 +90,31 @@ unsafeWindow.addEventListener('unhandledrejection', function (event) {
 // funcoes que podem podem ser executadas no document start
 // ---
 
-// criar meu elemento que sera o container para injetar os reviews e pros/cons
-// esperar ate que qualquer um dos elementos ancora exista
-//if ((window.location.href).includes('fragrantica.com.br/perfume')) {
-    //const ancorar_em = await waitForElement('reviews-wrapper, #all-reviews');
-    //const ancorar_em = document.querySelector('reviews-wrapper, #all-reviews');
-    //$('<div id="meuelemento"></div>').prependTo(ancorar_em);
-//}
+// trocar as imagens vagabundas pelas de alta densidade
+// remover lazy loading
+if ((window.location.href).includes('fragrantica.com.br/membros')) {
+    const observer = new MutationObserver(mutations => {
+        mutations.forEach((mutation) => {
+            if (mutation.addedNodes.length > 0) {
+                mutation.addedNodes.forEach((node) => {
+                    if (node.nodeType === 1) {
+                        node.querySelectorAll('img[loading="lazy"]').forEach(img => {
+                            img.removeAttribute('loading');
+                        });
+                        node.querySelectorAll('picture > source').forEach(source => {
+                            const oldSrcset = source.getAttribute('srcset');
+                            const [doisx, umx] = oldSrcset.split(', ');
+                            const url_2x = doisx.split(' ')[0];
+                            const url_s = url_2x.replace(/-[a-z]+(?=\.\d+\.)/, '-s');
+                            source.setAttribute('srcset', url_s);
+                        });
+                    }
+                });
+            }
+        });
+    });
+    observer.observe((document), {childList: true, subtree: true});
+}
 
 // adicionar socialcard como primeira imagem do perfume
 const socialcardlink = $('div#toptop a[href*=perfume-social-cards]').attr('href');
@@ -179,8 +197,8 @@ fnInjectStyle(css);
 
 $().ready(() => {
     console.log('DOM e jQuery prontos');
-    window.scrollTo(0, document.documentElement.scrollHeight);
-    window.scrollTo(0, 0);
+    // window.scrollTo(0, document.documentElement.scrollHeight);
+    // window.scrollTo(0, 0);
 });
 
 // ---
@@ -189,8 +207,8 @@ $().ready(() => {
 
 $([window, document, document.documentElement]).on('load pageshow ready', (e) => {
     console.log(`[${performance.now().toFixed(2)}ms] evento: ${e.type}`, e);
-    window.scrollTo(0, document.documentElement.scrollHeight);
-    window.scrollTo(0, 0);
+    // window.scrollTo(0, document.documentElement.scrollHeight);
+    // window.scrollTo(0, 0);
 });
 
 // -----------------------------------------------------------------------------
@@ -255,7 +273,7 @@ async function obterPaginaEmInglesCompleta() {
 
     const urlEn = location.href.replace('.com.br', '.com') + '#all-reviews';
 
-    let paginaEN = null
+    let paginaEN = null;
     try {
         const response = await fetchAsyncGM({method: 'GET', url: urlEn});
         console.log('obterPaginaEmInglesCompleta', 'response', response);
