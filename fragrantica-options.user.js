@@ -9,7 +9,7 @@
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
 // @icon        https://www.google.com/s2/favicons?domain=fragrantica.com
-// @version     2025.11.15.0052
+// @version     2025.11.17.1150
 // @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -132,6 +132,7 @@ const css = `
 
     /* meu perfil - versao nova */
     main.container { max-width: unset; }
+    div.shelf-element { width: 12% ; }
     img.h-14 {
       height: unset;
       width: -moz-available;
@@ -176,18 +177,18 @@ fnInjectStyle(css);
                 await injetarProsCons(prosContrasElemento, meuelemento);
             }
         }
-    }
 
-    const showDiagram = await waitForElement('#showDiagram:not(:checked)');
-    if (showDiagram) {
-        showDiagram.click();
-        console.log('showDiagram encontrado -> clicando...');
-    }
+        const showDiagram = await waitForElement('#showDiagram:not(:checked)');
+        if (showDiagram) {
+            console.log('showDiagram encontrado -> clicando...');
+            showDiagram.click();
+        }
 
-    const iframe = await waitForElement('#idIframeMMM');
-    if (iframe) {
-        iframe.remove();
-        console.log('idIframeMMM encontrado -> removendo...');
+        const iframe = await waitForElement('#idIframeMMM');
+        if (iframe) {
+            console.log('idIframeMMM encontrado -> removendo...');
+            iframe.remove();
+        }
     }
 })();
 
@@ -207,8 +208,16 @@ $().ready(() => {
 
 $([window, document, document.documentElement]).on('load pageshow ready', (e) => {
     console.log(`[${performance.now().toFixed(2)}ms] evento: ${e.type}`, e);
-    // window.scrollTo(0, document.documentElement.scrollHeight);
-    // window.scrollTo(0, 0);
+
+    if ((window.location.href).includes('fragrantica.com.br/perfume')) {
+        (async () => {
+            const carousel = await waitForElement('div.carousel');
+            if (carousel) {
+                console.log('carousel encontrado -> movendo...');
+                $('div#newreview').parent().prepend(carousel);
+            }
+        })();
+    }
 });
 
 // -----------------------------------------------------------------------------
