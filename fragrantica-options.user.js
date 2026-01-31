@@ -9,7 +9,7 @@
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
 // @icon        https://www.google.com/s2/favicons?domain=fragrantica.com
-// @version     2026.1.28.1501
+// @version     2026.1.31.259
 // @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -27,6 +27,14 @@
 this.$ = this.jQuery = jQuery.noConflict(true);
 
 if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// PREVENT ADS
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+unsafeWindow.freestarAdSlots = [];
+unsafeWindow.freestar.config = { enabled: false };
+unsafeWindow.yaContextCb = [];
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // MAIN
@@ -67,10 +75,13 @@ if ((window.location.href).includes('fragrantica.com.br/membros')) {
 
 if ((window.location.href).includes('/perfume')) {
     const socialcardlink = $('div#fragram-photos a[href*=perfume-social-cards]').attr('href');
-    const original = $('picture.max-w-full img.max-w-full[itemprop=image]').parent();
+    const original = $('picture.max-w-full img.max-w-full[itemprop=image], picture.w-full img.w-full[itemprop=image]').parent();
     const clone = original.clone(true).insertAfter(original);
     original.find('source').remove();
     original.find('img[itemprop=image]').attr('src', socialcardlink).removeAttr('srcset height width');
+    console.log('socialcardlink', socialcardlink);
+    console.log('original', original);
+    console.log('clone', clone);
 }
 
 // -----------------------------------------------------------------------------
@@ -99,7 +110,6 @@ const css = `
       border: 1px dashed #888;
       margin: 1em 0;
       padding: 0.5em;
-      background: #fafafa;
     }
 `;
 
@@ -109,13 +119,22 @@ fnInjectStyle(css);
 // registrar eventos
 // -----------------------------------------------------------------------------
 
+const elementTrackerWeakMap = new WeakMap();
+const processedAnchorsWeakMap = new WeakMap();
+const pageCacheWeakMap = new WeakMap(); // opcional para cache
+
+
 if ((window.location.href).includes('fragrantica.com.br/perfume')) {
-    onElementAppear('reviews-wrapper, #all-reviews', el => startReviewsParser(el).catch((e) => {console.log('erro em onElementAppear', e)}));
-    onElementAppear('#showDiagram:not(:checked)', el => el.click());
-    onElementAppear('#idIframeMMM', el => el.remove());
-    onElementAppear('button.group', el => { if (el.textContent.trim().includes('Mostrar votos')) {el.click();}});
-    onElementAppear('div.carousel, div.perfume-carousel-scroll', el => {$('#newreview').prepend(el.closest('div.mb-6'));});
-    onElementAppear('sup', el => { if (el.textContent.trim().includes('Sponsored')) {el.closest('div.mb-4').remove();}});
+    onElementAppear('reviews-wrapper, #all-reviews', el => {
+        startReviewsParser(el)
+            .then(() => $(el).find('[itemprop="review"]').removeAttr('style')) // remover o estilo que vem junto pois interfere no da pagina atual
+            .catch((e) => {console.log('erro em onElementAppear', e)})
+    });
+    onElementAppear('#showDiagram:not(:checked)', el => el.click(), true);
+    onElementAppear('#idIframeMMM', el => el.remove(), true);
+    onElementAppear('div#pyramid button.group', el => { if (el.textContent.trim().includes('Mostrar votos')) {el.click();}}, true);
+    onElementAppear('div.carousel, div.perfume-carousel-scroll', el => {$('#newreview').prepend(el.closest('div.mb-6'));}, true);
+    onElementAppear('sup', el => { if (el.textContent.trim().includes('Sponsored')) {el.closest(['div.mb-4', 'div.items-start']).remove();}}, true);
 }
 
 // -----------------------------------------------------------------------------
@@ -123,29 +142,39 @@ if ((window.location.href).includes('fragrantica.com.br/perfume')) {
 // -----------------------------------------------------------------------------
 
 async function startReviewsParser(ancorar_em) {
-    if (ancorar_em.dataset.reviewsHandled) {
-        console.log('ancorar_em ja existe', ancorar_em);
+
+    if (processedAnchorsWeakMap.has(ancorar_em)) {
+        console.log('ancorar_em ja existe', processedAnchorsWeakMap.get(ancorar_em));
         return;
     }
-    ancorar_em.dataset.reviewsHandled = '1';
+
+    processedAnchorsWeakMap.set(ancorar_em, {
+        seen: new Date().toString("yyyy-MM-dd HH:mm:ss"),
+        url: window.location.href,
+        processed: true
+    });
 
     let meuelemento = $('<div id="meuelemento"></div>').prependTo(ancorar_em);
 
     const paginaEN = await obterPaginaEmInglesCompleta().catch((e) => {console.log('erro em obterPaginaEmInglesCompleta', e)});
+    console.log('startReviewsParser: paginaEN retornou', paginaEN);
     if (! paginaEN) {
         console.log('startReviewsParser: paginaEN retornou vazio');
         return;
     }
 
     const reviewsEn = parseReviews(paginaEN);
+    console.log('startReviewsParser: reviewsEn retornou', reviewsEn);
+
     const prosContrasElemento = parseProsCons(paginaEN);
+    console.log('startReviewsParser: prosContrasElemento retornou', prosContrasElemento);
 
     if (reviewsEn) {
-        console.log('reviewsEn encontrado -> chamando promises...');
+        console.log('startReviewsParser: reviewsEn encontrado -> chamando promises...');
         await injetarReviews(reviewsEn, meuelemento).catch((e) => {console.log('erro em injetarReviews', e)});
     }
     if (prosContrasElemento) {
-        console.log('prosContrasElemento encontrado -> chamando promises...');
+        console.log('startReviewsParser: prosContrasElemento encontrado -> chamando promises...');
         await injetarProsCons(prosContrasElemento, meuelemento).catch((e) => {console.log('erro em injetarProsCons', e)});
     }
 }
@@ -202,17 +231,28 @@ function waitForElement(selector, timeout = 5000) {
 // USAR ASSIM:
 //   onElementAppear('#showDiagram:not(:checked)', el => { el.click(); });
 
-function onElementAppear(selector, callback) {
+function onElementAppear(selector, callback, once = false) {
     console.log('onElementAppear: monitorando', selector);
     const observer = new MutationObserver(() => {
         document.querySelectorAll(selector).forEach(el => {
-            if (el.dataset._observed) {
-                console.log('onElementAppear: elemento ja existe. ignorando', selector, el);
+            if (elementTrackerWeakMap.has(el)) {
+                console.log('onElementAppear: elemento ja existe. ignorando', elementTrackerWeakMap.get(el));
                 return;
             }
-            el.dataset._observed = '1';
-            console.log('onElementAppear: elemento encontrado', selector, el);
+
+            elementTrackerWeakMap.set(el, {
+                selector: selector,
+                seen: new Date().toString("yyyy-MM-dd HH:mm:ss"),
+                observed: true,
+                once: once
+            });
+            console.log('onElementAppear: elemento encontrado', elementTrackerWeakMap.get(el));
             callback(el);
+
+            if (once) {
+                console.log('onElementAppear: desconectando observer');
+                observer.disconnect();
+            }
         });
     });
 
@@ -251,56 +291,46 @@ function fetchAsyncGM(options) {
 // -----------------------------------------------------------------------------
 
 async function obterPaginaEmInglesCompleta() {
-    console.log('obterPaginaEmInglesCompleta', 'Iniciando');
     if (!location.hostname.includes('fragrantica.com.br')) return null;
-
     const urlEn = location.href.replace('.com.br', '.com') + '#all-reviews';
-
-    let paginaEN = null;
-    try {
-        const response = await fetchAsyncGM({method: 'GET', url: urlEn});
-        console.log('obterPaginaEmInglesCompleta', 'response', response);
-
-        if (response.status >= 200 && response.status < 400) {
-            const parser = new DOMParser();
-            paginaEN = parser.parseFromString(response.responseText, 'text/html');
-            console.log('obterPaginaEmInglesCompleta', 'Página em inglês obtida e armazenada em paginaEN (completa usando fetchAsyncGM).');
-        }
-        else {
-            console.error('obterPaginaEmInglesCompleta', 'Falha ao buscar a página em inglês (completa usando fetchAsyncGM). Status:', response.status);
-        }
-    }
-    catch (error) {
-        console.error('obterPaginaEmInglesCompleta', 'Erro ao buscar a página em inglês (completa usando fetchAsyncGM):', error);
-    }
-    return paginaEN;
+    const text = await fetchAsyncGM({ method: 'GET', url: urlEn }).then(r => r.responseText);
+    const doc = new DOMParser().parseFromString(text, 'text/html');
+    console.log('obterPaginaEmInglesCompleta', 'text', text);
+    console.log('obterPaginaEmInglesCompleta', 'doc', doc);
+    return doc;
 }
 
 // -----------------------------------------------------------------------------
 
-function parseProsCons(html) {
-    console.log('parseProsCons', 'Iniciando');
-    const doc = (typeof html == 'string') ? new DOMParser().parseFromString(html, 'text/html') : html;
-    const pc = doc.querySelector('pros-cons');
-    const fa = pc ? pc.querySelector(':has(div.fa-lg)') : null;
+function parseProsCons(htmlOrDoc) {
+    const doc = (typeof htmlOrDoc === 'string') ? new DOMParser().parseFromString(htmlOrDoc, 'text/html') : htmlOrDoc;
 
-    console.debug('parseProsCons', 'entrada', doc);
-    console.debug('parseProsCons', 'meio', pc);
-    console.debug('parseProsCons', 'saida', fa);
+    const cached = pageCacheWeakMap.get(doc)?.prosCons;
+    if (cached !== undefined) return cached;
 
-    if (fa) {
-        console.log('parseProsCons', 'elemento <pros-cons> encontrado', fa);
-    }
-    else {
-        console.log('parseProsCons', 'elemento <pros-cons> nao encontrado', fa);
-    }
+    const $doc = $(doc);
 
-    return fa;
+    const result =
+        $doc.find('pros-cons:has(div.fa-lg)').get(0) ??
+        $doc.find('[section-id=pros-cons]').get(0) ??
+        $doc.find('h3:contains("What People Say")').parent().parent().get(0) ??
+        null;
+
+    pageCacheWeakMap.set(doc, { ...(pageCacheWeakMap.get(doc) ?? {}), prosCons: result });
+
+    console.debug('parseProsCons', 'doc', doc);
+    console.debug('parseProsCons', '$doc', $doc);
+    console.debug('parseProsCons', 'result', result);
+
+    return result;
 }
 
 // -----------------------------------------------------------------------------
 
 async function injetarProsCons(html, container) {
+
+    container = container instanceof jQuery ? container[0] : container;
+
     console.debug('injetarProsCons', 'Iniciando');
     console.debug('injetarProsCons', 'entrada', html);
     console.debug('injetarProsCons', 'container', container);
@@ -339,6 +369,19 @@ function parseReviews(html) {
         console.log('parseReviews', 'Iniciando');
 
         const doc = (typeof html === 'string') ? new DOMParser().parseFromString(html, 'text/html') : html;
+
+        // verificar se temos cache e retorna-lo
+        if (pageCacheWeakMap.has(doc)) {
+            const cache = pageCacheWeakMap.get(doc);
+            if (cache.reviews == undefined) {
+                console.log('parseReviews: nao temos cache para o doc', cache);
+            }
+            else {
+                console.log('parseReviews: Retornando do cache WeakMap');
+                return cache.reviews;
+            }
+        }
+
         const reviewsContainerEn = doc.getElementById('all-reviews');
 
         if (!reviewsContainerEn) {
@@ -354,7 +397,18 @@ function parseReviews(html) {
         reviewsEn = Array.from(uniqueReviewsMap.values());
 
         // Usa função utilitária para extrair review e data
-        return reviewsEn.map(div => extractReviewDate(div));
+        const result = reviewsEn.map(div => extractReviewDate(div));
+
+        // armazenar resultado no cache
+        if (! pageCacheWeakMap.has(doc)) {
+            pageCacheWeakMap.set(doc, {});
+        }
+        pageCacheWeakMap.get(doc).reviews = result;
+
+        return result;
+
+        // Usa função utilitária para extrair review e data
+        //return reviewsEn.map(div => extractReviewDate(div));
     }
     catch (error) {
         console.error('parseReviews', 'Erro ao analisar as reviews:', error);
@@ -380,11 +434,12 @@ async function injetarReviews(parsedReviews, container) {
     const elementosParaInjetar = allSortedReviews.map(({div, isLocal}) => {
         if (!isLocal) {
             div.classList.add('fr-review-injetado');
-            div.style.borderLeft = '3px solid #007bff';
-            div.style.backgroundColor = '#f7f7f9';
         }
         return div;
     });
+
+    console.log('injetarReviews', 'parsedReviews', parsedReviews);
+    console.log('injetarReviews', 'container', container);
 
     if (container && elementosParaInjetar) {
         container.dataset.reviewsMerged = 'true';
