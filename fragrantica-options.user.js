@@ -4,12 +4,12 @@
 // @author      yodog
 // @description Fragrantica new options: use wide screen, bigger perfume pictures on shelf; bring shelf to top of page, add fragrantica.com reviews/pros/cons to fragrantica.com.br
 // @require     http://code.jquery.com/jquery-3.7.1.min.js
-// @require     https://cdnjs.cloudflare.com/ajax/libs/datejs/1.0/date.min.js
+// @require     https://cdnjs.cloudflare.com/ajax/libs/sugar/2.0.6/sugar.min.js
 // @match       *://*.fragrantica.com/*
 // @match       *://*.fragrantica.com.br/*
 // @connect     *
 // @icon        https://www.google.com/s2/favicons?domain=fragrantica.com
-// @version     2026.1.31.259
+// @version     2026.2.20.0009
 // @grant       GM_addStyle
 // @grant       GM_getValue
 // @grant       GM_setValue
@@ -24,16 +24,32 @@
 
 /* global $, jQuery */
 
-this.$ = this.jQuery = jQuery.noConflict(true);
+this.$ = this.jQuery = jQuery.noConflict(true); // true remove o jquery original da pagina
 
 if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
+
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+// sugar.js
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
+
+// -----------------------------------------------------------------------------
+// sugar.js pode ser 'injetado' de 3 formas diferentes, sendo o modo 'extend' o mais poderoso
+// Sugar.extend() no escopo global do script mapeia novos metodos diretamente em natives e prototypes
+// isso adiciona centenas de novas funcoes para numeros, datas e strings
+// docs aqui: https://sugarjs.com/
+//
+// neste script nao vou usar extend() completo porque quero somente um parse rapido na funcao de datas
+// e o @require acima ja carrega o objeto global 'Sugar' com seus namespaces
+// -----------------------------------------------------------------------------
+
+Sugar.Date.extend();
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 // PREVENT ADS
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
 
 unsafeWindow.freestarAdSlots = [];
-unsafeWindow.freestar.config = { enabled: false };
+unsafeWindow.freestar.config = {enabled: false};
 unsafeWindow.yaContextCb = [];
 
 // * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
@@ -125,16 +141,18 @@ const pageCacheWeakMap = new WeakMap(); // opcional para cache
 
 
 if ((window.location.href).includes('fragrantica.com.br/perfume')) {
-    onElementAppear('reviews-wrapper, #all-reviews', el => {
+    // possiveis elementos: div.reviewstrigger, reviews-wrapper-new, reviews-wrapper, #all-reviews, [section-id="reviews"]
+    onElementAppear('#all-reviews', el => {
         startReviewsParser(el)
             .then(() => $(el).find('[itemprop="review"]').removeAttr('style')) // remover o estilo que vem junto pois interfere no da pagina atual
-            .catch((e) => {console.log('erro em onElementAppear', e)})
-    });
+            .catch((e) => {console.log('erro em onElementAppear', e);})
+            .finally(() => {console.log('onElementAppear -> startReviewsParser finalizou para', el);});
+    }, false);
     onElementAppear('#showDiagram:not(:checked)', el => el.click(), true);
     onElementAppear('#idIframeMMM', el => el.remove(), true);
-    onElementAppear('div#pyramid button.group', el => { if (el.textContent.trim().includes('Mostrar votos')) {el.click();}}, true);
+    onElementAppear('div#pyramid button.group', el => {if (el.textContent.trim().includes('Mostrar votos')) {el.click();} }, true);
     onElementAppear('div.carousel, div.perfume-carousel-scroll', el => {$('#newreview').prepend(el.closest('div.mb-6'));}, true);
-    onElementAppear('sup', el => { if (el.textContent.trim().includes('Sponsored')) {el.closest(['div.mb-4', 'div.items-start']).remove();}}, true);
+    onElementAppear('sup', el => {if (el.textContent.trim().includes('Sponsored')) {el.closest(['div.mb-4', 'div.items-start']).remove();} }, true);
 }
 
 // -----------------------------------------------------------------------------
@@ -144,7 +162,7 @@ if ((window.location.href).includes('fragrantica.com.br/perfume')) {
 async function startReviewsParser(ancorar_em) {
 
     if (processedAnchorsWeakMap.has(ancorar_em)) {
-        console.log('ancorar_em ja existe', processedAnchorsWeakMap.get(ancorar_em));
+        console.log('startReviewsParser', 'ancorar_em ja existe', processedAnchorsWeakMap.get(ancorar_em));
         return;
     }
 
@@ -154,11 +172,12 @@ async function startReviewsParser(ancorar_em) {
         processed: true
     });
 
-    let meuelemento = $('<div id="meuelemento"></div>').prependTo(ancorar_em);
+    let meuelemento = $('#meuelemento').length ? $('#meuelemento') : $('<div id="meuelemento"></div>');
+    meuelemento.prependTo(ancorar_em);
 
-    const paginaEN = await obterPaginaEmInglesCompleta().catch((e) => {console.log('erro em obterPaginaEmInglesCompleta', e)});
+    const paginaEN = await obterPaginaEmInglesCompleta().catch((e) => {console.log('erro em obterPaginaEmInglesCompleta', e);});
     console.log('startReviewsParser: paginaEN retornou', paginaEN);
-    if (! paginaEN) {
+    if (!paginaEN) {
         console.log('startReviewsParser: paginaEN retornou vazio');
         return;
     }
@@ -171,11 +190,11 @@ async function startReviewsParser(ancorar_em) {
 
     if (reviewsEn) {
         console.log('startReviewsParser: reviewsEn encontrado -> chamando promises...');
-        await injetarReviews(reviewsEn, meuelemento).catch((e) => {console.log('erro em injetarReviews', e)});
+        await injetarReviews(reviewsEn, meuelemento).catch((e) => {console.log('erro em injetarReviews', e);});
     }
     if (prosContrasElemento) {
         console.log('startReviewsParser: prosContrasElemento encontrado -> chamando promises...');
-        await injetarProsCons(prosContrasElemento, meuelemento).catch((e) => {console.log('erro em injetarProsCons', e)});
+        await injetarProsCons(prosContrasElemento, meuelemento).catch((e) => {console.log('erro em injetarProsCons', e);});
     }
 }
 
@@ -226,13 +245,14 @@ function waitForElement(selector, timeout = 5000) {
 // -----------------------------------------------------------------------------
 
 // Funcao (nao bloqueante) auxiliar que espera um elemento aparecer no DOM
-// IMPORTANTE: nao abusar. monitora constantemente, sem observer.disconnect();
+// IMPORTANTE: nao abusar. monitora constantemente se once=false;
 //
 // USAR ASSIM:
 //   onElementAppear('#showDiagram:not(:checked)', el => { el.click(); });
 
 function onElementAppear(selector, callback, once = false) {
-    console.log('onElementAppear: monitorando', selector);
+    console.log('onElementAppear: iniciando', arguments);
+
     const observer = new MutationObserver(() => {
         document.querySelectorAll(selector).forEach(el => {
             if (elementTrackerWeakMap.has(el)) {
@@ -242,7 +262,6 @@ function onElementAppear(selector, callback, once = false) {
 
             elementTrackerWeakMap.set(el, {
                 selector: selector,
-                seen: new Date().toString("yyyy-MM-dd HH:mm:ss"),
                 observed: true,
                 once: once
             });
@@ -293,7 +312,7 @@ function fetchAsyncGM(options) {
 async function obterPaginaEmInglesCompleta() {
     if (!location.hostname.includes('fragrantica.com.br')) return null;
     const urlEn = location.href.replace('.com.br', '.com') + '#all-reviews';
-    const text = await fetchAsyncGM({ method: 'GET', url: urlEn }).then(r => r.responseText);
+    const text = await fetchAsyncGM({method: 'GET', url: urlEn}).then(r => r.responseText);
     const doc = new DOMParser().parseFromString(text, 'text/html');
     console.log('obterPaginaEmInglesCompleta', 'text', text);
     console.log('obterPaginaEmInglesCompleta', 'doc', doc);
@@ -311,12 +330,11 @@ function parseProsCons(htmlOrDoc) {
     const $doc = $(doc);
 
     const result =
-        $doc.find('pros-cons:has(div.fa-lg)').get(0) ??
         $doc.find('[section-id=pros-cons]').get(0) ??
         $doc.find('h3:contains("What People Say")').parent().parent().get(0) ??
         null;
 
-    pageCacheWeakMap.set(doc, { ...(pageCacheWeakMap.get(doc) ?? {}), prosCons: result });
+    pageCacheWeakMap.set(doc, {...(pageCacheWeakMap.get(doc) ?? {}), prosCons: result});
 
     console.debug('parseProsCons', 'doc', doc);
     console.debug('parseProsCons', '$doc', $doc);
@@ -348,16 +366,21 @@ async function injetarProsCons(html, container) {
 // -----------------------------------------------------------------------------
 
 function extractReviewDate(div, markLocal = false) {
-    const span = div.querySelector('span.vote-button-legend[itemprop="datePublished"]');
-    const rawDate = span ? (span.textContent.trim() || span.getAttribute('content')) : "";
-    const timestamp = Date.parse(rawDate);
-    const date = isNaN(timestamp) ? new Date(0) : new Date(timestamp);
-    const formatted = date.toString("yyyy-MM-dd HH:mm:ss"); // Usando date.js
 
-    if (span && date) {
-        span.textContent = formatted;
-        span.setAttribute('content', formatted);
-    }
+    const user = div.querySelector('span.idLinkify').textContent.trim() || div.querySelector('span.tw-username-link').textContent.trim() || 'user-nao-encontrado';
+    const span = div.querySelector('span[itemprop="datePublished"]') || div.querySelector('fromunixtimenew') || null;
+    const rawDate = span ? (span.textContent.trim() || span.getAttribute('content') || span.getAttribute('unixtime')) : '';
+
+    const date = Date.create(rawDate);
+    const formatted = date?.isValid() ? date.format('{yyyy}-{MM}-{dd} {HH}:{mm}:{ss}') : 'data-formatada-invalida';
+
+    span.textContent = formatted;
+    span.setAttribute('content', formatted);
+    span?.classList.replace('hidden', 'tw-text-muted-sm');
+
+    console.log('extractReviewDate', user, 'rawDate', rawDate);
+    console.log('extractReviewDate', user, 'date', date);
+    console.log('extractReviewDate', user, 'formatted', formatted);
 
     return markLocal ? {div, date, formatted, isLocal: true} : {div, date, formatted};
 }
@@ -395,20 +418,18 @@ function parseReviews(html) {
         const uniqueReviewsMap = new Map();
         reviewsEn.forEach(div => uniqueReviewsMap.set(div.outerHTML, div));
         reviewsEn = Array.from(uniqueReviewsMap.values());
+        console.log('parseReviews', 'reviewsEn', reviewsEn);
 
         // Usa função utilitária para extrair review e data
         const result = reviewsEn.map(div => extractReviewDate(div));
 
         // armazenar resultado no cache
-        if (! pageCacheWeakMap.has(doc)) {
+        if (!pageCacheWeakMap.has(doc)) {
             pageCacheWeakMap.set(doc, {});
         }
         pageCacheWeakMap.get(doc).reviews = result;
 
         return result;
-
-        // Usa função utilitária para extrair review e data
-        //return reviewsEn.map(div => extractReviewDate(div));
     }
     catch (error) {
         console.error('parseReviews', 'Erro ao analisar as reviews:', error);
