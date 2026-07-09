@@ -2,7 +2,7 @@
 // @name            Force Forms AutoComplete
 // @namespace       https://github.com/yodog/userscripts
 // @author          RASG
-// @version         2026.07.09.1004
+// @version         2026.07.09.1005
 // @description     Forces the autocomplete attribute for all forms and input fields in the page
 // @require         http://code.jquery.com/jquery-3.7.1.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
@@ -100,7 +100,7 @@ document.addEventListener('copy', allowEvent, true);
 document.addEventListener('paste', allowEvent, true);
 
 // -----------------------------------------------------------------------------
-// KNOWN FUNCTIONS THAT PREVENTS AUTOCOMPLETE FROM WORKING
+// DISABLE KNOWN FUNCTIONS THAT PREVENTS AUTOCOMPLETE FROM WORKING
 // -----------------------------------------------------------------------------
 
 unsafeWindow.C = function(G) { return false };
