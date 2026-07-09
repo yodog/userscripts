@@ -2,7 +2,7 @@
 // @name            Force Forms AutoComplete
 // @namespace       https://github.com/yodog/userscripts
 // @author          RASG
-// @version         2026.07.09.1003
+// @version         2026.07.09.1004
 // @description     Forces the autocomplete attribute for all forms and input fields in the page
 // @require         http://code.jquery.com/jquery-3.7.1.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
@@ -88,7 +88,7 @@ $(function() {
 });
 
 // -----------------------------------------------------------------------------
-// RE-ENABLE EVENTS THATS WEBPAGES INSIST ON HIJACKING
+// RE-ENABLE EVENTS THAT WEBPAGES INSIST ON HIJACKING
 // -----------------------------------------------------------------------------
 
 var allowEvent = function(e){
