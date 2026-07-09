@@ -2,7 +2,7 @@
 // @name            Force Forms AutoComplete
 // @namespace       https://github.com/yodog/userscripts
 // @author          RASG
-// @version         2025.07.30.0043
+// @version         2026.07.09.1003
 // @description     Forces the autocomplete attribute for all forms and input fields in the page
 // @require         http://code.jquery.com/jquery-3.7.1.min.js
 // @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
@@ -61,12 +61,23 @@ function togglePassword() {
 };
 
 function parse(element) {
+    var $self = $(element);
+
+    // o selector ':input' busca todos os controles de formulario (input, textarea, select, button)
+    // tambem vamos adicionar o proprio elemento caso ele seja um form, fieldset ou controle
+    var $targets = $self.find(':input, fieldset').add($self.filter('form, fieldset, :input'));
+
+    // remover disabled e readonly de tudo que foi encontrado
     if ( cfg.get("enable_field") ) {
-        $('input', element).andSelf().removeAttr("disabled readonly").removeProp("disabled readonly");
+        $targets.removeAttr("disabled readonly").removeProp("disabled readonly");
     }
+
+    // liga o autocomplete apenas nos elementos que realmente suportam (button e fieldset não suportam)
     if ( cfg.get("save_password") ) {
-        $('input', element).andSelf().attr("autocomplete", "on").prop("autocomplete", "on");
+        var $autoCompleteTargets = $targets.filter('form, input, textarea, select');
+        $autoCompleteTargets.attr("autocomplete", "on").prop("autocomplete", "on");
     }
+
     togglePassword();
 }
 
@@ -75,6 +86,18 @@ $(function() {
         parse(this)
     });
 });
+
+// -----------------------------------------------------------------------------
+// RE-ENABLE EVENTS THATS WEBPAGES INSIST ON HIJACKING
+// -----------------------------------------------------------------------------
+
+var allowEvent = function(e){
+  e.stopImmediatePropagation();
+  return true;
+};
+
+document.addEventListener('copy', allowEvent, true);
+document.addEventListener('paste', allowEvent, true);
 
 // -----------------------------------------------------------------------------
 // KNOWN FUNCTIONS THAT PREVENTS AUTOCOMPLETE FROM WORKING
