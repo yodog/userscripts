@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name            Melhorador de lojas online
-// @namespace       http://stackoverflow.com/users/982924/rasg
+// @namespace       http://github.com/yodog/userscripts
 // @author          RASG
 // @description:en  Brazillian online sale sites are awful. This is my attempt to fix that.
 // @description:pt  Bora melhorar o layout das nossas lojas online.
@@ -9,12 +9,14 @@
 // @require         https://cdn.jsdelivr.net/npm/siiimple-toast/dist/siiimple-toast.min.js
 // @require         https://raw.githubusercontent.com/yodog/userscripts/master/online-store-beautifier/boletando.js
 // @require         https://raw.githubusercontent.com/yodog/userscripts/master/online-store-beautifier/magazinevoce.js
+// @require         https://raw.githubusercontent.com/yodog/userscripts/master/online-store-beautifier/mercadolivre.js
 // @require         https://raw.githubusercontent.com/yodog/userscripts/master/online-store-beautifier/pelando.js
 // @resource        toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include         http*://*boletando.com/*
 // @include         http*://*magazinevoce.com.br/*
+// @include         http*://*mercadolivre.com.br/*
 // @icon            https://www.google.com/s2/favicons?domain=pelando.com.br
-// @version         2021.09.10.1449
+// @version         2026.08.12.1812
 // @grant           GM_addStyle
 // @grant           GM_getMetadata
 // @grant           GM_getResourceText
@@ -28,8 +30,8 @@
 // ==/UserScript==
 
 // -----------------------------------------------------------------------------
-// DONE: magazinevoce.com.br
-// TODO: americanas.com.br boletando.com extra.com.br mercadolivre.com.br pelando.com.br
+// DONE: magazinevoce.com.br mercadolivre.com.br
+// TODO: americanas.com.br boletando.com extra.com.br pelando.com.br
 // -----------------------------------------------------------------------------
 
 // -----------------------------------------------------------------------------
@@ -94,6 +96,15 @@ catch(err) {
 // -----------------------------------------------------------------------------
 
 var shouldreload = false;
+var cssinjetado  = {};   // dedicar CSS de injecao (hoisted gera bug se ficar no fim)
+
+// registro das lojas: cada uma fornece seus parametros
+var _lojas = [
+    { nome: 'boletando',    debounce: 100, aplicar: aplicar_boletando },
+    { nome: 'magazinevoce', debounce: 100, aplicar: aplicar_magazinevoce },
+    { nome: 'mercadolivre', debounce: 250, aplicar: aplicar_mercadolivre },
+    { nome: 'pelando',      debounce: 250, aplicar: aplicar_mercadolivre },
+];
 
 // apply imediately at document start
 fnCheckChanges();
@@ -103,8 +114,16 @@ $(function() {
 
     // monitor the page for changes and reapply if necessary
     // use 'observer.disconnect()' in 'fnCheckChanges()' to stop monitoring
-    var alvo = document.querySelector('body');
-    var observer = new MutationObserver(fnCheckChanges);
+
+    // debounce: agrupa as mutacoes e roda 1x apos o DOM parar de mudar
+    // (evita rodar a cada hover/tooltip/lazy-load ao passar o mouse)
+    var _timer = null;
+    var alvo = document.body;
+
+    var observer = new MutationObserver(function() {
+        clearTimeout(_timer);
+        _timer = setTimeout(fnCheckChanges, 500);
+    });
     observer.observe(alvo, { attributes: false, characterData: false, childList: true, subtree: true });
 
 });
@@ -113,10 +132,17 @@ $(function() {
 // FUNCTIONS
 // -----------------------------------------------------------------------------
 
+// funcao unica e generica de monitoramento
 function fnCheckChanges(changes, observer) {
-
-    aplicar_boletando();
-    aplicar_magazinevoce();
+    _lojas.forEach(function(loja) {
+        if ( location.hostname.includes(loja.nome) ) {
+            var agora = Date.now();
+            if (agora - (loja._ultimo || 0) >= (loja.debounce || 0)) {
+                loja._ultimo = agora;
+                loja.aplicar();
+            }
+        }
+    });
 }
 
 // -----------------------------------------------------------------------------
@@ -133,3 +159,22 @@ function fnSaveChanges() {
     var msg_reload = '<span id="reloadnow"> Some changes will be applied after you reload the page. <br> Click here to reload now </span>';
     if (shouldreload) toast.message(msg_reload, { delay: 3000, duration: 7000 });
 }
+
+// -----------------------------------------------------------------------------
+// AUX FUNCTIONS
+// -----------------------------------------------------------------------------
+
+function fnInjectStyle(css) {
+    if (cssinjetado[css]) return;
+    cssinjetado[css] = true;
+
+    try {
+        console.log('Injetando css na pagina');
+        GM_addStyle(css);
+    }
+    catch (e) {
+        console.warn('GM_addStyle falhou, usando fallback com jQuery');
+        $('<style>').attr('type', 'text/css').text(css).addClass('cssinjetado').appendTo('head');
+    }
+}
+
