@@ -3,7 +3,7 @@ const SEL_TITULO = '.ui-search-item__title, .poly-component__title, .poly-compon
 
 function aplicar_mercadolivre() {
 
-    console.log('Carregando configuracoes do mercado livre v2026.08.12.1812')
+    console.log('Carregando configuracoes do mercado livre v2026.08.12.2334')
 
     if (typeof $ == 'undefined') {
         console.log('JQuery nao encontrado. Saindo da funcao aplicar_mercadolivre');
@@ -12,20 +12,22 @@ function aplicar_mercadolivre() {
 
     // ajustar css para ocupar toda a largura da tela
     if (cfg.get("page_wide")) {
+        $('.ui-search-main').removeClass('ui-search-main--with-topkeywords');
+
         const css = `
-            .ui-search-main, .ui-search-results {
+            .ui-search-main, .ui-search-main--with-topkeywords, .ui-search-results {
                 max-width: unset !important ;
                 width: 100% !important ;
             }
             .ui-search-sidebar {
                 min-width: unset !important ;
             }
+            .ui-search-layout {
+                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important ;
+            }
             .ui-search-layout__item {
                 height: unset !important ;
                 min-width: unset !important ;
-            }
-            .ui-search-layout {
-                grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important ;
             }
         `;
         fnInjectStyle(css);
@@ -57,7 +59,7 @@ function filtro_mercadolivre() {
         barra.appendTo('body');
 
         // desloca o conteudo para caber a barra fixa
-        $('body').css({'padding-top':'42px'});
+        $('body').css({'padding-top':'50px'});
 
         // restaura o filtro salvo (so existe enquanto a aba/navegador estiver aberto)
         var salvo = '';
