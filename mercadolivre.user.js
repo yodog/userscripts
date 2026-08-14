@@ -10,7 +10,7 @@
 // @resource        toastcss  https://cdn.jsdelivr.net/npm/siiimple-toast/dist/style.css
 // @include         http*://*mercadolivre.com.br/*
 // @icon            https://www.google.com/s2/favicons?domain=mercadolivre.com.br
-// @version         2026.08.14.1941
+// @version         2026.08.14.1942
 // @grant           GM_addStyle
 // @grant           GM_getMetadata
 // @grant           GM_getResourceText
@@ -22,8 +22,6 @@
 // @grant           GM_xmlhttpRequest
 // @run-at          document-start
 // @noframes
-// @downloadURL  http://127.0.0.1/mercadolivre_options.user.js
-// @updateURL    http://127.0.0.1/mercadolivre_options.user.js
 // ==/UserScript==
 
 console.log("Iniciando script", GM_info.script.name, GM_info.script.version);
