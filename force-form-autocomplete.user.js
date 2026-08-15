@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name            Force Forms AutoComplete
 // @namespace       https://github.com/yodog/userscripts
-// @author          RASG
-// @version         2026.07.09.1005
-// @description     Forces the autocomplete attribute for all forms and input fields in the page
-// @require         http://code.jquery.com/jquery-3.7.1.min.js
-// @require         https://raw.github.com/odyniec/MonkeyConfig/master/monkeyconfig.js
+// @author          yodog
+// @version         2026.08.15.1433
+// @description     Forces the autocomplete attribute, restores copy/paste, manages hidden fields, and shows passwords
+// @require         https://code.jquery.com/jquery-3.7.1.min.js
+// @require         https://raw.github.com/yodog/MonkeyConfig/master/monkeyconfig.js
 // @grant           GM_getValue
 // @grant           GM_setValue
 // @grant           GM_addStyle
@@ -24,7 +24,7 @@
 
 this.$ = this.jQuery = jQuery.noConflict(true);
 
-if (typeof $ == 'undefined') console.log('JQuery not found; The script will certainly fail');
+if (typeof $ == 'undefined') console.log('JQuery not found. The script will certainly fail');
 
 // -----------------------------------------------------------------------------
 // OPTIONS / CONFIG MENU
@@ -32,75 +32,126 @@ if (typeof $ == 'undefined') console.log('JQuery not found; The script will cert
 
 /* global MonkeyConfig */
 
+var parametros = {
+    enable_all_fields:           { type: 'checkbox', default: false },
+    save_password:               { type: 'checkbox', default: true },
+    show_hidden_fields:          { type: 'checkbox', default: false },
+    show_password_as_clear_text: { type: 'checkbox', default: false },
+};
+
+var cfg;
 try {
-    var cfg = new MonkeyConfig({
-        title: 'Config JQ_ForceAutoComplete',
+    cfg = new MonkeyConfig({
+        title:       'Userscript Options',
         menuCommand: true,
-        onSave: function() { togglePassword(); },
-        params: {
-            enable_field                : { type: 'checkbox', default: true },
-            save_password               : { type: 'checkbox', default: true },
-            show_password_as_clear_text : { type: 'checkbox', default: false }
-        }
+        params:      parametros,
+        onSave:      function() { toggleHidden(); togglePassword(); },
     });
     console.log("MonkeyConfig loaded; The settings menu will be enabled");
 }
 catch(err) {
+    console.log(err);
     console.log("MonkeyConfig not loaded; The settings menu will be disabled");
+    cfg = {
+        params: parametros,
+        get:    function get(name) { return GM_getValue(name, this.params[name].default) },
+    }
 }
 
+// funcao extra que retorna todas as configs do usuario. funciona com e sem MonkeyConfig
+const getAllSettings = () => Object.fromEntries(Object.keys(parametros).map(k => [k, cfg.get(k)]));
+
 // -----------------------------------------------------------------------------
-//
+// CORE LOGIC
 // -----------------------------------------------------------------------------
 
-var pwdfields = $('input:password');
+GM_addStyle(`
+    input.showhidden {
+        border: 1px dashed #f44336 !important;
+        display: inline-block !important;
+        visibility: visible !important;
+    }
+`);
+
+const observer = new MutationObserver(mutations => {
+    mutations.forEach(mutation => {
+        mutation.addedNodes.forEach(node => {
+            if (node.nodeType !== 1) return; // only continue on 'element' nodes
+            if (node.matches('form, input, select, textarea') || node.querySelectorAll('form, input, select, textarea').length) {
+                parse(node);
+            }
+        });
+    });
+});
+observer.observe(document.body, { childList: true, subtree: true });
 
 function togglePassword() {
-    pwdfields = pwdfields.add( $('input:password') );
+    // Find any new password fields and mark them permanently
+    $('input[type="password"]:not([data-was-password])').attr('data-was-password', 'true');
+
+    // Select all fields that are currently, or EVER WERE, password fields
+    let pwdfields = $('input[data-was-password="true"]');
+
+    // Toggle type
     cfg.get('show_password_as_clear_text') ? pwdfields.attr('type', 'text') : pwdfields.attr('type', 'password');
-};
+}
+
+function toggleHidden() {
+    // Mark any hidden inputs we haven't seen yet so we keep tracking them later
+    $('input[type="hidden"]:not([data-was-hidden]), input:hidden:not([data-was-hidden])').attr('data-was-hidden', 'true');
+
+    // Select all fields that are currently, or EVER WERE, hidden
+    let hiddenfields = $('input[data-was-hidden="true"]');
+
+    // Toggle type and css class
+    let show_hidden_fields = cfg.get('show_hidden_fields');
+    hiddenfields.attr('type', show_hidden_fields ? 'text' : 'hidden').toggleClass('showhidden', show_hidden_fields);
+}
 
 function parse(element) {
-    var $self = $(element);
+    // converter elemento para objeto jquery
+    let $self = $(element);
+
+    // monitorar se estamos fazendo parse de muitos elementos
+    console.debug('parsing', getAllSettings(), $self);
 
     // o selector ':input' busca todos os controles de formulario (input, textarea, select, button)
     // tambem vamos adicionar o proprio elemento caso ele seja um form, fieldset ou controle
-    var $targets = $self.find(':input, fieldset').add($self.filter('form, fieldset, :input'));
+    let $targets = $self.find(':input, fieldset').add($self.filter('form, fieldset, :input'));
 
     // remover disabled e readonly de tudo que foi encontrado
-    if ( cfg.get("enable_field") ) {
+    if ( cfg.get("enable_all_fields") ) {
         $targets.removeAttr("disabled readonly").removeProp("disabled readonly");
     }
 
-    // liga o autocomplete apenas nos elementos que realmente suportam (button e fieldset não suportam)
+    // ligar o autocomplete apenas nos elementos que realmente suportam (button e fieldset não suportam)
     if ( cfg.get("save_password") ) {
-        var $autoCompleteTargets = $targets.filter('form, input, textarea, select');
+        let $autoCompleteTargets = $targets.filter('form, input, select, textarea');
         $autoCompleteTargets.attr("autocomplete", "on").prop("autocomplete", "on");
     }
 
+    // executar
     togglePassword();
+    toggleHidden();
 }
-
-$(function() {
-    $("body").on("click focus load ready", "form, input" , function() {
-        parse(this)
-    });
-});
 
 // -----------------------------------------------------------------------------
 // RE-ENABLE EVENTS THAT WEBPAGES INSIST ON HIJACKING
 // -----------------------------------------------------------------------------
 
-var allowEvent = function(e){
+const allowEvent = function(e){
   e.stopImmediatePropagation();
   return true;
 };
 
 document.addEventListener('copy', allowEvent, true);
+document.addEventListener('cut', allowEvent, true);
 document.addEventListener('paste', allowEvent, true);
 
 // -----------------------------------------------------------------------------
 // DISABLE KNOWN FUNCTIONS THAT PREVENTS AUTOCOMPLETE FROM WORKING
 // -----------------------------------------------------------------------------
 
-unsafeWindow.C = function(G) { return false };
+if ( (window.location.href).includes('google.com') ) {
+    unsafeWindow.C = function(G) { return false };
+}
