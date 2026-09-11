@@ -2,7 +2,7 @@
 // @name            Force Forms AutoComplete
 // @namespace       https://github.com/yodog/userscripts
 // @author          yodog
-// @version         2026.08.15.1433
+// @version         2026.09.11.1201
 // @description     Forces the autocomplete attribute, restores copy/paste, manages hidden fields, and shows passwords
 // @require         https://code.jquery.com/jquery-3.7.1.min.js
 // @require         https://raw.github.com/yodog/MonkeyConfig/master/monkeyconfig.js
@@ -13,6 +13,7 @@
 // @include         http*://*
 // @exclude         http*://*.google.com/*
 // @exclude         http*://*.live.com/*
+// @run-at          document-start
 // @noframes
 // ==/UserScript==
 
@@ -34,6 +35,7 @@ if (typeof $ == 'undefined') console.log('JQuery not found. The script will cert
 
 var parametros = {
     enable_all_fields:           { type: 'checkbox', default: false },
+    reenable_copy_paste_events:  { type: 'checkbox', default: false },
     save_password:               { type: 'checkbox', default: true },
     show_hidden_fields:          { type: 'checkbox', default: false },
     show_password_as_clear_text: { type: 'checkbox', default: false },
@@ -73,6 +75,8 @@ GM_addStyle(`
     }
 `);
 
+// -----------------------------------------------------------------------------
+
 const observer = new MutationObserver(mutations => {
     mutations.forEach(mutation => {
         mutation.addedNodes.forEach(node => {
@@ -83,37 +87,46 @@ const observer = new MutationObserver(mutations => {
         });
     });
 });
-observer.observe(document.body, { childList: true, subtree: true });
 
-function togglePassword() {
+observer.observe(document, { attributes: false, characterData: false, childList: true, subtree: true });
+
+// -----------------------------------------------------------------------------
+
+function togglePassword(scope = document) {
     // Find any new password fields and mark them permanently
-    $('input[type="password"]:not([data-was-password])').attr('data-was-password', 'true');
+    $('input[type="password"]', scope).attr('data-was-password', 'true');
 
     // Select all fields that are currently, or EVER WERE, password fields
-    let pwdfields = $('input[data-was-password="true"]');
+    let pwdfields = $('input[data-was-password="true"]', scope);
+    console.log('pwdfields', pwdfields);
 
     // Toggle type
     cfg.get('show_password_as_clear_text') ? pwdfields.attr('type', 'text') : pwdfields.attr('type', 'password');
 }
 
-function toggleHidden() {
+// -----------------------------------------------------------------------------
+
+function toggleHidden(scope = document) {
     // Mark any hidden inputs we haven't seen yet so we keep tracking them later
-    $('input[type="hidden"]:not([data-was-hidden]), input:hidden:not([data-was-hidden])').attr('data-was-hidden', 'true');
+    $('input[type="hidden"], input:hidden', scope).attr('data-was-hidden', 'true');
 
     // Select all fields that are currently, or EVER WERE, hidden
-    let hiddenfields = $('input[data-was-hidden="true"]');
+    let hiddenfields = $('input[data-was-hidden="true"]', scope);
+    console.log('hiddenfields', hiddenfields);
 
     // Toggle type and css class
     let show_hidden_fields = cfg.get('show_hidden_fields');
     hiddenfields.attr('type', show_hidden_fields ? 'text' : 'hidden').toggleClass('showhidden', show_hidden_fields);
 }
 
+// -----------------------------------------------------------------------------
+
 function parse(element) {
     // converter elemento para objeto jquery
     let $self = $(element);
 
     // monitorar se estamos fazendo parse de muitos elementos
-    console.debug('parsing', getAllSettings(), $self);
+    console.log('parsing', getAllSettings(), $self);
 
     // o selector ':input' busca todos os controles de formulario (input, textarea, select, button)
     // tambem vamos adicionar o proprio elemento caso ele seja um form, fieldset ou controle
@@ -130,9 +143,9 @@ function parse(element) {
         $autoCompleteTargets.attr("autocomplete", "on").prop("autocomplete", "on");
     }
 
-    // executar
-    togglePassword();
-    toggleHidden();
+    // passando parentNode porque e ele que contem os inputs
+    toggleHidden(element.parentNode);
+    togglePassword(element.parentNode);
 }
 
 // -----------------------------------------------------------------------------
@@ -140,13 +153,15 @@ function parse(element) {
 // -----------------------------------------------------------------------------
 
 const allowEvent = function(e){
-  e.stopImmediatePropagation();
-  return true;
+    e.stopImmediatePropagation();
+    return true;
 };
 
-document.addEventListener('copy', allowEvent, true);
-document.addEventListener('cut', allowEvent, true);
-document.addEventListener('paste', allowEvent, true);
+if ( cfg.get("reenable_copy_paste_events") ) {
+    document.addEventListener('copy', allowEvent, true);
+    document.addEventListener('cut', allowEvent, true);
+    document.addEventListener('paste', allowEvent, true);
+}
 
 // -----------------------------------------------------------------------------
 // DISABLE KNOWN FUNCTIONS THAT PREVENTS AUTOCOMPLETE FROM WORKING
